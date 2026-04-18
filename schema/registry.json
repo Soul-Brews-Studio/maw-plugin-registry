@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maw.soulbrews.studio/schema/registry.json",
+  "title": "maw plugin registry manifest",
+  "description": "Source-of-truth manifest listing all curated maw plugins.",
+  "type": "object",
+  "required": ["schemaVersion", "updated", "plugins"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "description": "Manifest schema version. Bump on breaking changes."
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp of last registry update."
+    },
+    "plugins": {
+      "type": "object",
+      "description": "Map of plugin-name → registry entry.",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$",
+        "minLength": 2,
+        "maxLength": 64
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": ["version", "source", "summary", "author", "license", "addedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+          "description": "Semver of the published plugin."
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^github:[^/]+/[^#]+#[^#]+$",
+          "description": "Source locator in github:owner/repo#ref form."
+        },
+        "sha256": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          ],
+          "description": "SHA-256 of the resolved source tarball. Null until CI populates on first release tag."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 140
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX identifier (e.g. MIT, BUSL-1.1)."
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri"
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

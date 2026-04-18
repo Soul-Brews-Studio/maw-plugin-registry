@@ -1,0 +1,43 @@
+name: validate
+
+on:
+  pull_request:
+    paths:
+      - "registry.json"
+      - "schema/**"
+      - ".github/workflows/validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "registry.json"
+      - "schema/**"
+      - ".github/workflows/validate.yml"
+
+jobs:
+  schema:
+    name: JSONSchema validate registry.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli@5 ajv-formats@3
+
+      - name: Validate registry.json against schema/registry.json
+        run: |
+          ajv validate \
+            --spec=draft2020 \
+            -c ajv-formats \
+            -s schema/registry.json \
+            -d registry.json \
+            --strict=false
+
+      - name: Sanity-check JSON is parseable
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('registry.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('schema/registry.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('schema/plugin.json','utf8'))"

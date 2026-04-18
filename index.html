@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>maw plugin registry</title>
+  <meta name="description" content="Curated registry for maw plugins." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%F0%9F%AA%B4%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b0d10;
+      --fg: #e6e9ee;
+      --muted: #8a92a0;
+      --accent: #00d1c7;
+      --card: #12161b;
+      --border: #1f2630;
+    }
+    @media (prefers-color-scheme: light) {
+      :root { --bg:#fafafa; --fg:#111; --muted:#555; --accent:#007a73; --card:#fff; --border:#e3e3e3; }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: var(--bg);
+      color: var(--fg);
+      padding: 3rem 1.25rem 4rem;
+    }
+    main { max-width: 820px; margin: 0 auto; }
+    header h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+    header p { color: var(--muted); margin: 0 0 2rem; }
+    a { color: var(--accent); }
+    .plugin {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+      margin-bottom: .9rem;
+    }
+    .plugin h2 { font-size: 1.05rem; margin: 0 0 .25rem; }
+    .plugin .meta { color: var(--muted); font-size: .85rem; margin-bottom: .4rem; }
+    .plugin .summary { margin: 0; }
+    .empty, .error { color: var(--muted); }
+    footer { margin-top: 3rem; color: var(--muted); font-size: .85rem; }
+    code { background: var(--border); padding: 1px 5px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>🪴 maw plugin registry</h1>
+      <p>Curated plugins for <a href="https://github.com/Soul-Brews-Studio/mawjs-oracle">maw</a>. Install via <code>maw plugin install &lt;name&gt;</code>.</p>
+    </header>
+    <section id="plugins"><p class="empty">Loading registry…</p></section>
+    <footer>
+      <p>
+        Source-of-truth: <a href="./registry.json">registry.json</a> •
+        Schemas: <a href="./schema/registry.json">registry</a>, <a href="./schema/plugin.json">plugin</a> •
+        <a href="https://github.com/Soul-Brews-Studio/maw-plugin-registry">GitHub</a>
+      </p>
+    </footer>
+  </main>
+  <script>
+    (async () => {
+      const root = document.getElementById('plugins');
+      try {
+        const res = await fetch('./registry.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const reg = await res.json();
+        const entries = Object.entries(reg.plugins || {});
+        if (!entries.length) {
+          root.innerHTML = '<p class="empty">No plugins registered yet.</p>';
+          return;
+        }
+        entries.sort(([a], [b]) => a.localeCompare(b));
+        root.innerHTML = entries.map(([name, p]) => {
+          const home = p.homepage ? `<a href="${p.homepage}" rel="noopener">${name}</a>` : name;
+          const src = p.source ? ` • <code>${p.source}</code>` : '';
+          return `<article class="plugin">
+            <h2>${home}</h2>
+            <p class="meta">v${p.version} • ${p.author} • ${p.license}${src}</p>
+            <p class="summary">${p.summary}</p>
+          </article>`;
+        }).join('');
+      } catch (err) {
+        root.innerHTML = `<p class="error">Failed to load registry: ${err.message}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>
