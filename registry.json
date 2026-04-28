@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-28T17:37:21Z",
+  "updated": "2026-04-28T17:54:54Z",
   "plugins": {
     "bg": {
       "version": "0.1.0",
@@ -42,6 +42,16 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-rename",
       "addedAt": "2026-04-28T17:37:21Z"
+    },
+    "park": {
+      "version": "0.1.0",
+      "source": "github:Soul-Brews-Studio/maw-park#v0.1.0",
+      "sha256": "c91d7faba37605da205a715b59c5cb1c01cc45d341a4622775a574490ec26c76",
+      "summary": "Park (pause) tmux windows with git context for later resume",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-park",
+      "addedAt": "2026-04-28T17:54:54Z"
     }
   }
 }
