@@ -1,17 +1,17 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-18T00:00:00Z",
+  "updated": "2026-04-28T16:56:09Z",
   "plugins": {
     "cross-team-queue": {
       "version": "0.1.0",
-      "source": "github:Soul-Brews-Studio/maw-cross-team-queue#main",
-      "sha256": null,
+      "source": "github:Soul-Brews-Studio/maw-cross-team-queue#v0.1.0",
+      "sha256": "f920586b2358e4736a4a5f97646e4bdba01e4b3e49c7b8386e38796e2ab044bb",
       "summary": "Unified inbox view across multiple oracle vaults",
       "author": "Soul-Brews-Studio",
       "license": "BUSL-1.1",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-cross-team-queue",
-      "addedAt": "2026-04-18T00:00:00Z"
+      "addedAt": "2026-04-28T16:56:09Z"
     }
   }
 }
