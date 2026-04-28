@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-28T16:56:09Z",
+  "updated": "2026-04-28T17:09:20Z",
   "plugins": {
     "cross-team-queue": {
       "version": "0.1.0",
@@ -12,6 +12,16 @@
       "license": "BUSL-1.1",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-cross-team-queue",
       "addedAt": "2026-04-28T16:56:09Z"
+    },
+    "shellenv": {
+      "version": "0.1.0",
+      "source": "github:Soul-Brews-Studio/maw-shellenv#v0.1.0",
+      "sha256": "c14b6bae3c18f07635a262a32f867f4dc6ec0c2a5c6190598566dec6d2ff6c9d",
+      "summary": "Emit shell init code for the maw warp ergonomic — eval-style install for zsh/bash",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-shellenv",
+      "addedAt": "2026-04-28T17:09:20Z"
     }
   }
 }
