@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-28T17:28:03Z",
+  "updated": "2026-04-28T17:37:21Z",
   "plugins": {
     "bg": {
       "version": "0.1.0",
@@ -32,6 +32,16 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-shellenv",
       "addedAt": "2026-04-28T17:09:20Z"
+    },
+    "rename": {
+      "version": "0.1.0",
+      "source": "github:Soul-Brews-Studio/maw-rename#v0.1.0",
+      "sha256": "427479c499b42da6bbef8522e07ea39545d504e5e289237e4a4aa340d81dd412",
+      "summary": "Tmux window rename with oracle-prefix auto-format",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-rename",
+      "addedAt": "2026-04-28T17:37:21Z"
     }
   }
 }
