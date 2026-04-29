@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-29T01:39:39Z",
+  "updated": "2026-04-29T01:39:41Z",
   "plugins": {
     "bg": {
       "version": "0.1.2",
@@ -161,6 +161,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:39:39Z",
+      "tier": "extra"
+    },
+    "project": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/project@v0.1.0-project",
+      "sha256": "9098f93596ae8228da6434a35a9cc349c0076c4400de12e66ad6b8496b8dbcef",
+      "summary": "Scaffold (stub): clone and track external repos (learn/incubate/find/list). Full impl lives in the Oracle /project skill — core plugin is a dispatcher shape only.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T01:39:41Z",
       "tier": "extra"
     }
   }
