@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-29T01:40:04Z",
+  "updated": "2026-04-29T01:40:28Z",
   "plugins": {
     "bg": {
       "version": "0.1.2",
@@ -326,6 +326,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:40:04Z",
+      "tier": "extra"
+    },
+    "whoami": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/whoami@v0.1.0-whoami",
+      "sha256": "a08543916e503a691c139cd469d21b9f02c9245ba34bd06ed73cd9c054fff20a",
+      "summary": "Print the current tmux session name (closes raw `tmux display-message -p '#S'` sweep).",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T01:40:28Z",
       "tier": "extra"
     }
   }
