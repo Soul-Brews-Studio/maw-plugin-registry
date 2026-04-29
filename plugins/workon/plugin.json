@@ -1,0 +1,16 @@
+{
+  "name": "workon",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Start working on a repo with optional task context.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "workon",
+    "aliases": [
+      "work"
+    ],
+    "help": "maw workon <repo> [task]"
+  },
+  "weight": 50
+}
