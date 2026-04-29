@@ -525,6 +525,17 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T02:49:08Z",
       "tier": "extra"
+    },
+    "artifact-manager": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/artifact-manager@v0.1.0-artifact-manager",
+      "sha256": "e67c84d1a7fb017a665a730f44e951344333c13dd34e4cbf5a3a1e0a1ce79c94",
+      "summary": "Task artifact lifecycle — ls, get, write, attach, init. Pure TypeScript, no WASM.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T02:49:08Z",
+      "tier": "extra"
     }
   }
 }
