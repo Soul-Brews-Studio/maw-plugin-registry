@@ -75,6 +75,10 @@
         "addedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "tier": {
+          "type": "string",
+          "description": "Optional classification tag — e.g. 'extra', 'standard', 'federation', 'dev'."
         }
       }
     }
