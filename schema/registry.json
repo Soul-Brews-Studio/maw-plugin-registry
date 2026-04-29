@@ -45,8 +45,8 @@
         },
         "source": {
           "type": "string",
-          "pattern": "^github:[^/]+/[^#]+#[^#]+$",
-          "description": "Source locator in github:owner/repo#ref form."
+          "pattern": "^[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9._-]*(/[a-z0-9][a-z0-9._-]*)*(@[a-zA-Z0-9._-]+)?$",
+          "description": "Source locator in owner/repo[/subpath][@ref] form (Vercel-style; consumed by maw-js#939 github: resolver). Owner/repo lowercase."
         },
         "sha256": {
           "oneOf": [
