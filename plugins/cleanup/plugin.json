@@ -1,0 +1,14 @@
+{
+  "name": "cleanup",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Cleanup zombie agent panes.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "cleanup",
+    "aliases": [],
+    "help": "maw cleanup --zombie-agents [--yes] — Kill orphan zombie panes"
+  },
+  "weight": 50
+}
