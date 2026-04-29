@@ -646,6 +646,17 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T02:49:10Z",
       "tier": "extra"
+    },
+    "health": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/health@v0.1.0-health",
+      "sha256": "ceeca04da4335ef2a1062f2e0e7a64c6d3f9dfc15e9814cee5b2ae859c62bf89",
+      "summary": "System health check — tmux, maw server, disk, memory, pm2, peers.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T02:49:10Z",
+      "tier": "extra"
     }
   }
 }
