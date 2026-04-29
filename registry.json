@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-29T01:39:51Z",
+  "updated": "2026-04-29T01:39:53Z",
   "plugins": {
     "bg": {
       "version": "0.1.2",
@@ -194,6 +194,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:39:51Z",
+      "tier": "extra"
+    },
+    "mega": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/mega@v0.1.0-mega",
+      "sha256": "dfbc3c5c6e3a045179d4d901998ee026441d7e07efd78ee15502e1037ea1c0e5",
+      "summary": "Manage MegaAgent multi-agent teams.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T01:39:53Z",
       "tier": "extra"
     }
   }
