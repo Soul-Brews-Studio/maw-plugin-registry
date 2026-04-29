@@ -1,0 +1,6 @@
+oracle: mawjs-oracle
+oracle-repo: github.com:Soul-Brews-Studio/mawjs-oracle.git
+date: 2026-04-18
+mode: default
+source: https://github.com/Soul-Brews-Studio/maw-cross-team-queue
+purpose: First registry plugin for maw-js plugin registry (issue #515)
