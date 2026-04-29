@@ -690,6 +690,17 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T02:49:10Z",
       "tier": "extra"
+    },
+    "send-enter": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/send-enter@v0.1.0-send-enter",
+      "sha256": "025e520fde0026421f673d1e96afc7767bea0c6b769e73f54207f9003c770e9c",
+      "summary": "Send Enter key to a maw target — manually submit pending input on stuck panes (#728).",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T02:49:10Z",
+      "tier": "extra"
     }
   }
 }
