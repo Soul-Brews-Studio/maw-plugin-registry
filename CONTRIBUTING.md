@@ -16,7 +16,7 @@ Thanks for wanting to list a plugin. The process is intentionally small.
 {
   "your-plugin-name": {
     "version": "0.1.0",
-    "source": "github:your-org/your-plugin-repo#main",
+    "source": "your-org/your-plugin-repo@v0.1.0",
     "sha256": null,
     "summary": "One sentence (≤ 140 chars) describing what the plugin does.",
     "author": "Your Name or Org",
@@ -32,11 +32,37 @@ Thanks for wanting to list a plugin. The process is intentionally small.
 | field      | what it is                                                     |
 |------------|----------------------------------------------------------------|
 | `version`  | semver of the published plugin                                 |
-| `source`   | `github:owner/repo#ref` — branch, tag, or commit               |
+| `source`   | `owner/repo[/subpath][@ref]` — see [Source format](#source-format) below |
 | `summary`  | one line (≤ 140 chars)                                         |
 | `author`   | person or org                                                  |
 | `license`  | SPDX identifier (e.g. `MIT`, `Apache-2.0`, `BUSL-1.1`)         |
 | `addedAt`  | ISO-8601 timestamp (set once, never edited)                    |
+
+### Source format
+
+The `source` field is a bare github-style locator: `owner/repo[/subpath][@ref]`.
+
+| shape                                | meaning                                                  |
+|--------------------------------------|----------------------------------------------------------|
+| `owner/repo`                         | whole-repo plugin, default branch                        |
+| `owner/repo@v1.2.3`                  | whole-repo plugin pinned to a tag (or branch / SHA)      |
+| `owner/repo/path/to/plugin`          | monorepo subpath, default branch                         |
+| `owner/repo/path/to/plugin@v1.2.3`   | monorepo subpath pinned to a tag                         |
+
+**Examples:**
+
+```jsonc
+// whole-repo plugin
+"source": "your-org/your-plugin-repo@v0.1.0"
+
+// monorepo subpath plugin (this registry's own plugins live this way)
+"source": "soul-brews-studio/maw-plugin-registry/bg@v0.1.2-bg"
+```
+
+The legacy `github:owner/repo#ref` form is being phased out — see
+[`scripts/migrate-source-format.ts`](./scripts/migrate-source-format.ts). Once
+the github: resolver in maw-js ships (maw-js#939), that script will rewrite all
+existing `monorepo:plugins/<name>@<tag>` entries to the bare form above.
 
 ### Optional fields
 
