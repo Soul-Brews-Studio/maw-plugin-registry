@@ -1,0 +1,21 @@
+{
+  "name": "kill",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Kill a tmux session, window, or pane (trusts the user — no --force).",
+  "cli": {
+    "command": "kill",
+    "help": "maw kill <target>[:window] [--pane N]",
+    "flags": {
+      "--pane": "number"
+    }
+  },
+  "api": {
+    "path": "/api/kill",
+    "methods": [
+      "POST"
+    ]
+  },
+  "weight": 10
+}
