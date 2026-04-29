@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-29T01:39:02Z",
+  "updated": "2026-04-29T01:39:05Z",
   "plugins": {
     "bg": {
       "version": "0.1.2",
@@ -73,6 +73,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:39:02Z",
+      "tier": "extra"
+    },
+    "peek": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/peek@v0.1.0-peek",
+      "sha256": "ed4ce7c9254f1288348476322cb799b102f73569b206002f7d12734b87267eb5",
+      "summary": "Peek at an agent's latest output.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T01:39:05Z",
       "tier": "extra"
     }
   }
