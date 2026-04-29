@@ -1,0 +1,19 @@
+{
+  "name": "sleep",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Gracefully stop a single Oracle agent's tmux window.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "sleep",
+    "help": "maw sleep <oracle> [window] — gracefully stop an oracle window"
+  },
+  "api": {
+    "path": "/api/sleep",
+    "methods": [
+      "POST"
+    ]
+  },
+  "weight": 0
+}
