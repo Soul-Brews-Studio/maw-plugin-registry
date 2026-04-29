@@ -5,7 +5,7 @@
   "plugins": {
     "bg": {
       "version": "0.1.2",
-      "source": "monorepo:plugins/bg@v0.1.2-bg",
+      "source": "soul-brews-studio/maw-plugin-registry/bg@v0.1.2-bg",
       "sha256": "b14f2689c2904d4646c18e661d18e50f621d013c783833829a8909c627ce8e20",
       "summary": "Run long commands in detached tmux; sample output non-destructively",
       "author": "Soul-Brews-Studio",
@@ -15,7 +15,7 @@
     },
     "cross-team-queue": {
       "version": "0.1.2",
-      "source": "monorepo:plugins/cross-team-queue@v0.1.2-cross-team-queue",
+      "source": "soul-brews-studio/maw-plugin-registry/cross-team-queue@v0.1.2-cross-team-queue",
       "sha256": "3806f16b7673e63a4ac02d621ce3116b1f952b4baba54d7e92372e15edf9ea99",
       "summary": "Unified inbox view across multiple oracle vaults",
       "author": "Soul-Brews-Studio",
@@ -25,7 +25,7 @@
     },
     "shellenv": {
       "version": "0.1.2",
-      "source": "monorepo:plugins/shellenv@v0.1.2-shellenv",
+      "source": "soul-brews-studio/maw-plugin-registry/shellenv@v0.1.2-shellenv",
       "sha256": "356a007e5bf066cf08c343a40b40b691a132d1ba45237e581a3e51bb915b206d",
       "summary": "Emit shell init code for the maw warp ergonomic — eval-style install for zsh/bash",
       "author": "Soul-Brews-Studio",
@@ -35,7 +35,7 @@
     },
     "rename": {
       "version": "0.1.2",
-      "source": "monorepo:plugins/rename@v0.1.2-rename",
+      "source": "soul-brews-studio/maw-plugin-registry/rename@v0.1.2-rename",
       "sha256": "f09816a8e9214fb01b7c5555f31fbe4b2a787b21f7f198c835d5c78c153a560b",
       "summary": "Tmux window rename with oracle-prefix auto-format",
       "author": "Soul-Brews-Studio",
@@ -45,7 +45,7 @@
     },
     "park": {
       "version": "0.1.2",
-      "source": "monorepo:plugins/park@v0.1.2-park",
+      "source": "soul-brews-studio/maw-plugin-registry/park@v0.1.2-park",
       "sha256": "73cba3fe50950b881c197ae29410717fb863861dd294b8672d0b7ac4171ea441",
       "summary": "Park (pause) tmux windows with git context for later resume",
       "author": "Soul-Brews-Studio",
@@ -55,7 +55,7 @@
     },
     "learn": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/learn@v0.1.0-learn",
+      "source": "soul-brews-studio/maw-plugin-registry/learn@v0.1.0-learn",
       "sha256": "777d6a193879e998b448a43e00279b2ce6d64bcb3f83c10ee6828ce1c92d37e5",
       "summary": "Scaffold (stub): explore a codebase with parallel agents. Full impl lives in the Oracle /learn skill — core plugin is a dispatcher shape only.",
       "author": "Soul-Brews-Studio",
@@ -66,7 +66,7 @@
     },
     "ls": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/ls@v0.1.0-ls",
+      "source": "soul-brews-studio/maw-plugin-registry/ls@v0.1.0-ls",
       "sha256": "1b1fb2a893430d0dd50e70211c3dcad49bb4f8801f1d10afb7b6a2ec7480f517",
       "summary": "List all agents and their status.",
       "author": "Soul-Brews-Studio",
@@ -77,7 +77,7 @@
     },
     "peek": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/peek@v0.1.0-peek",
+      "source": "soul-brews-studio/maw-plugin-registry/peek@v0.1.0-peek",
       "sha256": "ed4ce7c9254f1288348476322cb799b102f73569b206002f7d12734b87267eb5",
       "summary": "Peek at an agent's latest output.",
       "author": "Soul-Brews-Studio",
@@ -88,7 +88,7 @@
     },
     "triggers": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/triggers@v0.1.0-triggers",
+      "source": "soul-brews-studio/maw-plugin-registry/triggers@v0.1.0-triggers",
       "sha256": "2d857951503dae0980da9a939823a8103a39bfccd27ac0255c4665ce28e85cb7",
       "summary": "List configured event triggers.",
       "author": "Soul-Brews-Studio",
@@ -99,7 +99,7 @@
     },
     "stop": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/stop@v0.1.0-stop",
+      "source": "soul-brews-studio/maw-plugin-registry/stop@v0.1.0-stop",
       "sha256": "30f27cabb72cc802e256e75b6c4b7c9c92cf90164e5f69a5f847be9eb0b367cd",
       "summary": "Stop ALL fleet sessions (all oracles).",
       "author": "Soul-Brews-Studio",
@@ -110,7 +110,7 @@
     },
     "assign": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/assign@v0.1.0-assign",
+      "source": "soul-brews-studio/maw-plugin-registry/assign@v0.1.0-assign",
       "sha256": "4d63cf3319fe10db820664b6de9134c888754196999c8c50bdcae30ac6e2554a",
       "summary": "Assign a GitHub issue to an oracle.",
       "author": "Soul-Brews-Studio",
@@ -121,7 +121,7 @@
     },
     "broadcast": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/broadcast@v0.1.0-broadcast",
+      "source": "soul-brews-studio/maw-plugin-registry/broadcast@v0.1.0-broadcast",
       "sha256": "4f3efb6a03d6828ee6b9126b2a9c974f7e68df271b8865482086f3e98483d778",
       "summary": "Broadcast a message to all agents.",
       "author": "Soul-Brews-Studio",
@@ -132,7 +132,7 @@
     },
     "completions": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/completions@v0.1.0-completions",
+      "source": "soul-brews-studio/maw-plugin-registry/completions@v0.1.0-completions",
       "sha256": "702047b7e0f6d63c4d7ff7286ff2832ec3ab5a99aeb6b6771c1d2c99fe530613",
       "summary": "Generate shell completions for maw CLI.",
       "author": "Soul-Brews-Studio",
@@ -143,7 +143,7 @@
     },
     "incubate": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/incubate@v0.1.0-incubate",
+      "source": "soul-brews-studio/maw-plugin-registry/incubate@v0.1.0-incubate",
       "sha256": "37851e32b530c8ed2cdb3860541b9bd339654e0e5df68620fee7ddce6668d5b9",
       "summary": "Scaffold (stub): clone or create repos for active development — the right hand of /learn. Full impl lives in the Oracle /incubate skill — core plugin is a dispatcher shape only.",
       "author": "Soul-Brews-Studio",
@@ -154,7 +154,7 @@
     },
     "resume": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/resume@v0.1.0-resume",
+      "source": "soul-brews-studio/maw-plugin-registry/resume@v0.1.0-resume",
       "sha256": "374d568997d8e08ae9479a64aea517d3a5f37bfe36866ebd02661c8f96b5b8e8",
       "summary": "Resume a parked agent.",
       "author": "Soul-Brews-Studio",
@@ -165,7 +165,7 @@
     },
     "project": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/project@v0.1.0-project",
+      "source": "soul-brews-studio/maw-plugin-registry/project@v0.1.0-project",
       "sha256": "9098f93596ae8228da6434a35a9cc349c0076c4400de12e66ad6b8496b8dbcef",
       "summary": "Scaffold (stub): clone and track external repos (learn/incubate/find/list). Full impl lives in the Oracle /project skill — core plugin is a dispatcher shape only.",
       "author": "Soul-Brews-Studio",
@@ -176,7 +176,7 @@
     },
     "reunion": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/reunion@v0.1.0-reunion",
+      "source": "soul-brews-studio/maw-plugin-registry/reunion@v0.1.0-reunion",
       "sha256": "330518881cd30ca7f3467fbb1c8a1a03cc876144d677ff4f63a8f0a32d85aa49",
       "summary": "Trigger a federation reunion sync.",
       "author": "Soul-Brews-Studio",
@@ -187,7 +187,7 @@
     },
     "sleep": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/sleep@v0.1.0-sleep",
+      "source": "soul-brews-studio/maw-plugin-registry/sleep@v0.1.0-sleep",
       "sha256": "7f53cf07b44f47ef575d538f6a9e896ef2f516525f52bc26a21aaa8c8c1709fd",
       "summary": "Gracefully stop a single Oracle agent's tmux window.",
       "author": "Soul-Brews-Studio",
@@ -198,7 +198,7 @@
     },
     "mega": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/mega@v0.1.0-mega",
+      "source": "soul-brews-studio/maw-plugin-registry/mega@v0.1.0-mega",
       "sha256": "dfbc3c5c6e3a045179d4d901998ee026441d7e07efd78ee15502e1037ea1c0e5",
       "summary": "Manage MegaAgent multi-agent teams.",
       "author": "Soul-Brews-Studio",
@@ -209,7 +209,7 @@
     },
     "wake": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/wake@v0.1.0-wake",
+      "source": "soul-brews-studio/maw-plugin-registry/wake@v0.1.0-wake",
       "sha256": "e9445c6a7296cf1aef3e4d41a09341453602263f303488a7d830ddf222f314f5",
       "summary": "Spawn or attach to an oracle session",
       "author": "Soul-Brews-Studio",
@@ -220,7 +220,7 @@
     },
     "find": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/find@v0.1.0-find",
+      "source": "soul-brews-studio/maw-plugin-registry/find@v0.1.0-find",
       "sha256": "6d80a8fea7c1ef2a536e364b082b7025d6a4edeb8d61d01cc0b6e51c5c07fb4e",
       "summary": "Search across agents and fleet data.",
       "author": "Soul-Brews-Studio",
@@ -231,7 +231,7 @@
     },
     "scope": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/scope@v0.1.0-scope",
+      "source": "soul-brews-studio/maw-plugin-registry/scope@v0.1.0-scope",
       "sha256": "a40e8685f3798c9b804a7f6590078f9aeade1ba3135f4c8095e1b030da9c37c8",
       "summary": "Scope primitive — named routing namespaces (#642 Phase 1).",
       "author": "Soul-Brews-Studio",
@@ -242,7 +242,7 @@
     },
     "costs": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/costs@v0.1.0-costs",
+      "source": "soul-brews-studio/maw-plugin-registry/costs@v0.1.0-costs",
       "sha256": "f1014bd6ad5a1c749bd329561b967afd4e8194826c4fe94e68045d12dfa5151e",
       "summary": "Show token usage and estimated cost breakdown per agent.",
       "author": "Soul-Brews-Studio",
@@ -253,7 +253,7 @@
     },
     "demo": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/demo@v0.1.0-demo",
+      "source": "soul-brews-studio/maw-plugin-registry/demo@v0.1.0-demo",
       "sha256": "186e061cdd960730ca434e7d2ba9566a815eb3aeafbce1f2c861d800ea364a86",
       "summary": "Simulated multi-agent session — the gateway drug. No API key required.",
       "author": "Soul-Brews-Studio",
@@ -264,7 +264,7 @@
     },
     "trust": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/trust@v0.1.0-trust",
+      "source": "soul-brews-studio/maw-plugin-registry/trust@v0.1.0-trust",
       "sha256": "2a1a953149bb73d923121d86e68c1a4a4d523f8f57ad4ac1735f3ba28615cdf3",
       "summary": "Pairwise trust list — sender↔target whitelist consulted by scope-acl (#842 Sub-B).",
       "author": "Soul-Brews-Studio",
@@ -275,7 +275,7 @@
     },
     "inbox": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/inbox@v0.1.0-inbox",
+      "source": "soul-brews-studio/maw-plugin-registry/inbox@v0.1.0-inbox",
       "sha256": "0f7127c091f4198507a0a753b954a9e4d3ab72f4e7f1a1f5d647bf2a4ea5eb67",
       "summary": "Inbox messages + cross-scope approval queue (#842 Sub-C).",
       "author": "Soul-Brews-Studio",
@@ -286,7 +286,7 @@
     },
     "soul-sync": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/soul-sync@v0.1.0-soul-sync",
+      "source": "soul-brews-studio/maw-plugin-registry/soul-sync@v0.1.0-soul-sync",
       "sha256": "2ab1d2b9ea6efa3205a232d831b5fdd7777b6bfb2b0191eba15262477b0eb0bd",
       "summary": "Synchronize oracle soul across nodes.",
       "author": "Soul-Brews-Studio",
@@ -297,7 +297,7 @@
     },
     "ui": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/ui@v0.1.0-ui",
+      "source": "soul-brews-studio/maw-plugin-registry/ui@v0.1.0-ui",
       "sha256": "ae880f94c14cb98c651e5e5136953b4ee9cb464a220840ede5f83e38f3968606",
       "summary": "Open or manage the maw web UI.",
       "author": "Soul-Brews-Studio",
@@ -308,7 +308,7 @@
     },
     "team": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/team@v0.1.0-team",
+      "source": "soul-brews-studio/maw-plugin-registry/team@v0.1.0-team",
       "sha256": "7e09168f18aac770a550d2046a582849323551732de8364bee01930e04988bbd",
       "summary": "Agent reincarnation engine — create, spawn, send, shutdown, resume, lives.",
       "author": "Soul-Brews-Studio",
@@ -319,7 +319,7 @@
     },
     "peers": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/peers@v0.1.0-peers",
+      "source": "soul-brews-studio/maw-plugin-registry/peers@v0.1.0-peers",
       "sha256": "9828063b55cd8c841f78da78f8ba5eff654cb628da2ff40d1470717933c9d87a",
       "summary": "Manage federation peer aliases (#568).",
       "author": "Soul-Brews-Studio",
@@ -330,7 +330,7 @@
     },
     "whoami": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/whoami@v0.1.0-whoami",
+      "source": "soul-brews-studio/maw-plugin-registry/whoami@v0.1.0-whoami",
       "sha256": "a08543916e503a691c139cd469d21b9f02c9245ba34bd06ed73cd9c054fff20a",
       "summary": "Print the current tmux session name (closes raw `tmux display-message -p '#S'` sweep).",
       "author": "Soul-Brews-Studio",
@@ -341,7 +341,7 @@
     },
     "about": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/about@v0.1.0-about",
+      "source": "soul-brews-studio/maw-plugin-registry/about@v0.1.0-about",
       "sha256": "e8f754f83d37574360356b0b4ec6b21a8a6f11a055b03d4534cebb11e5f2cd5a",
       "summary": "Show information about an oracle (session, repo, windows).",
       "author": "Soul-Brews-Studio",
@@ -352,7 +352,7 @@
     },
     "archive": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/archive@v0.1.0-archive",
+      "source": "soul-brews-studio/maw-plugin-registry/archive@v0.1.0-archive",
       "sha256": "be23b49ce385a3ca87a41a7ee28c4117ba06f6770b74796b816ed65cf91210ed",
       "summary": "Archive an oracle's tmux session and data.",
       "author": "Soul-Brews-Studio",
@@ -363,7 +363,7 @@
     },
     "cleanup": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/cleanup@v0.1.0-cleanup",
+      "source": "soul-brews-studio/maw-plugin-registry/cleanup@v0.1.0-cleanup",
       "sha256": "88b83b29d037f067a5591c88a3ea31f9acf5817e25c29c1700f3f28a02b2bfac",
       "summary": "Cleanup zombie agent panes.",
       "author": "Soul-Brews-Studio",
@@ -374,7 +374,7 @@
     },
     "done": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/done@v0.1.0-done",
+      "source": "soul-brews-studio/maw-plugin-registry/done@v0.1.0-done",
       "sha256": "b27124336937bf46bc30d7bd80611d78956157975b3d5f7c708e3ca4a8772f75",
       "summary": "Clean up a finished worktree window: rrr, git save, kill, remove worktree.",
       "author": "Soul-Brews-Studio",
@@ -385,7 +385,7 @@
     },
     "init": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/init@v0.1.0-init",
+      "source": "soul-brews-studio/maw-plugin-registry/init@v0.1.0-init",
       "sha256": "39fc62510425f3b83a76ebfdda983866c6449be9e4fd4b62abf7c8c01cae3a57",
       "summary": "First-run wizard — configure ~/.config/maw/maw.config.json",
       "author": "Soul-Brews-Studio",
@@ -396,7 +396,7 @@
     },
     "pair": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/pair@v0.1.0-pair",
+      "source": "soul-brews-studio/maw-plugin-registry/pair@v0.1.0-pair",
       "sha256": "98eb1b96a2654fa1af50d50059528c700aef6f5ad5a521dbd161d7724228cc98",
       "summary": "Bluetooth-style federation pairing — ephemeral code handshake (#573, facet 3 of #565).",
       "author": "Soul-Brews-Studio",
@@ -407,7 +407,7 @@
     },
     "tab": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/tab@v0.1.0-tab",
+      "source": "soul-brews-studio/maw-plugin-registry/tab@v0.1.0-tab",
       "sha256": "fa1cb5b76e700b03750c198f71af6a52bc65e349582827995e6c66175376ceef",
       "summary": "Manage tmux tabs.",
       "author": "Soul-Brews-Studio",
@@ -418,7 +418,7 @@
     },
     "doctor": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/doctor@v0.1.0-doctor",
+      "source": "soul-brews-studio/maw-plugin-registry/doctor@v0.1.0-doctor",
       "sha256": "553360a12eb9f03c1479df5084b0ec1ce8f14078888319008fd5b8a717109d56",
       "summary": "Diagnostic checks — verifies maw install health and auto-heals when possible (#531).",
       "author": "Soul-Brews-Studio",
@@ -429,7 +429,7 @@
     },
     "view": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/view@v0.1.0-view",
+      "source": "soul-brews-studio/maw-plugin-registry/view@v0.1.0-view",
       "sha256": "a4d46e5120ebc282576de42498397f3c850f5ac8fa642b18b47ffae690426b16",
       "summary": "Create or attach to an agent's tmux view.",
       "author": "Soul-Brews-Studio",
@@ -440,7 +440,7 @@
     },
     "bud": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/bud@v0.1.0-bud",
+      "source": "soul-brews-studio/maw-plugin-registry/bud@v0.1.0-bud",
       "sha256": "ab3dd96d44aced6968445ed9d7831ec9a92bc95c3c1ebb73627d1f24e7217fc9",
       "summary": "Create a new oracle (bud from parent)",
       "author": "Soul-Brews-Studio",
@@ -451,7 +451,7 @@
     },
     "on": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/on@v0.1.0-on",
+      "source": "soul-brews-studio/maw-plugin-registry/on@v0.1.0-on",
       "sha256": "bab28c6b1a20b590016b7f7cf04d062111469da603d803deffde4303ee4c3e70",
       "summary": "Create event triggers for oracle lifecycle events.",
       "author": "Soul-Brews-Studio",
@@ -462,7 +462,7 @@
     },
     "signals": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/signals@v0.1.0-signals",
+      "source": "soul-brews-studio/maw-plugin-registry/signals@v0.1.0-signals",
       "sha256": "081531bc13afcd51b8ada7105d5db7be157e57137737ff7a9571231477dcd4a6",
       "summary": "List bud signals written to ψ/memory/signals/",
       "author": "Soul-Brews-Studio",
@@ -473,7 +473,7 @@
     },
     "pulse": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/pulse@v0.1.0-pulse",
+      "source": "soul-brews-studio/maw-plugin-registry/pulse@v0.1.0-pulse",
       "sha256": "447a948d73de6b31b920ae7c8db049a2a4243c489f77ec642c918d07346e8b99",
       "summary": "Task pulse — add, list, and clean up work items.",
       "author": "Soul-Brews-Studio",
@@ -484,7 +484,7 @@
     },
     "workspace": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/workspace@v0.1.0-workspace",
+      "source": "soul-brews-studio/maw-plugin-registry/workspace@v0.1.0-workspace",
       "sha256": "a789ea64f9215a8db6b9daa499119bcedfda8e90b76a0825fd4e9338de188f2e",
       "summary": "Multi-node workspace management.",
       "author": "Soul-Brews-Studio",
@@ -495,7 +495,7 @@
     },
     "workon": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/workon@v0.1.0-workon",
+      "source": "soul-brews-studio/maw-plugin-registry/workon@v0.1.0-workon",
       "sha256": "e404553ff41eeea3652784b286aa55645cbace499dd74072a8be0070560a9426",
       "summary": "Start working on a repo with optional task context.",
       "author": "Soul-Brews-Studio",
@@ -506,7 +506,7 @@
     },
     "zoom": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/zoom@v0.1.0-zoom",
+      "source": "soul-brews-studio/maw-plugin-registry/zoom@v0.1.0-zoom",
       "sha256": "2f09671b78a674083887b36bf3cddcc29a0d7bd01d7b21fff7880aece5852c50",
       "summary": "Toggle tmux pane zoom (full-screen) — wraps resize-pane -Z.",
       "author": "Soul-Brews-Studio",
@@ -517,7 +517,7 @@
     },
     "consent": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/consent@v0.1.0-consent",
+      "source": "soul-brews-studio/maw-plugin-registry/consent@v0.1.0-consent",
       "sha256": "f9b68b6bb52b74bf508ce036fcf7d87e8a9abd6eb76654f44b68d589438bd2c5",
       "summary": "PIN-consent for cross-oracle actions (#644 Phase 1 — gates `maw hey` when MAW_CONSENT=1).",
       "author": "Soul-Brews-Studio",
@@ -528,7 +528,7 @@
     },
     "artifact-manager": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/artifact-manager@v0.1.0-artifact-manager",
+      "source": "soul-brews-studio/maw-plugin-registry/artifact-manager@v0.1.0-artifact-manager",
       "sha256": "e67c84d1a7fb017a665a730f44e951344333c13dd34e4cbf5a3a1e0a1ce79c94",
       "summary": "Task artifact lifecycle — ls, get, write, attach, init. Pure TypeScript, no WASM.",
       "author": "Soul-Brews-Studio",
@@ -539,7 +539,7 @@
     },
     "ping": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/ping@v0.1.0-ping",
+      "source": "soul-brews-studio/maw-plugin-registry/ping@v0.1.0-ping",
       "sha256": "14c1e89c9765e00ed0eeb4e34d2a172e783b3de8de6b39cc4496fdbf582f75e0",
       "summary": "Ping peer nodes to check connectivity and auth status.",
       "author": "Soul-Brews-Studio",
@@ -550,9 +550,9 @@
     },
     "hey-test": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/hey-test@v0.1.0-hey-test",
+      "source": "soul-brews-studio/maw-plugin-registry/hey-test@v0.1.0-hey-test",
       "sha256": "0b325122fe0d08778dbf3fb20860ec48ad94f518b6249b25faf7e05f5e0ff960",
-      "summary": "TBD",
+      "summary": "Internal test plugin for install pipeline (no end-user functionality).",
       "author": "Soul-Brews-Studio",
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
@@ -561,7 +561,7 @@
     },
     "check": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/check@v0.1.0-check",
+      "source": "soul-brews-studio/maw-plugin-registry/check@v0.1.0-check",
       "sha256": "538bb55a38a5407cb5cf3c2971d619c62517e61ff8de13eb668961dc06025301",
       "summary": "Audit installed prep tools (ghq, gh, git, tmux, bun, uv, uvx)",
       "author": "Soul-Brews-Studio",
@@ -572,7 +572,7 @@
     },
     "kill": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/kill@v0.1.0-kill",
+      "source": "soul-brews-studio/maw-plugin-registry/kill@v0.1.0-kill",
       "sha256": "a1f3101cd6065e1191e880707b4ee08d86ef7f4b33c2176ca5d9409153b9b3b4",
       "summary": "Kill a tmux session, window, or pane (trusts the user — no --force).",
       "author": "Soul-Brews-Studio",
@@ -583,7 +583,7 @@
     },
     "capture": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/capture@v0.1.0-capture",
+      "source": "soul-brews-studio/maw-plugin-registry/capture@v0.1.0-capture",
       "sha256": "db636cbd88ca442492eba49c513d08614f9c96cf24aff5e7e94a54cc9c2aa874",
       "summary": "Capture tmux pane content — visible history or full scrollback.",
       "author": "Soul-Brews-Studio",
@@ -594,7 +594,7 @@
     },
     "pr": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/pr@v0.1.0-pr",
+      "source": "soul-brews-studio/maw-plugin-registry/pr@v0.1.0-pr",
       "sha256": "8fc6804d3817d13852b3c940138c887e01ca35e00a5fef3eeb7d7ec195a91eb1",
       "summary": "View or manage pull requests.",
       "author": "Soul-Brews-Studio",
@@ -605,7 +605,7 @@
     },
     "send": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/send@v0.1.0-send",
+      "source": "soul-brews-studio/maw-plugin-registry/send@v0.1.0-send",
       "sha256": "78aaf0f2acd056eca532b573a7f7471ee9e53e8e0c1b5ab4bd86bc73e0f72860",
       "summary": "Type raw text into a tmux pane (no Enter, composable) — dual of send-enter (#757).",
       "author": "Soul-Brews-Studio",
@@ -616,7 +616,7 @@
     },
     "run": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/run@v0.1.0-run",
+      "source": "soul-brews-studio/maw-plugin-registry/run@v0.1.0-run",
       "sha256": "c249fd922d4cca7fc3078f2b4612533be669a5c0c81431a4e6a04c37d7581eca",
       "summary": "Type text into a tmux pane and submit with Enter — idiomatic for shells (#757).",
       "author": "Soul-Brews-Studio",
@@ -627,7 +627,7 @@
     },
     "take": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/take@v0.1.0-take",
+      "source": "soul-brews-studio/maw-plugin-registry/take@v0.1.0-take",
       "sha256": "937d3050ef22c67b7885e73dada20282471671442b70fcc0913a0e696bee2ab2",
       "summary": "Move a tmux window from one oracle session to another (vesicle transport).",
       "author": "Soul-Brews-Studio",
@@ -638,7 +638,7 @@
     },
     "panes": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/panes@v0.1.0-panes",
+      "source": "soul-brews-studio/maw-plugin-registry/panes@v0.1.0-panes",
       "sha256": "cd98d6bb4fdfd22286e85c66fae96cf7918878565e39930babe525c2eecce1d3",
       "summary": "List tmux panes with metadata (index, size, command, title).",
       "author": "Soul-Brews-Studio",
@@ -649,7 +649,7 @@
     },
     "health": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/health@v0.1.0-health",
+      "source": "soul-brews-studio/maw-plugin-registry/health@v0.1.0-health",
       "sha256": "ceeca04da4335ef2a1062f2e0e7a64c6d3f9dfc15e9814cee5b2ae859c62bf89",
       "summary": "System health check — tmux, maw server, disk, memory, pm2, peers.",
       "author": "Soul-Brews-Studio",
@@ -660,7 +660,7 @@
     },
     "overview": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/overview@v0.1.0-overview",
+      "source": "soul-brews-studio/maw-plugin-registry/overview@v0.1.0-overview",
       "sha256": "377d37b339325b4d5acceb8e1b14b4c0d08cf5ea203ec9af85ab8fc95cd42577",
       "summary": "Show fleet overview / war room dashboard.",
       "author": "Soul-Brews-Studio",
@@ -671,7 +671,7 @@
     },
     "profile": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/profile@v0.1.0-profile",
+      "source": "soul-brews-studio/maw-plugin-registry/profile@v0.1.0-profile",
       "sha256": "c60d51a1ece5824d506055e61de2b3302a42a2ea279dec436c5cd82d1615b283",
       "summary": "Profile primitive — named plugin bundles (Phase 1 of #640 / #888).",
       "author": "Soul-Brews-Studio",
@@ -682,7 +682,7 @@
     },
     "avengers": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/avengers@v0.1.0-avengers",
+      "source": "soul-brews-studio/maw-plugin-registry/avengers@v0.1.0-avengers",
       "sha256": "3068b86454fad08e547464a93b7259d3b7e8d23b1c3709a9147c6da74251972b",
       "summary": "Manage the Avengers multi-agent team.",
       "author": "Soul-Brews-Studio",
@@ -693,7 +693,7 @@
     },
     "send-enter": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/send-enter@v0.1.0-send-enter",
+      "source": "soul-brews-studio/maw-plugin-registry/send-enter@v0.1.0-send-enter",
       "sha256": "025e520fde0026421f673d1e96afc7767bea0c6b769e73f54207f9003c770e9c",
       "summary": "Send Enter key to a maw target — manually submit pending input on stuck panes (#728).",
       "author": "Soul-Brews-Studio",
@@ -704,7 +704,7 @@
     },
     "restart": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/restart@v0.1.0-restart",
+      "source": "soul-brews-studio/maw-plugin-registry/restart@v0.1.0-restart",
       "sha256": "7b7f84d68499518e54a37cead3a7b3f6459aa2ed5d44134690977de1973b8883",
       "summary": "Restart the maw server with optional update.",
       "author": "Soul-Brews-Studio",
@@ -715,7 +715,7 @@
     },
     "split": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/split@v0.1.0-split",
+      "source": "soul-brews-studio/maw-plugin-registry/split@v0.1.0-split",
       "sha256": "dc5deb7166aba84a0e0754ed3abdbfc6535e9aaf5af41226880ea7906edaf8d9",
       "summary": "Split current tmux pane and attach to a session (vesicle beside).",
       "author": "Soul-Brews-Studio",
@@ -726,7 +726,7 @@
     },
     "contacts": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/contacts@v0.1.0-contacts",
+      "source": "soul-brews-studio/maw-plugin-registry/contacts@v0.1.0-contacts",
       "sha256": "07d9153d378eb4150ac3b4a1d836177980473b764f2a233f46d1ed37aa5c8da2",
       "summary": "Manage oracle contacts — add, remove, list",
       "author": "Soul-Brews-Studio",
@@ -737,7 +737,7 @@
     },
     "tag": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/tag@v0.1.0-tag",
+      "source": "soul-brews-studio/maw-plugin-registry/tag@v0.1.0-tag",
       "sha256": "e4e019b08bd2c40cad239836d6f195e5ded0bcb16cf7f98150870114e02ef4a3",
       "summary": "Set pane metadata: title, custom options. Enables deterministic routing by agent name.",
       "author": "Soul-Brews-Studio",
@@ -748,7 +748,7 @@
     },
     "talk-to": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/talk-to@v0.1.0-talk-to",
+      "source": "soul-brews-studio/maw-plugin-registry/talk-to@v0.1.0-talk-to",
       "sha256": "786a372c425803c9f4fdd90add6cffa457a3198726023cf8521fdb84cf1459a7",
       "summary": "Talk to a remote agent on another node.",
       "author": "Soul-Brews-Studio",
@@ -759,7 +759,7 @@
     },
     "locate": {
       "version": "0.1.0",
-      "source": "monorepo:plugins/locate@v0.1.0-locate",
+      "source": "soul-brews-studio/maw-plugin-registry/locate@v0.1.0-locate",
       "sha256": "e7744467dbb6e32a45a0a1bc968caaa3bd0452f4022862df4872a1ee85aebde0",
       "summary": "Locate an oracle — repo path, session, fleet config, federation node. Diagnostic, no side effects.",
       "author": "Soul-Brews-Studio",
