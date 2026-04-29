@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-29T01:39:08Z",
+  "updated": "2026-04-29T01:39:10Z",
   "plugins": {
     "bg": {
       "version": "0.1.2",
@@ -106,6 +106,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:39:08Z",
+      "tier": "extra"
+    },
+    "assign": {
+      "version": "0.1.0",
+      "source": "monorepo:plugins/assign@v0.1.0-assign",
+      "sha256": "4d63cf3319fe10db820664b6de9134c888754196999c8c50bdcae30ac6e2554a",
+      "summary": "Assign a GitHub issue to an oracle.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-04-29T01:39:10Z",
       "tier": "extra"
     }
   }
