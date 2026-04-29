@@ -1,0 +1,20 @@
+{
+  "name": "talk-to",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Talk to a remote agent on another node.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "talk-to",
+    "aliases": [
+      "talkto",
+      "talk"
+    ],
+    "help": "maw talk-to <agent> <message> [--force] — talk to a remote agent on another node",
+    "flags": {
+      "--force": "boolean"
+    }
+  },
+  "weight": 50
+}

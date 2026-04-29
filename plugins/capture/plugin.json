@@ -1,0 +1,23 @@
+{
+  "name": "capture",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Capture tmux pane content — visible history or full scrollback.",
+  "cli": {
+    "command": "capture",
+    "help": "maw capture <target> [--pane N] [--lines N] [--full]",
+    "flags": {
+      "--pane": "number",
+      "--lines": "number",
+      "--full": "boolean"
+    }
+  },
+  "api": {
+    "path": "/api/capture",
+    "methods": [
+      "POST"
+    ]
+  },
+  "weight": 10
+}

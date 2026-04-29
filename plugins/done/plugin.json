@@ -1,0 +1,22 @@
+{
+  "name": "done",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Clean up a finished worktree window: rrr, git save, kill, remove worktree.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "done",
+    "aliases": [
+      "finish"
+    ],
+    "help": "maw done <window-name> [--force] [--dry-run] — clean up a finished worktree"
+  },
+  "api": {
+    "path": "/api/done",
+    "methods": [
+      "POST"
+    ]
+  },
+  "weight": 0
+}
