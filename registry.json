@@ -768,5 +768,97 @@
       "addedAt": "2026-04-29T02:49:11Z",
       "tier": "extra"
     }
+  },
+  "packages": {
+    "standard": {
+      "summary": "Default install — common workflow plugins for daily use.",
+      "plugins": [
+        "init",
+        "ls",
+        "peek",
+        "stop",
+        "done",
+        "kill",
+        "find",
+        "locate",
+        "tag",
+        "send",
+        "run",
+        "view",
+        "on",
+        "take"
+      ]
+    },
+    "federation": {
+      "summary": "Multi-oracle features — peer discovery, trust, consent, broadcast.",
+      "plugins": [
+        "peers",
+        "trust",
+        "consent",
+        "pair",
+        "reunion",
+        "broadcast",
+        "cross-team-queue",
+        "workspace",
+        "talk-to",
+        "contacts"
+      ]
+    },
+    "dev": {
+      "summary": "Diagnostics + debug tooling.",
+      "plugins": [
+        "doctor",
+        "panes",
+        "ping",
+        "signals",
+        "scope",
+        "completions",
+        "whoami",
+        "restart",
+        "sleep",
+        "archive",
+        "check",
+        "health"
+      ]
+    },
+    "extras": {
+      "summary": "Optional community plugins — install à la carte or as a bundle.",
+      "plugins": [
+        "about",
+        "artifact-manager",
+        "assign",
+        "avengers",
+        "bg",
+        "bud",
+        "capture",
+        "cleanup",
+        "costs",
+        "demo",
+        "hey-test",
+        "inbox",
+        "incubate",
+        "learn",
+        "mega",
+        "overview",
+        "park",
+        "pr",
+        "profile",
+        "project",
+        "pulse",
+        "rename",
+        "resume",
+        "send-enter",
+        "shellenv",
+        "soul-sync",
+        "split",
+        "tab",
+        "team",
+        "triggers",
+        "ui",
+        "wake",
+        "workon",
+        "zoom"
+      ]
+    }
   }
 }
