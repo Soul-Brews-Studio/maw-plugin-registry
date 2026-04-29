@@ -1,12 +1,12 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-04-28T22:52:03Z",
+  "updated": "2026-04-29T00:42:53Z",
   "plugins": {
     "bg": {
       "version": "0.1.2",
-      "source": "github:Soul-Brews-Studio/maw-bg#v0.1.2",
-      "sha256": "b5d5c91c99344aa0a0c51b126ddee9a5237e76c3db9e68a7287e2abad2260ce8",
+      "source": "monorepo:plugins/bg@v0.1.2-bg",
+      "sha256": "b14f2689c2904d4646c18e661d18e50f621d013c783833829a8909c627ce8e20",
       "summary": "Run long commands in detached tmux; sample output non-destructively",
       "author": "Soul-Brews-Studio",
       "license": "MIT",
@@ -15,8 +15,8 @@
     },
     "cross-team-queue": {
       "version": "0.1.2",
-      "source": "github:Soul-Brews-Studio/maw-cross-team-queue#v0.1.2",
-      "sha256": "bfd7b82cf127602072044046af7fb0e23e67f94af9cc9c5520d43a8f490e21f4",
+      "source": "monorepo:plugins/cross-team-queue@v0.1.2-cross-team-queue",
+      "sha256": "3806f16b7673e63a4ac02d621ce3116b1f952b4baba54d7e92372e15edf9ea99",
       "summary": "Unified inbox view across multiple oracle vaults",
       "author": "Soul-Brews-Studio",
       "license": "BUSL-1.1",
@@ -25,8 +25,8 @@
     },
     "shellenv": {
       "version": "0.1.2",
-      "source": "github:Soul-Brews-Studio/maw-shellenv#v0.1.2",
-      "sha256": "1f02cd3a72918755599d1eaf060258d285a77e86061d92846b877b85e3fb1c59",
+      "source": "monorepo:plugins/shellenv@v0.1.2-shellenv",
+      "sha256": "356a007e5bf066cf08c343a40b40b691a132d1ba45237e581a3e51bb915b206d",
       "summary": "Emit shell init code for the maw warp ergonomic — eval-style install for zsh/bash",
       "author": "Soul-Brews-Studio",
       "license": "MIT",
@@ -35,8 +35,8 @@
     },
     "rename": {
       "version": "0.1.2",
-      "source": "github:Soul-Brews-Studio/maw-rename#v0.1.2",
-      "sha256": "a47f8f76af39922f4705c1242cb5ecd803142d1b6fedc7fa7615b0d269de175e",
+      "source": "monorepo:plugins/rename@v0.1.2-rename",
+      "sha256": "f09816a8e9214fb01b7c5555f31fbe4b2a787b21f7f198c835d5c78c153a560b",
       "summary": "Tmux window rename with oracle-prefix auto-format",
       "author": "Soul-Brews-Studio",
       "license": "MIT",
@@ -45,8 +45,8 @@
     },
     "park": {
       "version": "0.1.2",
-      "source": "github:Soul-Brews-Studio/maw-park#v0.1.2",
-      "sha256": "59b1714ec2574fdec5d8807516f865c87181f4b2c94824e63e73a548eec396ca",
+      "source": "monorepo:plugins/park@v0.1.2-park",
+      "sha256": "73cba3fe50950b881c197ae29410717fb863861dd294b8672d0b7ac4171ea441",
       "summary": "Park (pause) tmux windows with git context for later resume",
       "author": "Soul-Brews-Studio",
       "license": "MIT",
