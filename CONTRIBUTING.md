@@ -2,30 +2,57 @@
 
 Thanks for wanting to list a plugin. The process is intentionally small.
 
+**Important**: Plugins live here in the registry, NOT in the [maw-js](https://github.com/Soul-Brews-Studio/maw-js) core repo. PRs adding plugins to maw-js will be closed and redirected here.
+
 ## Submitting a new plugin
 
 1. **Fork** this repo and create a branch.
-2. **Add one entry** to [`registry.json`](./registry.json) under the `plugins`
-   object, keyed by your plugin's canonical name (kebab-case).
-3. **Bump** the top-level `updated` field to the current ISO-8601 UTC timestamp.
+2. **Add your plugin** to `plugins/<your-plugin-name>/`:
+   - `index.ts` — plugin handler
+   - `plugin.json` — plugin metadata (name, version, entry, description)
+   - `registry.meta.json` — registry-specific metadata (see below)
+3. **Run the build script**: `python3 scripts/build-registry.py`
 4. **Open a PR** titled `add plugin: <your-plugin-name>`.
 
-### Example entry
+### Plugin files
 
-```jsonc
+**`plugins/<name>/plugin.json`** — your plugin's identity:
+```json
 {
-  "your-plugin-name": {
-    "version": "0.1.0",
-    "source": "your-org/your-plugin-repo@v0.1.0",
-    "sha256": null,
-    "summary": "One sentence (≤ 140 chars) describing what the plugin does.",
-    "author": "Your Name or Org",
-    "license": "MIT",
-    "homepage": "https://github.com/your-org/your-plugin-repo",
-    "addedAt": "2026-04-18T00:00:00Z"
+  "name": "your-plugin-name",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "What it does in one line.",
+  "cli": {
+    "command": "your-plugin-name",
+    "help": "maw your-plugin-name [args]"
   }
 }
 ```
+
+**`plugins/<name>/registry.meta.json`** — registry listing:
+```json
+{
+  "version": "0.1.0",
+  "source": "your-org/your-plugin-repo@v0.1.0",
+  "sha256": null,
+  "summary": "One sentence (≤ 140 chars) describing what the plugin does.",
+  "author": "Your Name or Org",
+  "license": "MIT",
+  "homepage": "https://github.com/your-org/your-plugin-repo",
+  "addedAt": "2026-04-18T00:00:00Z"
+}
+```
+
+### Build step
+
+After adding your files, regenerate `registry.json`:
+```bash
+python3 scripts/build-registry.py
+```
+
+This combines all `plugins/*/registry.meta.json` into the single `registry.json`. Do NOT edit `registry.json` by hand — it's generated.
 
 ### Required fields
 
