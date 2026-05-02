@@ -19,20 +19,26 @@ export async function cmdDoctor(args: string[] = []): Promise<DoctorResult> {
   const positional = args.filter(a => !a.startsWith("--"));
   const only = positional[0];
   const allowDrift = flags.has("--allow-drift");
+  const smoke = flags.has("--smoke") || only === "smoke";
   const checks: DoctorResult["checks"] = [];
 
-  if (!only || only === "install" || only === "all") {
-    checks.push(await checkInstall());
-  }
-  if (!only || only === "version" || only === "all") {
-    const vChecks = await checkVersionDrift();
-    for (const c of vChecks) checks.push(c);
-  }
-  if (!only || only === "peers" || only === "all") {
-    checks.push(checkPeerDuplicates());
-  }
-  if (!only || only === "manifest" || only === "all") {
-    checks.push(checkCrossSourceConsistency());
+  if (smoke) {
+    const smokeChecks = await runSmokeTests();
+    for (const c of smokeChecks) checks.push(c);
+  } else {
+    if (!only || only === "install" || only === "all") {
+      checks.push(await checkInstall());
+    }
+    if (!only || only === "version" || only === "all") {
+      const vChecks = await checkVersionDrift();
+      for (const c of vChecks) checks.push(c);
+    }
+    if (!only || only === "peers" || only === "all") {
+      checks.push(checkPeerDuplicates());
+    }
+    if (!only || only === "manifest" || only === "all") {
+      checks.push(checkCrossSourceConsistency());
+    }
   }
 
   const hardOk = checks.every(c => c.ok);
@@ -285,4 +291,87 @@ function iconFor(c: { name: string; ok: boolean; message: string }): string {
   if (c.ok) return C.green + "✓";
   if (c.name.startsWith("version:") && c.message.startsWith("drift")) return C.yellow + "⚠";
   return C.red + "✗";
+}
+
+// ─── Smoke tests ────────────────────────────────────────────────────────────
+
+type SmokeCheck = { name: string; ok: boolean; message: string };
+
+async function runSmokeTests(): Promise<SmokeCheck[]> {
+  const checks: SmokeCheck[] = [];
+  const t0 = Date.now();
+
+  checks.push(await smokeCmd("ls", ["ls"]));
+  checks.push(await smokeCmd("oracle ls", ["oracle", "ls", "--json"]));
+  checks.push(await smokeCmd("oracle search", ["oracle", "search", "maw"]));
+  checks.push(await smokeCmd("--version", ["--version"]));
+  checks.push(await smokeCmd("fleet ls", ["fleet", "ls"]));
+  checks.push(smokePluginCount());
+  checks.push(smokeBrokenSymlinks());
+
+  const elapsed = Date.now() - t0;
+  const pass = checks.filter(c => c.ok).length;
+  console.log(`\n  ${C.gray}${pass}/${checks.length} passed in ${elapsed}ms${C.reset}`);
+  return checks;
+}
+
+async function smokeCmd(label: string, args: string[]): Promise<SmokeCheck> {
+  try {
+    const proc = Bun.spawn(["maw", ...args], {
+      stdout: "pipe", stderr: "pipe",
+      env: { ...process.env, MAW_TEST_MODE: "1" },
+    });
+    const code = await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    if (code === 0) {
+      const lines = stdout.trim().split("\n").length;
+      return { name: `smoke:${label}`, ok: true, message: `exit 0 (${lines} lines)` };
+    }
+    const err = (stderr || stdout).trim().split("\n")[0] || `exit ${code}`;
+    return { name: `smoke:${label}`, ok: false, message: err };
+  } catch (e: any) {
+    return { name: `smoke:${label}`, ok: false, message: e?.message || String(e) };
+  }
+}
+
+function smokePluginCount(): SmokeCheck {
+  const { readdirSync, lstatSync } = require("fs");
+  const { join } = require("path");
+  const dir = join(homedir(), ".maw", "plugins");
+  try {
+    const entries = readdirSync(dir) as string[];
+    const broken = entries.filter((e: string) => {
+      const p = join(dir, e);
+      try { return lstatSync(p).isSymbolicLink() && !existsSync(p); } catch { return false; }
+    });
+    if (broken.length > 0) {
+      return { name: "smoke:plugins", ok: false, message: `${broken.length} broken symlink${broken.length === 1 ? "" : "s"} in ${dir}` };
+    }
+    return { name: "smoke:plugins", ok: true, message: `${entries.length} plugins loaded (0 broken)` };
+  } catch (e: any) {
+    return { name: "smoke:plugins", ok: false, message: e?.message || String(e) };
+  }
+}
+
+function smokeBrokenSymlinks(): SmokeCheck {
+  const { readdirSync, lstatSync } = require("fs");
+  const { join } = require("path");
+  const dir = join(homedir(), ".maw", "plugins");
+  try {
+    const entries = readdirSync(dir) as string[];
+    const broken: string[] = [];
+    for (const e of entries) {
+      const p = join(dir, e);
+      try {
+        if (lstatSync(p).isSymbolicLink() && !existsSync(p)) broken.push(e);
+      } catch {}
+    }
+    if (broken.length > 0) {
+      return { name: "smoke:symlinks", ok: false, message: `broken: ${broken.slice(0, 5).join(", ")}${broken.length > 5 ? ` (+${broken.length - 5} more)` : ""}` };
+    }
+    return { name: "smoke:symlinks", ok: true, message: "no broken symlinks" };
+  } catch (e: any) {
+    return { name: "smoke:symlinks", ok: false, message: e?.message || String(e) };
+  }
 }
