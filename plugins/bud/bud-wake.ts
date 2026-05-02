@@ -80,7 +80,7 @@ export async function finalizeBud(ctx: BudFinalizeCtx): Promise<void> {
   // #835 — consult unified shouldAutoWake helper. bud's policy is "always
   // wake" — a freshly-cloned bud has no session yet and the whole point of
   // bud is to spawn one. The helper makes that explicit and auditable.
-  const { shouldAutoWake } = await import("../../shared/should-auto-wake");
+  const { shouldAutoWake } = await import("maw-js/commands/shared/should-auto-wake");
   const decision = shouldAutoWake(name, { site: "bud" });
   if (!decision.wake) {
     // Defensive — site=bud never returns wake=false today. Preserve the
@@ -93,14 +93,14 @@ export async function finalizeBud(ctx: BudFinalizeCtx): Promise<void> {
   // which would match any same-named repo in any org (stale-clone bug).
   const wakeOpts: any = { noAttach: true, repoPath: budRepoPath };
   if (opts.issue) {
-    const { fetchIssuePrompt } = await import("../../shared/wake");
+    const { fetchIssuePrompt } = await import("maw-js/commands/shared/wake");
     wakeOpts.prompt = await fetchIssuePrompt(opts.issue, `${org}/${budRepoName}`);
     wakeOpts.task = `issue-${opts.issue}`;
   }
   if (opts.repo) {
     // Clone the target repo via ghq (resolve-first, no worktree).
     // Previously set wakeOpts.incubate which auto-created a worktree — see #271.
-    const { ensureCloned } = await import("../../shared/wake-target");
+    const { ensureCloned } = await import("maw-js/commands/shared/wake-target");
     await ensureCloned(opts.repo);
   }
   try {

@@ -268,7 +268,7 @@ export async function cmdApprove(idOrPrefix: string): Promise<PendingMessage> {
   // Re-issue the send. Use the original query string when present (preserves
   // node prefix routing); fall back to target name otherwise.
   const query = updated.query ?? updated.target;
-  const { cmdSend } = await import("../../shared/comm-send");
+  const { cmdSend } = await import("maw-js/commands/shared/comm-send");
   // Pass `force=true` plus a sentinel to bypass ACL on the second pass:
   // the human approval IS the gate — re-checking here would loop forever.
   process.env.MAW_ACL_BYPASS = "1";

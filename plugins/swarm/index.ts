@@ -67,7 +67,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       nextAgentColor, colorAnsi, stylePaneBorder, enableBorderStatus,
       applyTeamLayout, applyTiledLayout, getWindowTarget,
     } = await import("../tmux/layout-manager");
-    const { hostExec, withPaneLock } = await import("../../../sdk");
+    const { hostExec, withPaneLock } = await import("maw-js/sdk");
     const { existsSync, readFileSync, writeFileSync, mkdirSync } = await import("fs");
     const { join } = await import("path");
     const { homedir } = await import("os");

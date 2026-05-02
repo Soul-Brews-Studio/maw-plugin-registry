@@ -6,7 +6,7 @@ export const command = {
 };
 
 export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
-  const { loadConfig, saveConfig } = await import("../../../config");
+  const { loadConfig, saveConfig } = await import("maw-js/config");
 
   const logs: string[] = [];
   const origLog = console.log;

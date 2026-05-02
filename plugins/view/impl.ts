@@ -111,8 +111,8 @@ export async function cmdView(
     let autoWake = extraOpts.wake;
     if (!autoWake && !extraOpts.noWake) {
       try {
-        const { resolveFleetSession } = await import("../../shared/wake-resolve");
-        const { shouldAutoWake } = await import("../../shared/should-auto-wake");
+        const { resolveFleetSession } = await import("maw-js/commands/shared/wake-resolve");
+        const { shouldAutoWake } = await import("maw-js/commands/shared/should-auto-wake");
         const isFleetKnown = Boolean(resolveFleetSession(agent));
         const decision = shouldAutoWake(agent, {
           site: "view",
@@ -150,7 +150,7 @@ export async function cmdView(
         const wakeImpl =
           extraOpts.wakeImpl ??
           (async (target: string) => {
-            const { cmdWake } = await import("../../shared/wake-cmd");
+            const { cmdWake } = await import("maw-js/commands/shared/wake-cmd");
             await cmdWake(target, { attach: true });
           });
         console.log(`\x1b[36m⚡\x1b[0m waking '${agent}'...`);
