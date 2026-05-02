@@ -2,11 +2,11 @@
  * install-impl seam: manifest reading + success printing helpers.
  */
 
-import type { PluginManifest } from "../../../../plugin/types";
+import type { PluginManifest } from "maw-js/plugin/types";
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
-import { parseManifest } from "../../../../plugin/manifest";
-import { runtimeSdkVersion } from "../../../../plugin/registry";
+import { parseManifest } from "maw-js/plugin/manifest";
+import { runtimeSdkVersion } from "maw-js/plugin/registry";
 
 /**
  * #864 — Resolve the plugin root inside an extracted staging dir.

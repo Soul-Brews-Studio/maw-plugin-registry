@@ -2,7 +2,7 @@ import { describe, it, expect, mock, beforeAll, afterAll, beforeEach, afterEach 
 import { mkdtempSync, mkdirSync, rmSync, existsSync, readFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import type { InvokeContext } from "../../../plugin/types";
+import type { InvokeContext } from "maw-js/plugin/types";
 
 // Capture real modules BEFORE any mock.module rewrites the cache.
 // Namespace imports are live bindings, so we copy function references into
@@ -12,8 +12,8 @@ import * as rawImpl from "./impl";
 import * as rawBudRepo from "./bud-repo";
 import * as rawBudWake from "./bud-wake";
 import * as rawBudInit from "./bud-init";
-import * as rawConfig from "../../../config";
-import * as rawGhqRoot from "../../../config/ghq-root";
+import * as rawConfig from "maw-js/config";
+import * as rawGhqRoot from "maw-js/config/ghq-root";
 
 const realCmdBud = rawImpl.cmdBud;
 const realEnsureBudRepo = rawBudRepo.ensureBudRepo;

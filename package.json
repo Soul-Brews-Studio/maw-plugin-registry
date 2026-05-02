@@ -1,0 +1,8 @@
+{
+  "name": "maw-plugin-registry",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "maw-js": "file:../maw-js"
+  }
+}

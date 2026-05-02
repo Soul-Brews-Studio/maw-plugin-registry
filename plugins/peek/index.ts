@@ -1,5 +1,5 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
-import { cmdPeek } from "../../shared/comm";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
+import { cmdPeek } from "maw-js/commands/shared/comm";
 
 export const command = { name: "peek", description: "Peek at an agent's latest output." };
 

@@ -1,6 +1,6 @@
 import { homedir, hostname } from "os";
 import { existsSync, readdirSync } from "fs";
-import { CONFIG_FILE, FLEET_DIR } from "../../../core/paths";
+import { CONFIG_FILE, FLEET_DIR } from "maw-js/core/paths";
 import { runPromptLoop, ttyAsk, type AskFn } from "./prompts";
 import { parseNonInteractive } from "./non-interactive";
 import {

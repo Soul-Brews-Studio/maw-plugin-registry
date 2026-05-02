@@ -1,5 +1,5 @@
-import { hostExec } from "../../../sdk";
-import { UserError } from "../../../core/util/user-error";
+import { hostExec } from "maw-js/sdk";
+import { UserError } from "maw-js/core/util/user-error";
 
 /**
  * maw whoami — print the current tmux session name on stdout.

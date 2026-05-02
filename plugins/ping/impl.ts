@@ -1,5 +1,5 @@
-import { loadConfig, cfgTimeout } from "../../../config";
-import { curlFetch } from "../../../sdk";
+import { loadConfig, cfgTimeout } from "maw-js/config";
+import { curlFetch } from "maw-js/sdk";
 
 export async function cmdPing(node?: string) {
   const config = loadConfig();

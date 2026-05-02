@@ -1,5 +1,5 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
-import { cmdSleep } from "../../shared/fleet";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
+import { cmdSleep } from "maw-js/commands/shared/fleet";
 
 export const command = {
   name: ["stop", "rest"],

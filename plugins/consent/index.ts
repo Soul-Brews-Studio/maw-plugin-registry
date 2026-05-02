@@ -9,12 +9,12 @@
  *   maw consent untrust <peer> [action]  revoke trust entry
  *   maw consent list-trust               show all trust entries
  */
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 import {
   listPending, listTrust, recordTrust, removeTrust,
   approveConsent, rejectConsent, type ConsentAction,
-} from "../../../core/consent";
-import { loadConfig } from "../../../config";
+} from "maw-js/core/consent";
+import { loadConfig } from "maw-js/config";
 
 const VALID_ACTIONS: ConsentAction[] = ["hey", "team-invite", "plugin-install"];
 

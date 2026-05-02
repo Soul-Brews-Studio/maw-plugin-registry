@@ -15,7 +15,7 @@ import { mkdirSync, readFileSync, readdirSync, unlinkSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
-import { tmux } from "../../../sdk";
+import { tmux } from "maw-js/sdk";
 
 const PARKED_DIR = join(homedir(), ".config/maw/parked");
 

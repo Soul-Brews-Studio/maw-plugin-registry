@@ -1,8 +1,8 @@
-import { listSessions } from "../../../sdk";
-import { Tmux, tmuxCmd, resolveSocket } from "../../../sdk";
-import { loadConfig } from "../../../config";
-import { resolveSessionTarget } from "../../../core/matcher/resolve-target";
-import { logAnomaly } from "../../../core/fleet/audit";
+import { listSessions } from "maw-js/sdk";
+import { Tmux, tmuxCmd, resolveSocket } from "maw-js/sdk";
+import { loadConfig } from "maw-js/config";
+import { resolveSessionTarget } from "maw-js/core/matcher/resolve-target";
+import { logAnomaly } from "maw-js/core/fleet/audit";
 import { execFileSync } from "child_process";
 import { ttyAsk } from "./internal/prompts";
 

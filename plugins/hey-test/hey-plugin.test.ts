@@ -54,7 +54,7 @@ mock.module("../../../core/fleet/worktrees", () => ({ scanWorktrees: async () =>
 mock.module("../../../core/transport/curl-fetch", () => ({ curlFetch: async () => ({ ok: false, data: {} }) }));
 mock.module("../../../commands/shared/wake", () => ({ resolveFleetSession: () => undefined }));
 
-import { cmdSend } from "../../../commands/shared/comm";
+import { cmdSend } from "maw-js/commands/shared/comm";
 
 describe("maw hey plugin:<name> routing", () => {
   let exitCode: number | undefined;

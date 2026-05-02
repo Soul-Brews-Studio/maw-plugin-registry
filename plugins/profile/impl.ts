@@ -16,8 +16,8 @@ import {
   loadAllProfiles,
   loadProfile,
   setActiveProfile,
-} from "../../../lib/profile-loader";
-import type { TProfile } from "../../../lib/schemas";
+} from "maw-js/lib/profile-loader";
+import type { TProfile } from "maw-js/lib/schemas";
 
 export function cmdList(): TProfile[] {
   return loadAllProfiles();

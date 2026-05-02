@@ -1,5 +1,5 @@
-import { listSessions, hostExec, tmuxCmd } from "../../../sdk";
-import { resolveSessionTarget } from "../../../core/matcher/resolve-target";
+import { listSessions, hostExec, tmuxCmd } from "maw-js/sdk";
+import { resolveSessionTarget } from "maw-js/core/matcher/resolve-target";
 
 export interface KillOpts {
   /** Pane index — narrows kill to a specific pane of the resolved window. */

@@ -13,11 +13,11 @@
 
 import { existsSync } from "fs";
 import { join } from "path";
-import { ghqFind } from "../../../core/ghq";
-import { listSessions, FLEET_DIR } from "../../../sdk";
-import { loadConfig } from "../../../config";
-import { resolveSessionTarget } from "../../../core/matcher/resolve-target";
-import { UserError } from "../../../core/util/user-error";
+import { ghqFind } from "maw-js/core/ghq";
+import { listSessions, FLEET_DIR } from "maw-js/sdk";
+import { loadConfig } from "maw-js/config";
+import { resolveSessionTarget } from "maw-js/core/matcher/resolve-target";
+import { UserError } from "maw-js/core/util/user-error";
 
 export interface LocateOpts {
   path?: boolean;

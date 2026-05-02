@@ -8,7 +8,7 @@
 
 import { describe, test, expect } from "bun:test";
 import handler, { command } from "./index";
-import type { InvokeContext } from "../../../plugin/types";
+import type { InvokeContext } from "maw-js/plugin/types";
 
 function makeCtx(args: string[]): InvokeContext {
   return {

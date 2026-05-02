@@ -1,9 +1,9 @@
-import { hostExec } from "../../../sdk";
+import { hostExec } from "maw-js/sdk";
 import { cmdSoulSync } from "./internal/soul-sync-impl";
-import { cmdWake } from "../../shared/wake";
-import { loadFleetEntries } from "../../shared/fleet-load";
-import { FLEET_DIR } from "../../../sdk";
-import { getGhqRoot } from "../../../config/ghq-root";
+import { cmdWake } from "maw-js/commands/shared/wake";
+import { loadFleetEntries } from "maw-js/commands/shared/fleet-load";
+import { FLEET_DIR } from "maw-js/sdk";
+import { getGhqRoot } from "maw-js/config/ghq-root";
 import { join } from "path";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 

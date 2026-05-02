@@ -1,8 +1,8 @@
 import { existsSync } from "fs";
 import { join } from "path";
-import { ghqFind } from "../../../../core/ghq";
-import { getGhqRoot } from "../../../../config/ghq-root";
-import { loadFleet } from "../../../shared/fleet-load";
+import { ghqFind } from "maw-js/core/ghq";
+import { getGhqRoot } from "maw-js/config/ghq-root";
+import { loadFleet } from "maw-js/commands/shared/fleet-load";
 
 /**
  * Resolve ghq path for an oracle name.

@@ -1,4 +1,4 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 import { cmdWhoami } from "./impl";
 
 export const command = { name: "whoami", description: "Print the current tmux session name." };

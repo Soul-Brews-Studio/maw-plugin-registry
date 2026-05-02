@@ -1,4 +1,4 @@
-import { listSessions, hostExec } from "../../../../sdk";
+import { listSessions, hostExec } from "maw-js/sdk";
 import { existsSync, readdirSync, copyFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 

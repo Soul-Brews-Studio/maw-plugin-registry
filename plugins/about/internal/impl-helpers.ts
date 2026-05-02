@@ -1,5 +1,5 @@
-import { listSessions, FLEET_DIR, type OracleEntry } from "../../../../sdk";
-import { ghqFind } from "../../../../core/ghq";
+import { listSessions, FLEET_DIR, type OracleEntry } from "maw-js/sdk";
+import { ghqFind } from "maw-js/core/ghq";
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "fs";
 import { join, dirname } from "path";
-import { FLEET_DIR } from "../../../sdk";
+import { FLEET_DIR } from "maw-js/sdk";
 
 // Auto-discover commands from src/commands/*.ts
 // No manual list — add a file, it shows up in completions

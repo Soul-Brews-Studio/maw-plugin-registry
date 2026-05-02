@@ -4,9 +4,9 @@ import { homedir } from "os";
 import { join, dirname, resolve } from "path";
 import { loadPeers } from "./internal/peers-store";
 import { findDuplicateIdentities, formatDuplicate } from "./internal/duplicate-detect";
-import { loadConfig } from "../../../config";
-import { C } from "../../shared/fleet-doctor-fixer";
-import { loadManifestCached, invalidateManifest } from "../../../lib/oracle-manifest";
+import { loadConfig } from "maw-js/config";
+import { C } from "maw-js/commands/shared/fleet-doctor-fixer";
+import { loadManifestCached, invalidateManifest } from "maw-js/lib/oracle-manifest";
 import { findGaps, summarizeGaps } from "./cross-source-detect";
 
 export interface DoctorResult {

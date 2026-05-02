@@ -1,13 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import { join } from "path";
-import { loadConfig } from "../../../config";
+import { loadConfig } from "maw-js/config";
 import {
   deletePending,
   loadPending,
   loadPendingById,
   updatePending,
   type PendingMessage,
-} from "../../shared/queue-store";
+} from "maw-js/commands/shared/queue-store";
 
 // Re-export queue-store helpers so callers can import from one place.
 export {
@@ -20,8 +20,8 @@ export {
   pendingPath,
   isExpired,
   TTL_MS,
-} from "../../shared/queue-store";
-export type { PendingMessage } from "../../shared/queue-store";
+} from "maw-js/commands/shared/queue-store";
+export type { PendingMessage } from "maw-js/commands/shared/queue-store";
 
 // File naming: YYYY-MM-DD_HH-MM_<from>_<slug>.md
 // Frontmatter: from / to / timestamp / read

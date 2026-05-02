@@ -2,7 +2,7 @@ import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import type { InvokeContext } from "../../../plugin/types";
+import type { InvokeContext } from "maw-js/plugin/types";
 import { planFromRepoInjection, looksLikeUrl, cmdBudFromRepo } from "./from-repo";
 import { applyFromRepoInjection, oracleMarkerBegin } from "./from-repo-exec";
 

@@ -5,7 +5,7 @@
  *   maw pair generate [--expires <sec>]   — recipient: mint code, listen
  *   maw pair <url> <code>                 — initiator: post to remote server
  */
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 
 export const command = {
   name: "pair",
