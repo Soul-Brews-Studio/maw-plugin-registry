@@ -1,4 +1,4 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 import { readdirSync, existsSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
@@ -6,7 +6,7 @@ import {
   cmdTeamShutdown, cmdTeamList, cmdTeamCreate, cmdTeamSpawn,
   cmdTeamSend, cmdTeamResume, cmdTeamLives,
 } from "./impl";
-import { parseFlags } from "../../../cli/parse-args";
+import { parseFlags } from "maw-js/cli/parse-args";
 
 export const command = {
   name: "team",

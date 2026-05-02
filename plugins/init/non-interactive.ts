@@ -1,4 +1,4 @@
-import { parseFlags } from "../../../cli/parse-args";
+import { parseFlags } from "maw-js/cli/parse-args";
 import { validateNodeName, validatePeerUrl, validatePeerName, validateGhqRoot } from "./prompts";
 
 export interface NonInteractiveOpts {

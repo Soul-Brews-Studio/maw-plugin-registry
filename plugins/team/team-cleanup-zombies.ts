@@ -1,8 +1,8 @@
 import { readdirSync, existsSync } from "fs";
 import { join } from "path";
-import { tmux } from "../../../sdk";
-import type { TmuxPane } from "../../../sdk";
-import { loadFleetEntries } from "../../shared/fleet-load";
+import { tmux } from "maw-js/sdk";
+import type { TmuxPane } from "maw-js/sdk";
+import { loadFleetEntries } from "maw-js/commands/shared/fleet-load";
 import { TEAMS_DIR, loadTeam } from "./team-helpers";
 
 // ─── maw cleanup --zombie-agents ───

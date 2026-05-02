@@ -1,5 +1,5 @@
-import { hostExec } from "../../../sdk";
-import { cmdWake, fetchIssuePrompt } from "../../shared/wake";
+import { hostExec } from "maw-js/sdk";
+import { cmdWake, fetchIssuePrompt } from "maw-js/commands/shared/wake";
 
 function parseIssueUrl(url: string): { org: string; repo: string; issueNum: number } {
   const m = url.match(/github\.com[:/]([^/]+)\/([^/]+)\/issues\/(\d+)/);

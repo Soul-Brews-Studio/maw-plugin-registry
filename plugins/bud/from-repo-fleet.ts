@@ -11,7 +11,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { basename, join } from "path";
 import { execFileSync } from "child_process";
-import { FLEET_DIR } from "../../../core/paths";
+import { FLEET_DIR } from "maw-js/core/paths";
 
 /** Parsed `org/repo` slug from a remote URL. */
 export interface RepoSlug {

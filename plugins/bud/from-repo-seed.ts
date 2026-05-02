@@ -13,8 +13,8 @@
 
 import { cpSync, copyFileSync, existsSync, mkdirSync, statSync } from "fs";
 import { join } from "path";
-import { loadConfig } from "../../../config";
-import { getGhqRoot } from "../../../config/ghq-root";
+import { loadConfig } from "maw-js/config";
+import { getGhqRoot } from "maw-js/config/ghq-root";
 import { peersPath } from "./internal/peers-store";
 
 type Log = (msg: string) => void;

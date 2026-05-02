@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
 import { dirname } from "path";
-import type { MawConfig } from "../../../config/types";
+import type { MawConfig } from "maw-js/config/types";
 
 /** Atomically write JSON config; throws EEXIST if `wx` flag and file exists. */
 export function writeConfigAtomic(filePath: string, config: Partial<MawConfig>, overwrite: boolean): void {

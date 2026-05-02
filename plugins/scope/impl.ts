@@ -22,7 +22,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-import type { TScope } from "../../../lib/schemas";
+import type { TScope } from "maw-js/lib/schemas";
 
 // Scope name validation — same alphabet as peers aliases. Slug-safe so the
 // name can double as a filename without escaping.

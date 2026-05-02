@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "fs";
 import { join } from "path";
-import { tmux } from "../../../sdk";
-import { assertValidOracleName } from "../../../core/fleet/validate";
+import { tmux } from "maw-js/sdk";
+import { assertValidOracleName } from "maw-js/core/fleet/validate";
 import { TEAMS_DIR, loadTeam, resolvePsi, writeShutdownRequest, cleanupTeamDir, type TeamConfig, type TeamMember } from "./team-helpers";
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));

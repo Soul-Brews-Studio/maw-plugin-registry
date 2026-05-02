@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-import { tmux } from "../../../sdk";
+import { tmux } from "maw-js/sdk";
 
 const TEAMS_DIR = join(homedir(), ".claude/teams");
 const TASKS_DIR = join(homedir(), ".claude/tasks");

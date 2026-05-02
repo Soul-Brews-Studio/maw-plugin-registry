@@ -1,6 +1,6 @@
 import { readdirSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { tmux } from "../../../sdk";
+import { tmux } from "maw-js/sdk";
 import { TEAMS_DIR, loadTeam, resolvePsi } from "./team-helpers";
 import { findZombiePanes } from "./team-cleanup-zombies";
 

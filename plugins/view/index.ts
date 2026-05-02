@@ -1,4 +1,4 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 
 export const command = {
   name: "view",

@@ -1,9 +1,9 @@
-import { hostExec } from "../../../sdk";
-import { tmux } from "../../../sdk";
-import { ghqFind } from "../../../core/ghq";
-import { buildCommand } from "../../../config";
-import { findWorktrees } from "../../shared/wake";
-import { resolveWorktreeTarget } from "../../../core/matcher/resolve-target";
+import { hostExec } from "maw-js/sdk";
+import { tmux } from "maw-js/sdk";
+import { ghqFind } from "maw-js/core/ghq";
+import { buildCommand } from "maw-js/config";
+import { findWorktrees } from "maw-js/commands/shared/wake";
+import { resolveWorktreeTarget } from "maw-js/core/matcher/resolve-target";
 
 async function resolveRepo(repo: string): Promise<{ repoPath: string; repoName: string; parentDir: string }> {
   // Support "org/repo" or bare "repo" — always search by last segment

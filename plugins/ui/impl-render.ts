@@ -14,7 +14,7 @@ import {
   justHost,
   buildTunnelCommand,
 } from "./impl-helpers";
-import { parseFlags } from "../../../cli/parse-args";
+import { parseFlags } from "maw-js/cli/parse-args";
 
 /**
  * Render the full output that `maw ui` prints, given the parsed options.

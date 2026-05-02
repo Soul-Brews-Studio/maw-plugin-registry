@@ -1,10 +1,10 @@
 import { join } from "path";
-import { listSessions } from "../../../sdk";
-import { getGhqRoot } from "../../../config/ghq-root";
-import { FLEET_DIR } from "../../../sdk";
-import { takeSnapshot } from "../../../sdk";
-import { tmux } from "../../../sdk";
-import { normalizeTarget } from "../../../core/matcher/normalize-target";
+import { listSessions } from "maw-js/sdk";
+import { getGhqRoot } from "maw-js/config/ghq-root";
+import { FLEET_DIR } from "maw-js/sdk";
+import { takeSnapshot } from "maw-js/sdk";
+import { tmux } from "maw-js/sdk";
+import { normalizeTarget } from "maw-js/core/matcher/normalize-target";
 import { signalParentInbox, autoSave } from "./done-autosave";
 import { removeWorktreeViaConfig, removeWorktreeByGhqScan, removeFromFleetConfig } from "./done-worktree";
 

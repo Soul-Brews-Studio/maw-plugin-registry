@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import type { InvokeContext } from "../../../plugin/types";
+import type { InvokeContext } from "maw-js/plugin/types";
 import handler, { command } from "./index";
 
 describe("find plugin — smoke", () => {

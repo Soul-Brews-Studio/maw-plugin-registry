@@ -24,8 +24,8 @@
  */
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
-import { loadConfig } from "../../../config";
-import { isTrusted, requestConsent } from "../../../core/consent";
+import { loadConfig } from "maw-js/config";
+import { isTrusted, requestConsent } from "maw-js/core/consent";
 import { resolvePsi } from "./team-helpers";
 
 export interface TeamInviteOptions {

@@ -1,7 +1,7 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
-import { parseFlags } from "../../../cli/parse-args";
-import { scanSignals } from "../../shared/scan-signals";
-import type { ScannedSignal } from "../../shared/scan-signals";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
+import { parseFlags } from "maw-js/cli/parse-args";
+import { scanSignals } from "maw-js/commands/shared/scan-signals";
+import type { ScannedSignal } from "maw-js/commands/shared/scan-signals";
 
 export const command = {
   name: "signals",

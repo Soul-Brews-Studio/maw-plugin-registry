@@ -1,10 +1,10 @@
-import { tmux } from "../../../sdk";
-import { detectSession } from "../../shared/wake";
-import { saveTabOrder } from "../../../sdk";
+import { tmux } from "maw-js/sdk";
+import { detectSession } from "maw-js/commands/shared/wake";
+import { saveTabOrder } from "maw-js/sdk";
 import { appendFile, mkdir } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
-import { takeSnapshot } from "../../../sdk";
+import { takeSnapshot } from "maw-js/sdk";
 
 /**
  * maw sleep <oracle> [window]

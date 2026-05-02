@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-import { hostExec } from "../../../sdk";
+import { hostExec } from "maw-js/sdk";
 import { cmdTeamTaskList, type MawTask } from "./task-ops";
 import { loadTeam } from "./impl";
 

@@ -1,14 +1,14 @@
-import { loadConfig } from "../../../config";
-import { getGhqRoot } from "../../../config/ghq-root";
-import { parseWakeTarget, ensureCloned } from "../../shared/wake-target";
-import { normalizeTarget } from "../../../core/matcher/normalize-target";
-import { assertValidOracleName } from "../../../core/fleet/validate";
-import { hostExec } from "../../../sdk";
+import { loadConfig } from "maw-js/config";
+import { getGhqRoot } from "maw-js/config/ghq-root";
+import { parseWakeTarget, ensureCloned } from "maw-js/commands/shared/wake-target";
+import { normalizeTarget } from "maw-js/core/matcher/normalize-target";
+import { assertValidOracleName } from "maw-js/core/fleet/validate";
+import { hostExec } from "maw-js/sdk";
 import { ensureBudRepo } from "./bud-repo";
 import { initVault, generateClaudeMd, configureFleet, writeBirthNote } from "./bud-init";
 import { finalizeBud } from "./bud-wake";
-import { writeSignal } from "../../../core/fleet/leaf";
-import { validateNickname, writeNickname, setCachedNickname } from "../../../core/fleet/nicknames";
+import { writeSignal } from "maw-js/core/fleet/leaf";
+import { validateNickname, writeNickname, setCachedNickname } from "maw-js/core/fleet/nicknames";
 import { join } from "path";
 
 export interface BudOpts {

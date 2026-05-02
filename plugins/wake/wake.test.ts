@@ -1,6 +1,6 @@
 import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { join } from "path";
-import type { InvokeContext } from "../../../plugin/types";
+import type { InvokeContext } from "maw-js/plugin/types";
 
 let lastWakeCall: { oracle: string; opts: any } | null = null;
 let lastWakeAllCall: { opts: any } | null = null;

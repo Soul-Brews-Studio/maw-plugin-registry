@@ -1,5 +1,5 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
-import { cmdList } from "../../shared/comm";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
+import { cmdList } from "maw-js/commands/shared/comm";
 
 export const command = { name: "ls", description: "List all agents and their status." };
 

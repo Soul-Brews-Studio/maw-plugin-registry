@@ -1,7 +1,7 @@
-import { loadConfig } from "../../../config";
-import { listSessions, sendKeys, getPaneCommand, resolveTarget } from "../../../sdk";
-import { runHook } from "../../../sdk";
-import { resolveOraclePane } from "../../shared/comm-send";
+import { loadConfig } from "maw-js/config";
+import { listSessions, sendKeys, getPaneCommand, resolveTarget } from "maw-js/sdk";
+import { runHook } from "maw-js/sdk";
+import { resolveOraclePane } from "maw-js/commands/shared/comm-send";
 import { appendFile, mkdir } from "fs/promises";
 import { homedir, hostname } from "os";
 import { join } from "path";

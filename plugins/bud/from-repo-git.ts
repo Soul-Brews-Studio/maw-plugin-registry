@@ -10,7 +10,7 @@
 import { mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { hostExec } from "../../../sdk";
+import { hostExec } from "maw-js/sdk";
 
 /** Single-quote escape for bash. Safe for unknown input (URLs, paths, branches). */
 function sh(s: string): string {

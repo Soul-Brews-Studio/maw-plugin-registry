@@ -1,4 +1,4 @@
-import { tmux } from "../../../sdk";
+import { tmux } from "maw-js/sdk";
 
 /**
  * maw broadcast <message> — send to ALL Claude windows across ALL sessions

@@ -14,7 +14,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import { CONFIG_DIR } from "../../../core/paths";
+import { CONFIG_DIR } from "maw-js/core/paths";
 
 // ─── Types ───
 

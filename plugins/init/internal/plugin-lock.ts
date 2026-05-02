@@ -13,7 +13,7 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { dirname, join } from "path";
-import { hashFile } from "../../../../plugin/registry";
+import { hashFile } from "maw-js/plugin/registry";
 import { readManifest } from "./install-manifest-helpers";
 import { extractTarball } from "./install-extraction";
 import { mkdtempSync, rmSync } from "fs";

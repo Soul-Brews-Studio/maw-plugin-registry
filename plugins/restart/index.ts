@@ -1,4 +1,4 @@
-import type { InvokeContext, InvokeResult } from "../../../plugin/types";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 import { cmdRestart } from "./impl";
 
 /** Dual-dispatcher ctx: old plugin/registry.ts passes InvokeContext;

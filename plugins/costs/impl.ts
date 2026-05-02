@@ -1,6 +1,6 @@
-import { loadConfig } from "../../../config";
-import { UserError } from "../../../core/util/user-error";
-import { sparkline } from "../../../lib/sparkline";
+import { loadConfig } from "maw-js/config";
+import { UserError } from "maw-js/core/util/user-error";
+import { sparkline } from "maw-js/lib/sparkline";
 
 type CostAgent = {
   name: string;

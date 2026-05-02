@@ -2,12 +2,12 @@
  * install-impl seam: tarball extraction, URL download, artifact hash verify.
  */
 
-import type { PluginManifest } from "../../../../plugin/types";
+import type { PluginManifest } from "maw-js/plugin/types";
 import { spawnSync } from "child_process";
 import { existsSync, mkdtempSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { basename, join } from "path";
-import { hashFile } from "../../../../plugin/registry";
+import { hashFile } from "maw-js/plugin/registry";
 
 const MAX_DOWNLOAD_BYTES = 50 * 1024 * 1024; // 50 MB
 

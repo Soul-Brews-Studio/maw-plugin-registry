@@ -4,7 +4,7 @@
  * Both paths end with cmdAdd() so peers.json has reciprocal aliases.
  */
 
-import { loadConfig } from "../../../config";
+import { loadConfig } from "maw-js/config";
 import { cmdAdd } from "./internal/peers-impl";
 import { postHandshake, warnIfPlainHttp } from "./handshake";
 import { normalize, isValidShape, redact } from "./codes";

@@ -8,8 +8,8 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-import { loadConfig } from "../../../config";
-import { ghqFindSync } from "../../../core/ghq";
+import { loadConfig } from "maw-js/config";
+import { ghqFindSync } from "maw-js/core/ghq";
 
 // ---- Constants -----------------------------------------------------------
 
