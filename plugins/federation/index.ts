@@ -24,17 +24,17 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
 
     if (!sub || sub === "status" || sub === "ls") {
       if (args.includes("--verify")) {
-        const { cmdFederationStatusVerify } = await import("../../shared/federation");
+        const { cmdFederationStatusVerify } = await import("maw-js/commands/shared/federation");
         const res = await cmdFederationStatusVerify();
         if (!res.ok) {
           return { ok: false, error: "one or more pairs are non-healthy", output: logs.join("\n") || undefined };
         }
       } else {
-        const { cmdFederationStatus } = await import("../../shared/federation");
+        const { cmdFederationStatus } = await import("maw-js/commands/shared/federation");
         await cmdFederationStatus();
       }
     } else if (sub === "sync") {
-      const { cmdFederationSync } = await import("../../shared/federation-sync");
+      const { cmdFederationSync } = await import("maw-js/commands/shared/federation-sync");
       await cmdFederationSync({
         dryRun: args.includes("--dry-run"),
         check: args.includes("--check"),

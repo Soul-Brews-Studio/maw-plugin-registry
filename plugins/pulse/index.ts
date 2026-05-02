@@ -42,14 +42,14 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
           error: 'usage: maw pulse add "task title" --oracle <name> [--wt <repo>]',
         };
       }
-      const { cmdPulseAdd } = await import("../../shared/pulse");
+      const { cmdPulseAdd } = await import("maw-js/commands/shared/pulse");
       await cmdPulseAdd(title, pulseOpts);
     } else if (subcmd === "ls" || subcmd === "list") {
       const sync = args.includes("--sync");
-      const { cmdPulseLs } = await import("../../shared/pulse");
+      const { cmdPulseLs } = await import("maw-js/commands/shared/pulse");
       await cmdPulseLs({ sync });
     } else if (subcmd === "cleanup" || subcmd === "clean") {
-      const { scanWorktrees, cleanupWorktree } = await import("../../../worktrees");
+      const { scanWorktrees, cleanupWorktree } = await import("maw-js/worktrees");
       const worktrees = await scanWorktrees();
       const stale = worktrees.filter(wt => wt.status !== "active");
       if (!stale.length) {

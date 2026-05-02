@@ -253,7 +253,7 @@ export async function cmdTeamSpawn(
       return;
     }
     try {
-      const { hostExec } = await import("../../../sdk");
+      const { hostExec } = await import("maw-js/sdk");
       const claudeCmd = `claude --model ${model} --prompt-file '${promptPath.replace(/'/g, "'\\''")}'`;
       await hostExec(`tmux split-window -h -l 50% '${claudeCmd.replace(/'/g, "'\\''")}'`);
       console.log();

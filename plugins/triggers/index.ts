@@ -6,7 +6,7 @@ export const command = {
 };
 
 export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
-  const { cmdTriggers } = await import("../../shared/triggers");
+  const { cmdTriggers } = await import("maw-js/commands/shared/triggers");
 
   const logs: string[] = [];
   const origLog = console.log;
