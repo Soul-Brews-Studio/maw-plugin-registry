@@ -49,12 +49,22 @@ export async function cmdHealth() {
     checks.push({ name: "disk /tmp", status: "warn", detail: "unknown" });
   }
 
-  // 4. memory
+  // 4. memory — cross-platform: linux=free, macOS=vm_stat (#1121)
   try {
-    const mem = execSync("free -m | grep Mem", { encoding: "utf-8" }).trim();
-    const parts = mem.split(/\s+/);
-    const avail = parseInt(parts[6] || "0");
-    checks.push({ name: "memory", status: avail < 500 ? "warn" : "ok", detail: `${avail}MB available` });
+    let availMB = 0;
+    if (process.platform === "darwin") {
+      // macOS: vm_stat reports pages free + inactive (reusable). Page size = 16384 on Apple Silicon, 4096 on Intel.
+      const vm = execSync("vm_stat", { encoding: "utf-8" });
+      const pageSize = parseInt(execSync("sysctl -n hw.pagesize", { encoding: "utf-8" }).trim() || "16384");
+      const free = parseInt(vm.match(/Pages free:\s+(\d+)/)?.[1] || "0");
+      const inactive = parseInt(vm.match(/Pages inactive:\s+(\d+)/)?.[1] || "0");
+      availMB = Math.round(((free + inactive) * pageSize) / 1024 / 1024);
+    } else {
+      // Linux: free -m, column 7 (available)
+      const mem = execSync("free -m | grep Mem", { encoding: "utf-8" }).trim();
+      availMB = parseInt(mem.split(/\s+/)[6] || "0");
+    }
+    checks.push({ name: "memory", status: availMB < 500 ? "warn" : "ok", detail: `${availMB}MB available` });
   } catch {
     checks.push({ name: "memory", status: "warn", detail: "unknown" });
   }
