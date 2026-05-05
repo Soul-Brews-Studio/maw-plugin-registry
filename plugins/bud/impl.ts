@@ -9,6 +9,7 @@ import { initVault, generateClaudeMd, configureFleet, writeBirthNote } from "./b
 import { finalizeBud } from "./bud-wake";
 import { writeSignal } from "maw-js/core/fleet/leaf";
 import { validateNickname, writeNickname, setCachedNickname } from "maw-js/core/fleet/nicknames";
+import { resolveOrg, formatOrgSource, type OrgResolution } from "./smart-default-org";
 import { join } from "path";
 
 export interface BudOpts {
@@ -40,10 +41,18 @@ export interface BudOpts {
  *
  * Yeast budding — any oracle can spawn a new oracle.
  *
- * Target org resolution (first wins):
+ * Target org resolution (first wins) — see ./smart-default-org.ts for impl:
  *   1. --org <org>                    — per-invocation override (#235)
- *   2. config.githubOrg               — per-machine default from config
- *   3. "Soul-Brews-Studio"            — hard-coded fallback
+ *   2. MAW_BUD_OWNER env              — per-shell override
+ *   3. config.githubOrg               — per-machine default from config
+ *   4. fleet most-recent (FTS-tier)   — smart default from local fleet history
+ *   5. gh api user (vector cold-start) — once per fresh machine when fleet empty
+ *   6. "Soul-Brews-Studio"            — ultimate fallback
+ *
+ * The fleet→gh→default chain is the FTS+vector retrieval pattern (mirrored
+ * from arra-oracle-v3): fast structural match first, slow authoritative
+ * fallback when needed. Future Phase 3 upgrades to parallel-merge with a
+ * confidence bonus — see follow-up issue.
  *
  * Note: --repo is an INCUBATION flag (seeds the bud from an existing local
  * project's ψ/), NOT a target-org override. Use --org to target a different
@@ -87,7 +96,16 @@ export async function cmdBud(name: string, opts: BudOpts = {}) {
 
   const config = loadConfig();
   const reposRoot = join(getGhqRoot(), "github.com");
-  const org = opts.org || config.githubOrg || "Soul-Brews-Studio";
+
+  // Resolve target org via the FTS+vector precedence chain (smart-default-org.ts).
+  // Echo line happens just before `gh repo create` in bud-repo.ts so the user
+  // can catch a wrong default before the destructive step.
+  const orgResolution: OrgResolution = await resolveOrg({
+    flag: opts.org,
+    env: process.env.MAW_BUD_OWNER,
+    config: config.githubOrg,
+  });
+  const org = orgResolution.org;
 
   // Resolve parent oracle (skip for --root)
   let parentName: string | null = opts.from || null;
@@ -142,6 +160,19 @@ export async function cmdBud(name: string, opts: BudOpts = {}) {
     }
     console.log();
     return;
+  }
+
+  // Echo the resolved org + source BEFORE the destructive `gh repo create`
+  // call, so the user can catch a wrong default (sticky-default trap) and
+  // ^C before any network side-effects fire. All 3 v3 evaluators converged
+  // on this as the essential mitigation against the recency-only ranking
+  // failure mode (e.g., personal-fork side-quest after months in
+  // Soul-Brews-Studio leaves fleet pointing at the wrong org until
+  // explicitly bud back).
+  console.log(`  \x1b[36m●\x1b[0m bud: creating ${budRepoSlug}`);
+  console.log(`     \x1b[90msource: ${formatOrgSource(orgResolution)}\x1b[0m`);
+  if (orgResolution.source === "fleet" || orgResolution.source === "gh" || orgResolution.source === "default") {
+    console.log(`     \x1b[90moverride: --org <name> or MAW_BUD_OWNER=<name>\x1b[0m`);
   }
 
   // 1. Create oracle repo — returns the ACTUAL clone path per ghq (#630).
