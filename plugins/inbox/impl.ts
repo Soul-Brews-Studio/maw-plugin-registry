@@ -75,13 +75,37 @@ function slugify(text: string): string {
   return text.trim().split(/\s+/).slice(0, 5).join("-").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40);
 }
 
-function relativeTime(date: Date): string {
-  const mins = Math.floor((Date.now() - date.getTime()) / 60000);
+/**
+ * Format a date as human-readable relative age (or absolute date for old/invalid).
+ *
+ * Defensive against the epoch-zero fallback in `loadInboxMessages` (where a
+ * missing/malformed `timestamp:` frontmatter coerces to `new Date(0)` and
+ * produces "20578d ago" — the #1142 bug shape).
+ *
+ * Contract:
+ *   NaN / epoch-zero / non-positive  → "—"  (unknown/missing)
+ *   future-dated (clock skew)        → "future"
+ *   < 1 minute                       → "just now"
+ *   < 60 minutes                     → "Nm ago"
+ *   < 24 hours                       → "Nh ago"
+ *   < 30 days                        → "Nd ago"
+ *   ≥ 30 days                        → "YYYY-MM-DD" (absolute)
+ *
+ * Exported for tests; the WHEN column in `cmdInboxLs` is the production caller.
+ */
+export function relativeTime(date: Date): string {
+  const t = date.getTime();
+  if (!isFinite(t) || t <= 0) return "—";
+  const diffMs = Date.now() - t;
+  if (diffMs < 0) return "future";
+  const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return date.toISOString().slice(0, 10); // YYYY-MM-DD for older items
 }
 
 export function writeInboxFile(inboxDir: string, from: string, to: string, body: string): string {
