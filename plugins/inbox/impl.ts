@@ -61,7 +61,7 @@ function parseFrontmatter(content: string): { frontmatter: InboxFrontmatter; bod
     const v = line.slice(colon + 2).trim();
     if (k === "from") fm.from = v;
     else if (k === "to") fm.to = v;
-    else if (k === "timestamp") fm.timestamp = v;
+    else if (k === "timestamp" || k === "date") fm.timestamp = v;
     else if (k === "read") fm.read = v === "true";
   }
   return { frontmatter: fm, body: match[2].trim() };
@@ -127,13 +127,24 @@ export function loadInboxMessages(inboxDir: string): InboxMessage[] {
     try {
       const content = readFileSync(path, "utf-8");
       const { frontmatter, body } = parseFrontmatter(content);
+      // #1142 — resolve timestamp: try frontmatter first, then filename pattern,
+      // then file mtime. Avoids epoch-0 fallback that produces "20578d ago".
+      let ts = frontmatter.timestamp ? new Date(frontmatter.timestamp) : null;
+      if (!ts || isNaN(ts.getTime())) {
+        const m = f.match(/^(\d{4})-?(\d{2})-?(\d{2})[_T](\d{2})-?(\d{2})/);
+        ts = m ? new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00`) : null;
+      }
+      if (!ts || isNaN(ts.getTime())) {
+        const { statSync } = require("fs");
+        ts = new Date(statSync(path).mtimeMs);
+      }
       messages.push({
         id: f.replace(/\.md$/, ""),
         filename: f,
         path,
         frontmatter,
         body,
-        timestamp: frontmatter.timestamp ? new Date(frontmatter.timestamp) : new Date(0),
+        timestamp: ts,
       });
     } catch { /* skip unreadable files */ }
   }
