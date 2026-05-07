@@ -8,6 +8,7 @@ import { loadConfig } from "maw-js/config";
 import { C } from "maw-js/commands/shared/fleet-doctor-fixer";
 import { loadManifestCached, invalidateManifest } from "maw-js/lib/oracle-manifest";
 import { findGaps, summarizeGaps } from "./cross-source-detect";
+import { checkStillbornWorktrees } from "./internal/stillborn-worktrees";
 
 export interface DoctorResult {
   ok: boolean;
@@ -38,6 +39,9 @@ export async function cmdDoctor(args: string[] = []): Promise<DoctorResult> {
     }
     if (!only || only === "manifest" || only === "all") {
       checks.push(checkCrossSourceConsistency());
+    }
+    if (!only || only === "worktrees" || only === "all") {
+      checks.push(checkStillbornWorktrees());
     }
   }
 
