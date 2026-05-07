@@ -3,9 +3,11 @@ import { join } from "path";
 import type { InvokeContext } from "maw-js/plugin/types";
 import { deriveWindowName } from "./derive-window-name";
 
-const root = join(import.meta.dir, "../../..");
-
-mock.module(join(root, "commands/plugins/sleep/impl"), () => ({
+// Mock the actual ./impl resolution path the handler uses.
+// Previously targeted <registry-root>/commands/plugins/sleep/impl which did
+// not match — the handler imports "./impl" which resolves to this directory.
+// (#18 fix)
+mock.module(join(import.meta.dir, "impl"), () => ({
   cmdSleepOne: async (oracle: string, window?: string) => {
     console.log(`sleep ${oracle}${window ? ` window=${window}` : ""}`);
   },
