@@ -1,62 +1,50 @@
-import { tmux } from "maw-js/sdk";
+import { tmux, listSessions } from "maw-js/sdk";
 import { detectSession } from "maw-js/commands/shared/wake";
+import { loadFleet } from "maw-js/commands/shared/fleet-load";
 import { saveTabOrder } from "maw-js/sdk";
 import { appendFile, mkdir } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
 import { takeSnapshot } from "maw-js/sdk";
-import { deriveWindowName } from "./derive-window-name";
+import { resolveSleepTarget } from "./resolve-target";
 
 /**
- * maw sleep <oracle> [window]
+ * maw sleep <target> [window]
  *
  * Gracefully stop a single Oracle agent's tmux window:
  * 1. Send /exit to the Claude session
  * 2. Wait 3 seconds
  * 3. If window still exists, kill it
  * 4. Log the event
+ *
+ * Resolution (Tier 1-2-3) lives in `./resolve-target.ts`.
  */
-export async function cmdSleepOne(oracle: string, window?: string) {
-  // Resolve session
-  const session = await detectSession(oracle);
-  if (!session) {
-    throw new Error(`no running session found for '${oracle}'`);
+export async function cmdSleepOne(target: string, windowOverride?: string) {
+  const resolved = await resolveSleepTarget(target, windowOverride, {
+    listSessions,
+    loadFleet,
+    detectSession,
+  });
+
+  if (!resolved) {
+    const sessions = await listSessions();
+    const flatWindows = sessions.flatMap(s =>
+      s.windows.map(w => `${s.name}:${w.name}`),
+    );
+    if (flatWindows.length > 0) {
+      const head = flatWindows.slice(0, 10).join(", ");
+      const more = flatWindows.length > 10 ? ` ... (+${flatWindows.length - 10} more)` : "";
+      console.error(`\x1b[90mavailable:\x1b[0m ${head}${more}`);
+    }
+    throw new Error(`could not resolve sleep target: '${target}'`);
   }
 
-  const windowName = deriveWindowName(oracle, window);
+  const { session, window: windowName } = resolved;
 
   // Save tab order before sleeping (so wake can restore positions)
   await saveTabOrder(session);
 
-  // Verify window exists
-  let windows;
-  try {
-    windows = await tmux.listWindows(session);
-  } catch {
-    throw new Error(`could not list windows for session '${session}'`);
-  }
-
-  // Normalize trailing dashes — tmux window names like "fireman-1w-test-"
-  // cause exact-match failures and strand maw sleep (#206)
-  const stripDash = (s: string) => s.replace(/-+$/, "");
-
-  const target = windows.find(w => w.name === windowName || stripDash(w.name) === stripDash(windowName));
-  if (!target) {
-    // Try partial match (e.g. oracle-N-name pattern)
-    const nameSuffix = window || "oracle";
-    const fuzzy = windows.find(w =>
-      stripDash(w.name) === stripDash(windowName) ||
-      new RegExp(`^${oracle}-\\d+-${nameSuffix}-?$`).test(w.name)
-    );
-    if (!fuzzy) {
-      console.error(`\x1b[90mavailable:\x1b[0m ${windows.map(w => w.name).join(", ")}`);
-      throw new Error(`window '${windowName}' not found in session '${session}'`);
-    }
-    // Use the fuzzy-matched name
-    return await doSleep(session, fuzzy.name, oracle);
-  }
-
-  await doSleep(session, windowName, oracle);
+  await doSleep(session, windowName, target);
 }
 
 async function doSleep(session: string, windowName: string, oracle: string) {
