@@ -9,6 +9,7 @@ import { C } from "maw-js/commands/shared/fleet-doctor-fixer";
 import { loadManifestCached, invalidateManifest } from "maw-js/lib/oracle-manifest";
 import { findGaps, summarizeGaps } from "./cross-source-detect";
 import { checkMawJsBranch } from "./internal/maw-js-branch-check";
+import { checkStillbornWorktrees } from "./internal/stillborn-worktrees";
 
 export interface DoctorResult {
   ok: boolean;
@@ -42,6 +43,9 @@ export async function cmdDoctor(args: string[] = []): Promise<DoctorResult> {
     }
     if (!only || only === "maw-js" || only === "all") {
       checks.push(await checkMawJsBranch());
+    }
+    if (!only || only === "worktrees" || only === "all") {
+      checks.push(checkStillbornWorktrees());
     }
   }
 
