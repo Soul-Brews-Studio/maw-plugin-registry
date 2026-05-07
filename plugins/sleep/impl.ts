@@ -5,6 +5,7 @@ import { appendFile, mkdir } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
 import { takeSnapshot } from "maw-js/sdk";
+import { deriveWindowName } from "./derive-window-name";
 
 /**
  * maw sleep <oracle> [window]
@@ -22,8 +23,7 @@ export async function cmdSleepOne(oracle: string, window?: string) {
     throw new Error(`no running session found for '${oracle}'`);
   }
 
-  // Determine window name
-  const windowName = window ? `${oracle}-${window}` : `${oracle}-oracle`;
+  const windowName = deriveWindowName(oracle, window);
 
   // Save tab order before sleeping (so wake can restore positions)
   await saveTabOrder(session);
