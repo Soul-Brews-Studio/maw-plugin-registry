@@ -1,19 +1,24 @@
 {
   "name": "incubate",
-  "version": "0.1.0-alpha.0",
+  "version": "1.0.0",
   "entry": "./index.ts",
   "sdk": "^1.0.0",
-  "description": "Scaffold (stub): clone or create repos for active development — the right hand of /learn. Full impl lives in the Oracle /incubate skill — core plugin is a dispatcher shape only.",
+  "description": "Fire /incubate skill into an oracle's Claude TUI — thin router. Skill does the actual ghq clone, ψ/incubate symlink, .origins manifest, hub file, and mode workflow.",
   "author": "Soul-Brews-Studio",
   "cli": {
     "command": "incubate",
-    "help": "maw incubate <repo> [--flash|--contribute|--status|--offload] — scaffold stub (impl pending, see Oracle skill /incubate)",
+    "help": "maw incubate <source> [--oracle <name>] [--flash | --contribute | --status | --offload | --init] [--no-trigger] [--trigger <text>]\n       Fire `/incubate <source>` into an oracle's Claude TUI. The skill clones via ghq, symlinks into ψ/incubate/, manages .origins + hub files.\n       Default oracle: inferred from cwd (must be inside an oracle's repo). Override with --oracle.\n       Mode flags pass straight through to the skill.\n       Use --status to query existing incubations (no source arg required).\n       Use --init to restore all origins from .origins manifest.",
     "flags": {
+      "--oracle": "string",
+      "--trigger": "string",
+      "--no-trigger": "boolean",
       "--flash": "boolean",
       "--contribute": "boolean",
       "--status": "boolean",
-      "--offload": "boolean"
+      "--offload": "boolean",
+      "--init": "boolean",
+      "--dry-run": "boolean"
     }
   },
-  "weight": 50
+  "weight": 0
 }

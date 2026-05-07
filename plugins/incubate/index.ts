@@ -1,29 +1,16 @@
 import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
+import { cmdIncubate, resolveMode } from "./impl";
+import { parseFlags } from "maw-js/cli/parse-args";
 
 export const command = {
   name: "incubate",
-  description: "Scaffold (stub): clone or create repos for active development.",
+  description: "Fire /incubate skill into an oracle's Claude TUI — thin router.",
 };
 
-/**
- * maw incubate — core plugin scaffold (#522).
- *
- * This is a migration scaffold for the Oracle skill `/incubate`. The full
- * implementation (ghq clone/create, origin symlink, .origins manifest,
- * INCUBATED_BY breadcrumb, hub file, --flash/--contribute/--status/--offload
- * workflow modes) lives in ~/.claude/skills/incubate/SKILL.md and ships in a
- * follow-up PR.
- *
- * Today the plugin only:
- *   - registers the CLI verb + flags
- *   - validates positional args + flag shape
- *   - returns a stub message pointing users at the Oracle skill
- *
- * See issue #522 for the follow-up implementation tracker.
- */
-export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
-  const { cmdIncubate } = await import("./impl");
+const USAGE =
+  "usage: maw incubate <source> [--oracle <name>] [--flash | --contribute | --status | --offload | --init] [--no-trigger] [--trigger <text>] [--dry-run]";
 
+export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
   const logs: string[] = [];
   const origLog = console.log;
   const origError = console.error;
@@ -37,44 +24,83 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
   };
 
   try {
-    const args = ctx.source === "cli" ? (ctx.args as string[]) : [];
+    if (ctx.source === "cli") {
+      const args = ctx.args as string[];
+      const flags = parseFlags(
+        args,
+        {
+          "--oracle": String,
+          "--trigger": String,
+          "--no-trigger": Boolean,
+          "--flash": Boolean,
+          "--contribute": Boolean,
+          "--status": Boolean,
+          "--offload": Boolean,
+          "--init": Boolean,
+          "--dry-run": Boolean,
+        },
+        0,
+      );
 
-    const flash = args.includes("--flash");
-    const contribute = args.includes("--contribute");
-    const status = args.includes("--status");
-    const offload = args.includes("--offload");
+      let mode;
+      try {
+        mode = resolveMode(
+          !!flags["--flash"],
+          !!flags["--contribute"],
+          !!flags["--status"],
+          !!flags["--offload"],
+        );
+      } catch (e: any) {
+        return { ok: false, error: e.message };
+      }
 
-    const modes = [flash, contribute, status, offload].filter(Boolean).length;
-    if (modes > 1) {
-      return {
-        ok: false,
-        error: "maw incubate: --flash, --contribute, --status, --offload are mutually exclusive",
-      };
+      const source = flags._[0];
+      // --status and --init don't need a source positional
+      const needsSource = mode !== "status" && !flags["--init"];
+      if (needsSource && !source) {
+        return { ok: false, error: USAGE };
+      }
+      if (source && source.startsWith("-")) {
+        return {
+          ok: false,
+          error: `"${source}" looks like a flag, not a source repo.\n  ${USAGE}`,
+        };
+      }
+
+      await cmdIncubate({
+        source,
+        oracle: flags["--oracle"],
+        mode,
+        init: flags["--init"],
+        trigger: flags["--trigger"],
+        noTrigger: flags["--no-trigger"],
+        dryRun: flags["--dry-run"],
+      });
+    } else if (ctx.source === "api") {
+      const body = ctx.args as Record<string, unknown>;
+      const source = body.source as string | undefined;
+      const mode = (body.mode as string | undefined) ?? "default";
+      if (!["default", "flash", "contribute", "status", "offload"].includes(mode)) {
+        return { ok: false, error: `invalid mode: ${mode}` };
+      }
+      await cmdIncubate({
+        source,
+        oracle: body.oracle as string | undefined,
+        mode: mode as any,
+        init: body.init as boolean | undefined,
+        trigger: body.trigger as string | undefined,
+        noTrigger: body.noTrigger as boolean | undefined,
+        dryRun: body.dryRun as boolean | undefined,
+      });
     }
 
-    const known = new Set(["--flash", "--contribute", "--status", "--offload"]);
-    const positional = args.filter(a => !a.startsWith("--"));
-    const unknown = args.filter(a => a.startsWith("--") && !known.has(a));
-    if (unknown.length > 0) {
-      return {
-        ok: false,
-        error: `maw incubate: unknown flag(s) ${unknown.join(", ")} (accepts --flash, --contribute, --status, --offload)`,
-      };
-    }
-
-    const mode = flash ? "flash" : contribute ? "contribute" : status ? "status" : offload ? "offload" : "default";
-
-    if (mode !== "status" && !positional[0]) {
-      return {
-        ok: false,
-        error: "usage: maw incubate <repo> [--flash|--contribute|--status|--offload]",
-      };
-    }
-
-    const result = await cmdIncubate(positional[0] ?? "", mode);
-    return { ok: true, output: logs.join("\n") || result };
+    return { ok: true, output: logs.join("\n") || undefined };
   } catch (e: any) {
-    return { ok: false, error: logs.join("\n") || e.message, output: logs.join("\n") || undefined };
+    return {
+      ok: false,
+      error: logs.join("\n") || e.message,
+      output: logs.join("\n") || undefined,
+    };
   } finally {
     console.log = origLog;
     console.error = origError;
