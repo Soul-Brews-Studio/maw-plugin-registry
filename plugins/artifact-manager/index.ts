@@ -23,6 +23,8 @@ import {
 } from "maw-js/lib/artifacts";
 import { readFileSync } from "fs";
 import { basename } from "path";
+import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
+import { parseFlags } from "maw-js/cli/parse-args";
 
 export const command = {
   name: ["art", "artifact-manager"],
@@ -33,9 +35,18 @@ export const command = {
   },
 };
 
-export default async function handler(args: string[], flags: Record<string, any>) {
-  const sub = args[0] ?? "ls";
-  const json = flags["--json"];
+export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
+  const logs: string[] = [];
+  const origLog = console.log;
+  const origError = console.error;
+  console.log = (...a: any[]) => { ctx.writer ? ctx.writer(...a) : logs.push(a.map(String).join(" ")); };
+  console.error = (...a: any[]) => { ctx.writer ? ctx.writer(...a) : logs.push(a.map(String).join(" ")); };
+  try {
+    const rawArgs = ctx.source === "cli" ? (ctx.args as string[]) : [];
+    const flags = parseFlags(rawArgs, { "--json": Boolean, "--team": String }, 0);
+    const args = flags._ as string[];
+    const sub = args[0] ?? "ls";
+    const json = flags["--json"];
 
   switch (sub) {
     case "ls":
@@ -127,6 +138,13 @@ export default async function handler(args: string[], flags: Record<string, any>
 
     default:
       console.error("usage: maw art [ls|get|write|attach|init] [--json]");
+  }
+  return { ok: true, output: logs.join("\n") || undefined };
+  } catch (e: any) {
+    return { ok: false, error: e.message, output: logs.join("\n") || undefined };
+  } finally {
+    console.log = origLog;
+    console.error = origError;
   }
 }
 
