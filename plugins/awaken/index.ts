@@ -50,6 +50,8 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
           "--force": Boolean,
           "--track-vault": Boolean,
           "--sync-peers": Boolean,
+          "--yes": Boolean,
+          "-y": "--yes",
         },
         0,
       );
