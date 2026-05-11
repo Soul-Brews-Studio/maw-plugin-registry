@@ -1,0 +1,271 @@
+/**
+ * attach plugin tests (#25 Phase 1).
+ *
+ * Two layers:
+ *   1. Resolver — pure, no mocks, exercises Tier 1 / Tier 2 / ambiguous / null
+ *   2. Handler — mocks listSessions + loadFleet + the maw subprocess via
+ *      mock.module on Bun.spawn, verifies the cascade emits the right command
+ */
+
+import { test, expect, mock } from "bun:test";
+import { resolveAttachTarget, type SessionLike, type FleetLike } from "./resolve-attach-target";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. Resolver tests
+// ─────────────────────────────────────────────────────────────────────────────
+
+function makeDeps(sessions: SessionLike[], fleet: FleetLike[]) {
+  return {
+    listSessions: async () => sessions,
+    loadFleet: () => fleet,
+  };
+}
+
+test("resolver: Tier 1 — exact session name match", async () => {
+  const deps = makeDeps([{ name: "discord-oracle", windows: [{ name: "discord-oracle" }] }], []);
+  const r = await resolveAttachTarget("discord-oracle", deps);
+  expect(r).toEqual({ tier: 1, sessionName: "discord-oracle" });
+});
+
+test("resolver: Tier 1 — slot-prefix-aware suffix match", async () => {
+  const deps = makeDeps([{ name: "24-discord-oracle", windows: [{ name: "discord-oracle" }] }], []);
+  const r = await resolveAttachTarget("discord-oracle", deps);
+  expect(r).toEqual({ tier: 1, sessionName: "24-discord-oracle" });
+});
+
+test("resolver: Tier 1 — case-insensitive match", async () => {
+  const deps = makeDeps([{ name: "Discord-Oracle", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("DISCORD-ORACLE", deps);
+  expect(r).toEqual({ tier: 1, sessionName: "Discord-Oracle" });
+});
+
+test("resolver: Tier 2 — fleet entry, no live session", async () => {
+  const deps = makeDeps([], [{ name: "24-discord-oracle", windows: [{ name: "discord-oracle" }] }]);
+  const r = await resolveAttachTarget("discord-oracle", deps);
+  expect(r).toEqual({ tier: 2, fleetName: "24-discord-oracle" });
+});
+
+test("resolver: ambiguous Tier 1 — multiple live sessions match", async () => {
+  const deps = makeDeps(
+    [
+      { name: "24-discord-oracle", windows: [{ name: "x" }] },
+      { name: "99-discord-oracle", windows: [{ name: "x" }] },
+    ],
+    [],
+  );
+  const r = await resolveAttachTarget("discord-oracle", deps);
+  expect(r?.tier).toBe(1);
+  expect(r?.ambiguousCandidates).toEqual(["24-discord-oracle", "99-discord-oracle"]);
+});
+
+test("resolver: ambiguous Tier 2 — multiple fleet entries match", async () => {
+  const deps = makeDeps(
+    [],
+    [
+      { name: "24-discord-oracle", windows: [{ name: "x" }] },
+      { name: "30-discord-oracle", windows: [{ name: "x" }] },
+    ],
+  );
+  const r = await resolveAttachTarget("discord-oracle", deps);
+  expect(r?.tier).toBe(2);
+  expect(r?.ambiguousCandidates).toEqual(["24-discord-oracle", "30-discord-oracle"]);
+});
+
+test("resolver: no match → null", async () => {
+  const deps = makeDeps([{ name: "foo-oracle", windows: [{ name: "x" }] }], [{ name: "bar-oracle", windows: [{ name: "x" }] }]);
+  const r = await resolveAttachTarget("does-not-exist", deps);
+  expect(r).toBeNull();
+});
+
+test("resolver: live session takes precedence over fleet entry", async () => {
+  const deps = makeDeps(
+    [{ name: "24-foo-oracle", windows: [{ name: "x" }] }],
+    [{ name: "24-foo-oracle", windows: [{ name: "x" }] }],
+  );
+  const r = await resolveAttachTarget("foo-oracle", deps);
+  expect(r).toEqual({ tier: 1, sessionName: "24-foo-oracle" });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. Handler tests — cascade + flag plumbing
+// ─────────────────────────────────────────────────────────────────────────────
+
+function setupHandlerMocks(opts: {
+  sessions?: SessionLike[];
+  fleet?: FleetLike[];
+}) {
+  const spawnCalls: string[][] = [];
+
+  mock.module("maw-js/sdk", () => ({
+    listSessions: async () => opts.sessions ?? [],
+  }));
+  mock.module("maw-js/commands/shared/fleet-load", () => ({
+    loadFleet: () => opts.fleet ?? [],
+  }));
+
+  // Bun.spawn is global — patch it with a stub that records args + returns
+  // an immediately-resolved exited promise.
+  const realSpawn = Bun.spawn;
+  (Bun as any).spawn = (args: string[]) => {
+    spawnCalls.push(args);
+    return {
+      exited: Promise.resolve(0),
+    };
+  };
+
+  mock.module("maw-js/cli/parse-args", () => ({
+    parseFlags: (args: string[], schema: any) => {
+      const out: any = { _: [] };
+      const aliases: Record<string, string> = {};
+      for (const [k, v] of Object.entries(schema)) {
+        if (typeof v === "string" && v.startsWith("--")) aliases[k] = v;
+      }
+      for (let i = 0; i < args.length; i++) {
+        let a = args[i];
+        if (aliases[a]) a = aliases[a];
+        if (a.startsWith("--")) {
+          const ty = schema[a];
+          if (ty === Boolean) out[a] = true;
+          else if (ty === Number) out[a] = Number(args[++i]);
+          else out[a] = args[++i];
+        } else {
+          out._.push(a);
+        }
+      }
+      return out;
+    },
+  }));
+
+  return {
+    spawnCalls,
+    restore: () => {
+      (Bun as any).spawn = realSpawn;
+      mock.restore();
+    },
+  };
+}
+
+test("handler: Tier 1 (live) — invokes `maw tmux attach <session>`", async () => {
+  const ctx = setupHandlerMocks({
+    sessions: [{ name: "24-discord-oracle", windows: [{ name: "x" }] }],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: ["discord-oracle"], writer: undefined } as any);
+    expect(result.ok).toBe(true);
+    expect(ctx.spawnCalls.length).toBe(1);
+    expect(ctx.spawnCalls[0]).toEqual(["maw", "tmux", "attach", "24-discord-oracle"]);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("handler: Tier 1 dry-run — no spawn, prints plan", async () => {
+  const ctx = setupHandlerMocks({
+    sessions: [{ name: "24-discord-oracle", windows: [{ name: "x" }] }],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: ["discord-oracle", "--dry-run"], writer: undefined } as any);
+    expect(result.ok).toBe(true);
+    expect(ctx.spawnCalls.length).toBe(0);
+    expect(result.output).toMatch(/Tier 1/);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("handler: Tier 2 with -y — wakes then attaches, no prompt", async () => {
+  const ctx = setupHandlerMocks({
+    fleet: [{ name: "24-discord-oracle", windows: [{ name: "x" }] }],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: ["discord-oracle", "-y"], writer: undefined } as any);
+    expect(result.ok).toBe(true);
+    expect(ctx.spawnCalls.length).toBe(2);
+    expect(ctx.spawnCalls[0]).toEqual(["maw", "wake", "24-discord-oracle"]);
+    expect(ctx.spawnCalls[1]).toEqual(["maw", "tmux", "attach", "24-discord-oracle"]);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("handler: Tier 2 dry-run — no spawn, says 'would wake … then attach'", async () => {
+  const ctx = setupHandlerMocks({
+    fleet: [{ name: "24-discord-oracle", windows: [{ name: "x" }] }],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: ["discord-oracle", "--dry-run"], writer: undefined } as any);
+    expect(result.ok).toBe(true);
+    expect(ctx.spawnCalls.length).toBe(0);
+    expect(result.output).toMatch(/Tier 2/);
+    expect(result.output).toMatch(/would wake/);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("handler: no match — returns error listing availables", async () => {
+  const ctx = setupHandlerMocks({
+    sessions: [{ name: "foo-oracle", windows: [{ name: "x" }] }],
+    fleet: [{ name: "bar-oracle", windows: [{ name: "x" }] }],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: ["nonexistent"], writer: undefined } as any);
+    expect(result.ok).toBe(false);
+    expect(result.output).toMatch(/no oracle named 'nonexistent'/);
+    expect(result.output).toMatch(/foo-oracle/);
+    expect(result.output).toMatch(/bar-oracle/);
+    expect(ctx.spawnCalls.length).toBe(0);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("handler: ambiguous match — stops without spawning", async () => {
+  const ctx = setupHandlerMocks({
+    sessions: [
+      { name: "24-discord-oracle", windows: [{ name: "x" }] },
+      { name: "99-discord-oracle", windows: [{ name: "x" }] },
+    ],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: ["discord-oracle"], writer: undefined } as any);
+    expect(result.ok).toBe(false);
+    expect(result.output).toMatch(/ambiguous/);
+    expect(ctx.spawnCalls.length).toBe(0);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("handler: missing name returns usage", async () => {
+  const ctx = setupHandlerMocks({});
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "cli", args: [], writer: undefined } as any);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/usage/);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("API: dispatch invokes the cascade with yes=true (no TTY)", async () => {
+  const ctx = setupHandlerMocks({
+    fleet: [{ name: "24-foo-oracle", windows: [{ name: "x" }] }],
+  });
+  try {
+    const handler = (await import("./index")).default;
+    const result = await handler({ source: "api", args: { name: "foo-oracle" } } as any);
+    expect(result.ok).toBe(true);
+    expect(ctx.spawnCalls.length).toBe(2);
+    expect(ctx.spawnCalls[0]).toEqual(["maw", "wake", "24-foo-oracle"]);
+  } finally {
+    ctx.restore();
+  }
+});
