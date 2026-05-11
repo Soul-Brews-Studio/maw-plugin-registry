@@ -18,7 +18,7 @@
  */
 import { cmdBud, type BudOpts } from "../bud/impl";
 import { cmdSendText } from "../send-text/impl";
-import { listSessions, resolveTarget } from "maw-js/sdk";
+import { listSessions, resolveTarget, getPaneCommand, isAgentCommand } from "maw-js/sdk";
 import { loadConfig } from "maw-js/config";
 
 export interface AwakenOpts extends BudOpts {
@@ -51,7 +51,7 @@ export async function cmdAwaken(name: string, opts: AwakenOpts = {}): Promise<vo
     return;
   }
 
-  // Step 2: resolve the target pane (no readiness wait — Q2: "no-wait")
+  // Step 2: resolve the target pane
   const config = loadConfig();
   const sessions = await listSessions();
   const result = resolveTarget(name, config, sessions);
@@ -61,6 +61,34 @@ export async function cmdAwaken(name: string, opts: AwakenOpts = {}): Promise<vo
       `  \x1b[33m⚠\x1b[0m could not resolve ${name} after wake — skipping ${trigger}`,
     );
     console.log(`  \x1b[90m  try manually: maw send-text ${name} ${trigger}\x1b[0m`);
+    return;
+  }
+
+  // Step 2.5: wait for Claude (or other agent) to be running in the pane.
+  // Fixes registry#28 — without this, /awaken arrives before Claude TUI is
+  // ready and the text lands in the bare zsh prompt (`zsh: no such file or
+  // directory: /awaken`). Poll getPaneCommand(target) until isAgentCommand
+  // returns true. Max wait ~10s — Claude cold start is usually 2-5s on m5.
+  const target = result.target;
+  const POLL_INTERVAL_MS = 500;
+  const MAX_WAIT_MS = 10000;
+  const deadline = Date.now() + MAX_WAIT_MS;
+  let ready = false;
+  while (Date.now() < deadline) {
+    try {
+      const paneCmd = await getPaneCommand(target);
+      if (isAgentCommand(paneCmd)) {
+        ready = true;
+        break;
+      }
+    } catch {}
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+  }
+  if (!ready) {
+    console.log(
+      `  \x1b[33m⚠\x1b[0m timeout waiting for agent in ${target} after ${MAX_WAIT_MS}ms`,
+    );
+    console.log(`  \x1b[90m  pane may still be in zsh — try manually: maw send-text ${name} ${trigger}\x1b[0m`);
     return;
   }
 
