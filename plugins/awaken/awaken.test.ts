@@ -34,6 +34,8 @@ function setupHappyPathMocks() {
   mock.module("maw-js/sdk", () => ({
     listSessions: async () => [{ name: "01-foo", windows: [{ name: "foo" }] }],
     resolveTarget: () => ({ type: "local", target: "01-foo:foo" }),
+    getPaneCommand: async () => "claude",
+    isAgentCommand: (cmd: string | null) => /claude|codex|node/i.test(cmd ?? ""),
   }));
 
   mock.module("maw-js/config", () => ({ loadConfig: () => ({}) }));
@@ -221,6 +223,8 @@ test("call: unresolvable target after wake → warn but no throw", async () => {
   mock.module("maw-js/sdk", () => ({
     listSessions: async () => [],
     resolveTarget: () => null, // unresolvable
+    getPaneCommand: async () => "claude",
+    isAgentCommand: (cmd: string | null) => /claude/i.test(cmd ?? ""),
   }));
   const { cmdAwaken } = await import("./impl");
   await expect(cmdAwaken("ghost-oracle", { root: true })).resolves.toBeUndefined();
