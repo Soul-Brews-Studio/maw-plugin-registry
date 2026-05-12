@@ -148,4 +148,9 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
   }
 }
 
-function col(s: string, n: number): string { return s.padEnd(n); }
+const ANSI = /\x1b\[[0-9;]*m/g;
+function visLen(s: string): number { return s.replace(ANSI, "").length; }
+function col(s: string, n: number): string {
+  const v = visLen(s);
+  return v >= n ? s : s + " ".repeat(n - v);
+}
