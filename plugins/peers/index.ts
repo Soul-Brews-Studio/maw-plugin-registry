@@ -34,16 +34,21 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
 
   const out = () => logs.join("\n");
   const help = () => [
-    "usage: maw peers <add|list|info|probe|probe-all|remove|forget> [...]",
+    "usage: maw peers <add|list|info|probe|probe-all|accept|remove|forget> [...]",
     "  add       <alias> <url> [--node <name>] [--allow-unreachable]",
     "            — register alias (auto-probes /info). Exits non-zero on handshake failure:",
     "              2=UNKNOWN/BAD_BODY/TLS  3=DNS  4=REFUSED  5=TIMEOUT  6=HTTP_4XX/5XX",
     "            --allow-unreachable keeps exit 0 even when the probe fails (CI/bootstrap).",
-    "  list                                      — tabular list of all peers",
+    "  list      [--discovered] [--all] [--json] [--limit N]",
+    "            — tabular list of all peers. --discovered: LAN candidates from Scout (#1237).",
+    "              --all: include already-paired (default hides). --limit: cap rows (default 50).",
     "  info      <alias>                         — JSON details for one peer (includes lastError if set)",
     "  probe     <alias>                         — re-run /info handshake; updates lastSeen / lastError (#565)",
     "  probe-all [--timeout <ms>] [--allow-unreachable]",
     "            — probe every peer in parallel; prints liveness table. Exit = worst PROBE_EXIT_CODE (#669).",
+    "  accept    <node|zid-prefix> [--alias X] | --all (#1237)",
+    "            — pair with a Scout-discovered peer. Shortest unambiguous prefix wins.",
+    "              Refuses if pubkey already pins under a different alias (impersonation guard).",
     "  remove    <alias>                         — remove (idempotent)",
     "  forget    <alias>                         — clear cached pubkey so next contact re-TOFUs (#804 Step 2)",
     "",
@@ -151,7 +156,78 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       }
       case "list":
       case "ls": {
+        // #1237 — `--discovered` swaps the data source from peers.json
+        // (paired aliases) to the daemon's in-memory Scout snapshot
+        // (LAN candidates). Renderers differ; everything else flows
+        // through the same dispatcher.
+        if (args.includes("--discovered")) {
+          const all = args.includes("--all");
+          const json = args.includes("--json");
+          const limitIdx = args.indexOf("--limit");
+          let limit: number | undefined;
+          if (limitIdx >= 0) {
+            const parsed = Number(args[limitIdx + 1]);
+            if (!Number.isFinite(parsed) || parsed <= 0) {
+              return { ok: false, error: `usage: maw peers list --discovered [--all] [--json] [--limit N] (got --limit ${args[limitIdx + 1] ?? ""})` };
+            }
+            limit = parsed;
+          }
+          const { fetchDiscoveries, formatDiscoveries } = await import("./discovered");
+          const resp = await fetchDiscoveries({ all, limit });
+          if (!resp.ok) {
+            console.error(`\x1b[31m✗\x1b[0m ${resp.error}${resp.hint ? ` — ${resp.hint}` : ""}`);
+            return { ok: false, output: out(), error: resp.error };
+          }
+          if (json) {
+            console.log(JSON.stringify(resp, null, 2));
+          } else {
+            console.log(formatDiscoveries(resp));
+          }
+          return { ok: true, output: out() };
+        }
         console.log(impl.formatList(impl.cmdList()));
+        return { ok: true, output: out() };
+      }
+      case "accept": {
+        // #1237 — accept a Scout-discovered peer via the daemon's accept
+        // endpoint. CLI is pure dispatcher: validation + impersonation
+        // guard happen daemon-side so behaviour is consistent regardless
+        // of caller (CLI / UI / cron / federation peer).
+        const { acceptPeer } = await import("./discovered");
+        const aliasIdx = args.indexOf("--alias");
+        const alias = aliasIdx >= 0 ? args[aliasIdx + 1] : undefined;
+        const all = args.includes("--all");
+        if (!all) {
+          const id = positional[1];
+          if (!id) return { ok: false, error: "usage: maw peers accept <node|zid-prefix> [--alias X] | --all" };
+          const r = await acceptPeer({ id, alias });
+          if (!r.ok) {
+            console.error(`\x1b[31m✗\x1b[0m ${r.error}${r.hint ? ` — ${r.hint}` : ""}`);
+            const anyR = r as any;
+            if (Array.isArray(anyR.candidates)) {
+              console.error("  candidates:");
+              for (const c of anyR.candidates) {
+                console.error(`    ${c.zid.slice(0, 12)}… ${c.node} (${c.host})`);
+              }
+            }
+            return { ok: false, output: out(), error: r.error };
+          }
+          console.log(`\x1b[32m✓\x1b[0m accepted ${r.alias}${r.node && r.node !== r.alias ? ` (${r.node})` : ""}${r.url ? ` → ${r.url}` : ""}`);
+          return { ok: true, output: out() };
+        }
+        const r = await acceptPeer({ all: true });
+        if (!r.ok) {
+          console.error(`\x1b[31m✗\x1b[0m ${r.error}${r.hint ? ` — ${r.hint}` : ""}`);
+          return { ok: false, output: out(), error: r.error };
+        }
+        const accepted = r.accepted ?? [];
+        const skipped = r.skipped ?? [];
+        if (accepted.length === 0 && skipped.length === 0) {
+          console.log(r.message ?? "no unpaired discoveries");
+        } else {
+          for (const a of accepted) console.log(`\x1b[32m✓\x1b[0m accepted ${a.alias}`);
+          for (const s of skipped) console.error(`\x1b[33m⚠\x1b[0m skipped ${s.id}: ${s.error}${s.hint ? ` — ${s.hint}` : ""}`);
+        }
         return { ok: true, output: out() };
       }
       case "info": {
@@ -190,7 +266,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         console.log(help());
         return {
           ok: false,
-          error: `maw peers: unknown subcommand "${sub}" (expected add|list|info|probe|probe-all|remove|forget)`,
+          error: `maw peers: unknown subcommand "${sub}" (expected add|list|info|probe|probe-all|accept|remove|forget)`,
           output: out() || help(),
         };
       }
