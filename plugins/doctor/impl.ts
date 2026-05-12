@@ -129,8 +129,13 @@ async function checkVersionDrift(): Promise<DoctorResult["checks"]> {
 }
 
 function readSourceVersion(): string | null {
+  // Resolve via Bun's module resolver so we always land on the installed
+  // maw-js (sibling repo, linked node_modules, or npm install). The old
+  // ../../../../package.json walk assumed this plugin still lived inside
+  // maw-js/src/commands/plugins/doctor — extracting it to its own repo
+  // pointed the walk at ~/Code/github.com/package.json instead.
   try {
-    const pkgPath = join(import.meta.dir, "..", "..", "..", "..", "package.json");
+    const pkgPath = Bun.resolveSync("maw-js/package.json", import.meta.dir);
     const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
     return typeof pkg.version === "string" ? pkg.version : null;
   } catch {
