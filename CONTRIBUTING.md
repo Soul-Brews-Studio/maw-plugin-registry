@@ -86,10 +86,13 @@ The `source` field is a bare github-style locator: `owner/repo[/subpath][@ref]`.
 "source": "soul-brews-studio/maw-plugin-registry/bg@v0.1.2-bg"
 ```
 
-The legacy `github:owner/repo#ref` form is being phased out — see
-[`scripts/migrate-source-format.ts`](./scripts/migrate-source-format.ts). Once
-the github: resolver in maw-js ships (maw-js#939), that script will rewrite all
-existing `monorepo:plugins/<name>@<tag>` entries to the bare form above.
+The migration from `monorepo:plugins/<name>@<tag>` to the bare
+`owner/repo/<name>@<tag>` form has shipped — all 72 entries now use the bare
+github form (see PR #6 + the federation/swarm finisher). The legacy
+`github:owner/repo#ref` form remains accepted for third-party entries but is
+being phased out. CI enforces this via
+[`scripts/migrate-source-format.ts --check`](./scripts/migrate-source-format.ts),
+which fails on any unknown source shape.
 
 ### Optional fields
 
