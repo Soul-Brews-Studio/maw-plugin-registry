@@ -1,0 +1,62 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  bun-test:
+    name: bun test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout maw-plugin-registry
+        uses: actions/checkout@v4
+        with:
+          path: maw-plugin-registry
+
+      - name: Checkout sibling maw-js (resolves file:../maw-js dep)
+        uses: actions/checkout@v4
+        with:
+          repository: Soul-Brews-Studio/maw-js
+          path: maw-js
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install maw-js deps
+        working-directory: maw-js
+        run: bun install
+
+      - name: Install maw-plugin-registry deps
+        working-directory: maw-plugin-registry
+        run: bun install
+
+      - name: Run bun test (non-blocking — see #42)
+        id: bun-test
+        working-directory: maw-plugin-registry
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          bun test 2>&1 | tee bun-test.log
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Surface test summary in PR
+        if: always()
+        working-directory: maw-plugin-registry
+        run: |
+          {
+            echo "## bun test results"
+            echo ""
+            if [ -f bun-test.log ]; then
+              # Last line of bun test output is "Ran N tests across M files."
+              # Preceding lines include the pass/skip/fail counts.
+              tail -n 6 bun-test.log | sed 's/^/    /'
+            else
+              echo "_no log produced_"
+            fi
+            echo ""
+            echo "Test step is **non-blocking** while pre-existing failures are triaged (issue #42)."
+            echo "Exit code: \`${{ steps.bun-test.outputs.exit_code }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
