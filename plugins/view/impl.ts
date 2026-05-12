@@ -1,5 +1,6 @@
 import { listSessions } from "maw-js/sdk";
-import { Tmux, tmuxCmd, resolveSocket } from "maw-js/sdk";
+import { Tmux, resolveSocket } from "maw-js/sdk";
+import { attachRemoteSession } from "maw-js/sdk";
 import { loadConfig } from "maw-js/config";
 import { resolveSessionTarget } from "maw-js/core/matcher/resolve-target";
 import { logAnomaly } from "maw-js/core/fleet/audit";
@@ -348,12 +349,18 @@ async function resolveAnchorPane(anchor: string): Promise<string> {
   return `${viewName}:0`;
 }
 
-// Reject tmux session names that contain anything a remote shell could parse.
-// Tmux itself accepts only a restricted set, and our fleet validators
-// (src/core/fleet/validate.ts) tighten that further — but defense in depth
-// protects the ssh branch, where the remote command is shell-interpreted.
-const SAFE_SESSION_NAME = /^[A-Za-z0-9._-]+$/;
-
+/**
+ * Attach to a local OR remote tmux session, picking transport from `isLocal`.
+ *
+ * For the local path we still call `execFileSync("tmux", …)` directly — the
+ * socket-aware argv has no SSH counterpart and stays in view's purview.
+ *
+ * For the remote path we delegate to `attachRemoteSession` (maw-js/sdk), the
+ * shared helper extracted in #1236 Tier 3 prep. That helper carries the
+ * `SAFE_SESSION_NAME` guard plus the structured `SshAttachError` failure UX,
+ * so view inherits both for free. Behavior is unchanged for view — same
+ * `ssh -tt <host> "tmux attach-session -t '<safe>'"` invocation.
+ */
 function attachViaTmux(opts: {
   isLocal: boolean;
   socket: string | undefined;
@@ -368,9 +375,8 @@ function attachViaTmux(opts: {
     execFileSync("tmux", args, { stdio: "inherit" });
     return;
   }
-  if (!SAFE_SESSION_NAME.test(target)) {
-    throw new Error(`refusing ssh attach: unsafe session name '${target}'`);
-  }
-  const remoteCmd = `${tmuxCmd()} attach-session -t '${target}'`;
-  execFileSync("ssh", ["-tt", host, remoteCmd], { stdio: "inherit" });
+  // Remote — funnel through the shared helper. `host` doubles as both the
+  // logical node label and the SSH alias for view's case (config.host is the
+  // operator's existing alias, e.g. "homekeeper.wg").
+  attachRemoteSession({ node: host, sshAlias: host, sessionName: target });
 }
