@@ -1,14 +1,25 @@
 /**
- * attach plugin tests (#25 Phase 1).
+ * attach plugin tests (#25 Phase 1 + #1236 Tier 3).
  *
- * Two layers:
- *   1. Resolver — pure, no mocks, exercises Tier 1 / Tier 2 / ambiguous / null
+ * Three layers:
+ *   1. Resolver — pure, no mocks, exercises Tier 1 / 2 / 3 / ambiguous / null
  *   2. Handler — mocks listSessions + loadFleet + the maw subprocess via
  *      mock.module on Bun.spawn, verifies the cascade emits the right command
+ *   3. Tier 3 — peer-aware resolver + handler with stubbed SSH
  */
 
 import { test, expect, mock } from "bun:test";
-import { resolveAttachTarget, type SessionLike, type FleetLike } from "./resolve-attach-target";
+import {
+  resolveAttachTarget,
+  type SessionLike,
+  type FleetLike,
+} from "./resolve-attach-target";
+import {
+  resolveRemoteAttachTarget,
+  resolveSshAlias,
+  type AggregatedSessionLike,
+} from "./resolve-remote-target";
+import type { PeerConfig } from "maw-js/config/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Resolver tests
@@ -18,6 +29,20 @@ function makeDeps(sessions: SessionLike[], fleet: FleetLike[]) {
   return {
     listSessions: async () => sessions,
     loadFleet: () => fleet,
+  };
+}
+
+function makeRemoteDeps(opts: {
+  sessions?: SessionLike[];
+  fleet?: FleetLike[];
+  aggregated?: AggregatedSessionLike[];
+  namedPeers?: PeerConfig[];
+}) {
+  return {
+    listSessions: async () => opts.sessions ?? [],
+    loadFleet: () => opts.fleet ?? [],
+    getAggregatedSessions: async () => opts.aggregated ?? [],
+    namedPeers: () => opts.namedPeers ?? [],
   };
 }
 
@@ -96,8 +121,20 @@ function setupHandlerMocks(opts: {
 }) {
   const spawnCalls: string[][] = [];
 
+  // Tier 3 surface mocked-out (empty aggregated, no SSH calls). Existing
+  // handler tests don't exercise it, but impl.ts imports the symbols
+  // unconditionally — so they must resolve.
+  class FakeSshAttachError extends Error {
+    constructor(message: string) { super(message); this.name = "SshAttachError"; }
+  }
   mock.module("maw-js/sdk", () => ({
     listSessions: async () => opts.sessions ?? [],
+    getAggregatedSessions: async () => [],
+    attachRemoteSession: () => { throw new Error("attachRemoteSession not stubbed in this test"); },
+    SshAttachError: FakeSshAttachError,
+  }));
+  mock.module("maw-js/config", () => ({
+    loadConfig: () => ({ namedPeers: [] }),
   }));
   mock.module("maw-js/commands/shared/fleet-load", () => ({
     loadFleet: () => opts.fleet ?? [],
@@ -265,6 +302,315 @@ test("API: dispatch invokes the cascade with yes=true (no TTY)", async () => {
     expect(result.ok).toBe(true);
     expect(ctx.spawnCalls.length).toBe(2);
     expect(ctx.spawnCalls[0]).toEqual(["maw", "wake", "24-foo-oracle"]);
+  } finally {
+    ctx.restore();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. Tier 3 — cross-node attach (#1236)
+// ─────────────────────────────────────────────────────────────────────────────
+
+test("resolveSshAlias: namedPeers[n].ssh override beats URL hostname", () => {
+  const alias = resolveSshAlias(
+    "http://mba.wg:9090",
+    "mba",
+    [{ name: "mba", url: "http://mba.wg:9090", ssh: "mba-tunnel" }],
+  );
+  expect(alias).toBe("mba-tunnel");
+});
+
+test("resolveSshAlias: URL hostname fallback when no override", () => {
+  const alias = resolveSshAlias("http://mba.wg:9090", "mba", []);
+  expect(alias).toBe("mba.wg");
+});
+
+test("resolveSshAlias: literal node name when URL is unparseable", () => {
+  const alias = resolveSshAlias("not-a-url-at-all", "mba", []);
+  expect(alias).toBe("mba");
+});
+
+test("remote resolver: Tier 3 — single peer match", async () => {
+  const r = await resolveRemoteAttachTarget("homekeeper", {
+    getAggregatedSessions: async () => [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+    namedPeers: () => [],
+  });
+  expect(r?.kind).toBe("match");
+  if (r?.kind !== "match") return;
+  expect(r.match.sessionName).toBe("24-homekeeper");
+  expect(r.match.node).toBe("mba");
+  expect(r.match.sshAlias).toBe("mba.wg");
+});
+
+test("remote resolver: ignores local-tagged rows (those belong to Tier 1)", async () => {
+  const r = await resolveRemoteAttachTarget("homekeeper", {
+    getAggregatedSessions: async () => [
+      { name: "homekeeper", windows: [{ name: "x" }], source: "local" },
+    ],
+    namedPeers: () => [],
+  });
+  expect(r).toBeNull();
+});
+
+test("remote resolver: multiple peers expose same name → ambiguous", async () => {
+  const r = await resolveRemoteAttachTarget("homekeeper", {
+    getAggregatedSessions: async () => [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+      { name: "30-homekeeper", windows: [{ name: "x" }], source: "http://white.wg:9090", node: "white" },
+    ],
+    namedPeers: () => [],
+  });
+  expect(r?.kind).toBe("ambiguous");
+  if (r?.kind !== "ambiguous") return;
+  expect(r.candidates.length).toBe(2);
+});
+
+test("cascade: bare name with NO local match falls through to Tier 3", async () => {
+  const result = await resolveAttachTarget("homekeeper", makeRemoteDeps({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  }));
+  expect(result?.tier).toBe(3);
+  if (result?.tier !== 3) return;
+  expect(result.node).toBe("mba");
+  expect(result.peerUrl).toBe("http://mba.wg:9090");
+  expect(result.sshAlias).toBe("mba.wg");
+});
+
+test("cascade: ambiguity local+remote → prefer LOCAL, surface remote as alternates", async () => {
+  const result = await resolveAttachTarget("homekeeper", makeRemoteDeps({
+    sessions: [{ name: "homekeeper", windows: [{ name: "x" }] }],
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  }));
+  expect(result?.tier).toBe(1);
+  if (result?.tier !== 1) return;
+  expect(result.sessionName).toBe("homekeeper");
+  expect(result.remoteAlternates?.length).toBe(1);
+  expect(result.remoteAlternates?.[0].node).toBe("mba");
+});
+
+test("cascade: --remote-only skips Tier 1/2 and goes straight to Tier 3", async () => {
+  const result = await resolveAttachTarget(
+    "homekeeper",
+    makeRemoteDeps({
+      // Local has it AND a fleet entry has it — neither should win under remote-only.
+      sessions: [{ name: "homekeeper", windows: [{ name: "x" }] }],
+      fleet: [{ name: "homekeeper", windows: [{ name: "x" }] }],
+      aggregated: [
+        { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+      ],
+    }),
+    { remoteOnly: true },
+  );
+  expect(result?.tier).toBe(3);
+});
+
+test("cascade: explicit node:agent syntax short-circuits past Tier 1/2", async () => {
+  const result = await resolveAttachTarget(
+    "mba:homekeeper",
+    makeRemoteDeps({
+      sessions: [{ name: "homekeeper", windows: [{ name: "x" }] }],
+      aggregated: [
+        { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+      ],
+    }),
+  );
+  expect(result?.tier).toBe(3);
+  if (result?.tier !== 3) return;
+  expect(result.node).toBe("mba");
+});
+
+test("cascade: bare name + no local + no remote → null", async () => {
+  const result = await resolveAttachTarget("ghost", makeRemoteDeps({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  }));
+  expect(result).toBeNull();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. Tier 3 handler — SSH failure UX
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Tier 3 handler tests stub `getAggregatedSessions` + `attachRemoteSession`
+ * via mock.module on maw-js/sdk. cmdAttach reads the SDK directly so its
+ * Tier 3 branch resolves to our fakes.
+ */
+function setupTier3Mocks(opts: {
+  aggregated?: AggregatedSessionLike[];
+  namedPeers?: PeerConfig[];
+  sshThrows?: { kind: "unreachable" | "auth-failed" | "tmux-missing"; message: string };
+}) {
+  const sshCalls: any[] = [];
+
+  // Build the SshAttachError-shaped throw without depending on the real class
+  // (mock.module replaces the whole sdk surface, so we re-export a minimal
+  // class that satisfies `instanceof SshAttachError` in the handler).
+  class FakeSshAttachError extends Error {
+    kind: string;
+    constructor(kind: string, message: string) {
+      super(message);
+      this.kind = kind;
+      this.name = "SshAttachError";
+    }
+  }
+
+  mock.module("maw-js/sdk", () => ({
+    listSessions: async () => [],
+    getAggregatedSessions: async () => opts.aggregated ?? [],
+    SshAttachError: FakeSshAttachError,
+    attachRemoteSession: (sshArgs: any) => {
+      sshCalls.push(sshArgs);
+      if (opts.sshThrows) {
+        throw new FakeSshAttachError(opts.sshThrows.kind, opts.sshThrows.message);
+      }
+    },
+  }));
+  mock.module("maw-js/commands/shared/fleet-load", () => ({
+    loadFleet: () => [],
+  }));
+  mock.module("maw-js/config", () => ({
+    loadConfig: () => ({ namedPeers: opts.namedPeers ?? [] }),
+  }));
+
+  const realSpawn = Bun.spawn;
+  (Bun as any).spawn = () => ({ exited: Promise.resolve(0) });
+
+  return {
+    sshCalls,
+    restore: () => {
+      (Bun as any).spawn = realSpawn;
+      mock.restore();
+    },
+  };
+}
+
+test("Tier 3 handler: happy path — calls attachRemoteSession with right args", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    await cmdAttach("homekeeper");
+    expect(ctx.sshCalls.length).toBe(1);
+    expect(ctx.sshCalls[0]).toEqual({
+      node: "mba",
+      sshAlias: "mba.wg",
+      sessionName: "24-homekeeper",
+    });
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("Tier 3 handler: namedPeers.ssh override is used as sshAlias", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+    namedPeers: [{ name: "mba", url: "http://mba.wg:9090", ssh: "mba-tunnel" }],
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    await cmdAttach("homekeeper");
+    expect(ctx.sshCalls[0].sshAlias).toBe("mba-tunnel");
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("Tier 3 handler: dry-run prints plan without calling SSH", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    await cmdAttach("homekeeper", { dryRun: true });
+    expect(ctx.sshCalls.length).toBe(0);
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("Tier 3 handler: ssh exit 255 / Connection refused → throws UserError-ish", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+    sshThrows: { kind: "unreachable", message: "✗ can't reach mba via ssh — try: ssh mba.wg" },
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    let threw: Error | null = null;
+    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    expect(threw).not.toBeNull();
+    expect(threw!.message).toContain("can't reach mba");
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("Tier 3 handler: Permission denied → auth-failed UserError", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+    sshThrows: { kind: "auth-failed", message: "✗ no SSH key for mba — ssh-add ~/.ssh/<your-key>" },
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    let threw: Error | null = null;
+    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    expect(threw).not.toBeNull();
+    expect(threw!.message).toContain("no SSH key for mba");
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("Tier 3 handler: tmux not installed on remote → tmux-missing UserError", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+    sshThrows: { kind: "tmux-missing", message: "✗ tmux not installed on mba" },
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    let threw: Error | null = null;
+    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    expect(threw).not.toBeNull();
+    expect(threw!.message).toContain("tmux not installed on mba");
+  } finally {
+    ctx.restore();
+  }
+});
+
+test("Tier 3 handler: ambiguous across peers — refuses, prints pin hint", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+      { name: "30-homekeeper", windows: [{ name: "x" }], source: "http://white.wg:9090", node: "white" },
+    ],
+  });
+  try {
+    const { cmdAttach } = await import("./impl");
+    let threw: Error | null = null;
+    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    expect(threw).not.toBeNull();
+    expect(threw!.message).toMatch(/ambiguous/i);
+    expect(ctx.sshCalls.length).toBe(0);
   } finally {
     ctx.restore();
   }

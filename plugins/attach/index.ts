@@ -4,10 +4,10 @@ import { cmdAttach } from "./impl";
 
 export const command = {
   name: "attach",
-  description: "Smart attach — running session, or wake from fleet and attach (#25).",
+  description: "Smart attach — local live, sleeping fleet, or remote-live peer (#25 + #1236).",
 };
 
-const USAGE = "usage: maw attach <name> [--dry-run] [-y|--yes]";
+const USAGE = "usage: maw attach <name> [--dry-run] [-y|--yes] [--node <n>] [--remote-only]";
 
 export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
   const logs: string[] = [];
@@ -31,6 +31,8 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
           "--dry-run": Boolean,
           "--yes": Boolean,
           "-y": "--yes",
+          "--node": String,
+          "--remote-only": Boolean,
         },
         0,
       );
@@ -44,6 +46,8 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       await cmdAttach(name, {
         dryRun: flags["--dry-run"],
         yes: flags["--yes"],
+        node: flags["--node"],
+        remoteOnly: flags["--remote-only"],
       });
     } else if (ctx.source === "api") {
       const body = ctx.args as Record<string, unknown>;
@@ -53,6 +57,8 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       await cmdAttach(name, {
         dryRun: body.dryRun as boolean | undefined,
         yes: true,
+        node: body.node as string | undefined,
+        remoteOnly: body.remoteOnly as boolean | undefined,
       });
     }
 
