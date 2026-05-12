@@ -4,13 +4,17 @@ on:
   pull_request:
     paths:
       - "registry.json"
+      - "plugins/**/registry.meta.json"
       - "schema/**"
+      - "scripts/migrate-source-format.ts"
       - ".github/workflows/validate.yml"
   push:
     branches: [main]
     paths:
       - "registry.json"
+      - "plugins/**/registry.meta.json"
       - "schema/**"
+      - "scripts/migrate-source-format.ts"
       - ".github/workflows/validate.yml"
 
 jobs:
@@ -41,3 +45,13 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('registry.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('schema/registry.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('schema/plugin.json','utf8'))"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Source-format guard (migrate-source-format --check)
+        run: bun scripts/migrate-source-format.ts --check
+
+      - name: Source-format self-test
+        run: bun scripts/migrate-source-format.ts --self-test
