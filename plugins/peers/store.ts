@@ -188,3 +188,67 @@ export function clearStaleTmp(): void {
   const tmp = `${peersPath()}.tmp`;
   try { if (existsSync(tmp)) unlinkSync(tmp); } catch { /* ignore */ }
 }
+
+// ─── TTL stale-peer detection (#1238) ──────────────────────────────────────
+//
+// A peer is "stale" when its most-recent successful probe (`lastSeen`) is
+// older than `ttlMs` — or, if it was never successfully probed, when its
+// `addedAt` timestamp itself is older than `ttlMs`. The never-probed branch
+// keeps unreachable bootstraps from lingering forever in the cache; an
+// alias added via `peers add --allow-unreachable` against a typo'd URL
+// will fall out on its own once the TTL elapses, exactly like a peer that
+// went offline. Both branches share the same TTL — there's no reason to
+// give never-probed peers a longer grace period than peers we've actively
+// lost contact with.
+//
+// Default: 7 days. Override via `MAW_PEER_STALE_TTL_MS` (positive integer
+// milliseconds). Anything non-positive, non-numeric, or unset falls back
+// to the default — never silently disables the TTL.
+
+/** Default stale TTL: 7 days in milliseconds. */
+export const DEFAULT_STALE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Resolve the effective stale TTL from `MAW_PEER_STALE_TTL_MS` or the
+ * default. Bad values (NaN, ≤0) fall back to the default — never throw,
+ * never disable.
+ */
+export function getStaleTtlMs(): number {
+  const raw = process.env.MAW_PEER_STALE_TTL_MS;
+  if (raw) {
+    const parsed = Number(raw);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_STALE_TTL_MS;
+}
+
+/**
+ * Age of the most informative timestamp on a peer — `lastSeen` if we've
+ * ever heard from it, else `addedAt`. Returns `null` when neither is a
+ * parseable ISO date (defensive — schema requires `addedAt` but old/hand-
+ * edited stores may violate that).
+ */
+export function staleAgeMs(peer: Peer, now: number = Date.now()): number | null {
+  const ref = peer.lastSeen ?? peer.addedAt;
+  if (!ref) return null;
+  const t = Date.parse(ref);
+  if (!Number.isFinite(t)) return null;
+  return Math.max(0, now - t);
+}
+
+/**
+ * Is this peer stale per `ttlMs`?
+ *
+ * Returns true if:
+ *   - `lastSeen` is set AND older than `ttlMs`, OR
+ *   - `lastSeen` is null AND `addedAt` is older than `ttlMs`.
+ *
+ * If neither timestamp is parseable we err on the side of "stale" — a
+ * peer with no usable provenance is exactly the kind of entry the
+ * operator wants `--fix-stale` to sweep out.
+ */
+export function isStale(peer: Peer, ttlMs: number, now: number = Date.now()): boolean {
+  const age = staleAgeMs(peer, now);
+  if (age === null) return true;
+  return age > ttlMs;
+}
