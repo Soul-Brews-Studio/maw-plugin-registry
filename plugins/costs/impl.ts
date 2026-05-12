@@ -19,7 +19,8 @@ type CostsResponse = {
 
 export async function cmdCosts() {
   const config = loadConfig();
-  const base = `http://${config.host}:${config.port}`;
+  const effectiveHost = config.host === "local" ? "localhost" : config.host;
+  const base = `http://${effectiveHost}:${config.port}`;
 
   // Split three distinct failure paths so diagnostics aren't misleading (#390.1):
   //   1. fetch throws  → real network failure, pm2 server not running
@@ -109,7 +110,8 @@ type DailyResponse = {
 
 export async function cmdCostsDaily(days: number, json: boolean) {
   const config = loadConfig();
-  const base = `http://${config.host}:${config.port}`;
+  const effectiveHost = config.host === "local" ? "localhost" : config.host;
+  const base = `http://${effectiveHost}:${config.port}`;
 
   let res: Response;
   try {
