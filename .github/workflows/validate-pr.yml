@@ -1,0 +1,99 @@
+# Deep validation for plugin-registry PRs.
+#
+# Complements .github/workflows/validate.yml (fast JSONSchema check on
+# registry.json) with per-plugin checks: regenerate-and-clean, plugin manifest
+# schema, SPDX license allowlist, and source-format regex.
+#
+# Network-dependent checks (gh repo view, gh release view, tarball sha256) are
+# deferred to a follow-up — see issue #1 defense-in-depth.
+
+name: validate-pr
+
+on:
+  pull_request:
+    paths:
+      - "registry.json"
+      - "plugins/**"
+      - "schema/**"
+      - "scripts/validate-registry.ts"
+      - ".github/workflows/validate-pr.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  deep-validate:
+    name: deep validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: setup-bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: detect changed plugins
+        id: changed
+        run: bun scripts/validate-registry.ts --emit-changed --base "${{ github.event.pull_request.base.sha }}"
+
+      - name: regenerate registry & clean-check
+        id: regen
+        run: |
+          python3 scripts/build-registry.py
+          # Any drift means contributor forgot to run the build script.
+          # Ignore the regenerated `updated` timestamp (always changes per run).
+          git diff --exit-code -I '"updated":' registry.json
+
+      - name: validate plugin manifests
+        id: plugin_json
+        if: steps.changed.outputs.plugins != ''
+        run: bun scripts/validate-registry.ts --step plugin-json --plugins "${{ steps.changed.outputs.plugins }}"
+
+      - name: validate licenses
+        id: license
+        if: steps.changed.outputs.plugins != ''
+        run: bun scripts/validate-registry.ts --step license --plugins "${{ steps.changed.outputs.plugins }}"
+
+      - name: validate source format
+        id: source_format
+        # Pass --plugins so we hard-fail on `monorepo:` only for plugins
+        # touched by this PR. Legacy entries are warning-only during scan-all
+        # (migration in progress via scripts/migrate-source-format.ts).
+        run: bun scripts/validate-registry.ts --step source-format --plugins "${{ steps.changed.outputs.plugins }}"
+
+      - name: comment on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '.tmp-validate-failure.md';
+            let body;
+            if (fs.existsSync(path)) {
+              body = fs.readFileSync(path, 'utf8');
+            } else {
+              body = [
+                "### ❌ PR validation failed",
+                "",
+                "One of the deep-validation checks failed but didn't write a structured failure report.",
+                "Open the failed job's logs above for details, then see",
+                "[CONTRIBUTING.md → Validation Checks](../blob/main/CONTRIBUTING.md#validation-checks)",
+                "for the recovery commands.",
+              ].join("\n");
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
