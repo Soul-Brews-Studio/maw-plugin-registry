@@ -1,17 +1,15 @@
 import { describe, it, expect, mock } from "bun:test";
-import { join } from "path";
 import type { InvokeContext } from "maw-js/plugin/types";
 
-const root = join(import.meta.dir, "../../..");
-const { mockConfigModule } = await import("../../../../test/helpers/mock-config");
+const { mockConfigModule } = await import("maw-js/test/helpers/mock-config");
 
-mock.module(join(root, "config"), () => mockConfigModule(() => ({
+mock.module("maw-js/config", () => mockConfigModule(() => ({
   namedPeers: [{ name: "white", url: "http://white.local:3456" }],
   peers: [],
   federationToken: "test-token",
 })));
 
-mock.module(join(root, "core/transport/curl-fetch"), () => ({
+mock.module("maw-js/core/transport/curl-fetch", () => ({
   curlFetch: async (_url: string) => ({
     ok: true,
     data: { node: "white", version: "2.0.0-alpha.10" },
