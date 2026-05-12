@@ -10,6 +10,7 @@ import { loadManifestCached, invalidateManifest } from "maw-js/lib/oracle-manife
 import { findGaps, summarizeGaps } from "./cross-source-detect";
 import { checkMawJsBranch } from "./internal/maw-js-branch-check";
 import { checkStillbornWorktrees } from "./internal/stillborn-worktrees";
+import { checkStalePeers, cmdFixStalePeers } from "./internal/stale-peers";
 
 export interface DoctorResult {
   ok: boolean;
@@ -24,6 +25,13 @@ export async function cmdDoctor(args: string[] = []): Promise<DoctorResult> {
   const smoke = flags.has("--smoke") || only === "smoke";
   const checks: DoctorResult["checks"] = [];
 
+  // #1238 — `maw doctor --fix-stale` short-circuits the normal check
+  // suite: this is a destructive sweep, not a diagnostic. Returns the
+  // fix result directly so index.ts surfaces it unchanged.
+  if (flags.has("--fix-stale")) {
+    return await cmdFixStalePeers();
+  }
+
   if (smoke) {
     const smokeChecks = await runSmokeTests();
     for (const c of smokeChecks) checks.push(c);
@@ -37,6 +45,7 @@ export async function cmdDoctor(args: string[] = []): Promise<DoctorResult> {
     }
     if (!only || only === "peers" || only === "all") {
       checks.push(checkPeerDuplicates());
+      checks.push(checkStalePeers());
     }
     if (!only || only === "manifest" || only === "all") {
       checks.push(checkCrossSourceConsistency());

@@ -188,3 +188,52 @@ export function clearStaleTmp(): void {
   const tmp = `${peersPath()}.tmp`;
   try { if (existsSync(tmp)) unlinkSync(tmp); } catch { /* ignore */ }
 }
+
+// ─── TTL stale-peer detection (#1238) ──────────────────────────────────────
+//
+// Mirrored from `plugins/peers/store.ts` so the doctor plugin's internal
+// copy keeps full parity. See the canonical comment block there for the
+// design rationale.
+
+/** Default stale TTL: 7 days in milliseconds. */
+export const DEFAULT_STALE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Resolve the effective stale TTL from `MAW_PEER_STALE_TTL_MS` or the
+ * default. Bad values (NaN, ≤0) fall back to the default — never throw,
+ * never disable.
+ */
+export function getStaleTtlMs(): number {
+  const raw = process.env.MAW_PEER_STALE_TTL_MS;
+  if (raw) {
+    const parsed = Number(raw);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_STALE_TTL_MS;
+}
+
+/**
+ * Age of the most informative timestamp on a peer — `lastSeen` if we've
+ * ever heard from it, else `addedAt`. Returns `null` when neither is a
+ * parseable ISO date.
+ */
+export function staleAgeMs(peer: Peer, now: number = Date.now()): number | null {
+  const ref = peer.lastSeen ?? peer.addedAt;
+  if (!ref) return null;
+  const t = Date.parse(ref);
+  if (!Number.isFinite(t)) return null;
+  return Math.max(0, now - t);
+}
+
+/**
+ * Is this peer stale per `ttlMs`?
+ *
+ * True when `lastSeen` is set AND older than `ttlMs`, OR `lastSeen` is
+ * null AND `addedAt` is older than `ttlMs`. A peer with no usable
+ * provenance is treated as stale.
+ */
+export function isStale(peer: Peer, ttlMs: number, now: number = Date.now()): boolean {
+  const age = staleAgeMs(peer, now);
+  if (age === null) return true;
+  return age > ttlMs;
+}

@@ -11,7 +11,7 @@
  * valid — it just means `alias:<agent>` routing needs the URL-to-node
  * map from another source. That's a follow-up concern.
  */
-import { loadPeers, mutatePeers, type Peer, type LastError } from "./store";
+import { loadPeers, mutatePeers, isStale, getStaleTtlMs, staleAgeMs, type Peer, type LastError } from "./store";
 import { probePeer } from "./probe";
 import { evaluatePeerIdentity, applyTofuDecision, PeerPubkeyMismatchError } from "./tofu";
 
@@ -207,11 +207,28 @@ export async function cmdProbe(alias: string): Promise<ProbeResult> {
   };
 }
 
-export function cmdList(): Array<{ alias: string } & Peer> {
+/**
+ * One peers-list row — base Peer fields plus derived staleness metadata.
+ *
+ * `stale` / `staleAgeMs` are derived at list-time (not persisted) from
+ * the current TTL (`MAW_PEER_STALE_TTL_MS` or default). Renderers append
+ * the stale annotation; consumers can ignore the fields entirely and
+ * still get back valid Peer data.
+ */
+export type PeerListRow = { alias: string; stale: boolean; staleAgeMs: number | null } & Peer;
+
+export function cmdList(): PeerListRow[] {
   const data = loadPeers();
+  const ttlMs = getStaleTtlMs();
+  const now = Date.now();
   return Object.entries(data.peers)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([alias, p]) => ({ alias, ...p }));
+    .map(([alias, p]) => ({
+      alias,
+      ...p,
+      stale: isStale(p, ttlMs, now),
+      staleAgeMs: staleAgeMs(p, now),
+    }));
 }
 
 export function cmdInfo(alias: string): ({ alias: string } & Peer) | null {
@@ -253,7 +270,16 @@ export async function cmdForget(alias: string): Promise<ForgetOutcome> {
   return forgetPeerPubkey(alias);
 }
 
-export function formatList(rows: Array<{ alias: string } & Peer>): string {
+/**
+ * Render the peer list as a fixed-width table.
+ *
+ * #1238: when a row carries `stale: true` we append a dim
+ * ` (stale, last seen Nd ago)` suffix after the normal column line.
+ * Rows without staleness metadata (legacy callers passing raw
+ * `{ alias } & Peer` shapes) render unchanged, so existing callers
+ * keep working.
+ */
+export function formatList(rows: Array<{ alias: string; stale?: boolean; staleAgeMs?: number | null } & Peer>): string {
   if (!rows.length) return "no peers";
   const header = ["alias", "url", "node", "nickname", "lastSeen"];
   const lines = rows.map(r => [
@@ -266,5 +292,17 @@ export function formatList(rows: Array<{ alias: string } & Peer>): string {
   const widths = header.map((h, i) =>
     Math.max(h.length, ...lines.map(l => l[i].length)));
   const fmt = (cols: string[]) => cols.map((c, i) => c.padEnd(widths[i])).join("  ");
-  return [fmt(header), fmt(widths.map(w => "-".repeat(w))), ...lines.map(fmt)].join("\n");
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const dataLines = rows.map((r, i) => {
+    let line = fmt(lines[i]);
+    if (r.stale) {
+      const age = r.staleAgeMs;
+      const suffix = age != null
+        ? `last seen ${Math.floor(age / DAY_MS)}d ago`
+        : "never seen";
+      line += `  \x1b[2m(stale, ${suffix})\x1b[0m`;
+    }
+    return line;
+  });
+  return [fmt(header), fmt(widths.map(w => "-".repeat(w))), ...dataLines].join("\n");
 }
