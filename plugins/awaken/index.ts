@@ -8,7 +8,7 @@ export const command = {
 };
 
 const USAGE =
-  "usage: maw awaken <name> [--from <oracle>] [--root] [--seed] [--org <org>] [--repo org/repo] [--issue N] [--note <text>] [--nickname <pretty>] [--fast] [--split] [--dry-run] [--trigger <text>] [--no-trigger]";
+  "usage: maw awaken <name> [--from <oracle>] [--root] [--seed] [--org <org>] [--repo org/repo] [--issue N] [--note <text>] [--nickname <pretty>] [--fast] [--split] [--dry-run] [--trigger <text>] [--no-trigger] [-y|--yes]";
 
 export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
   const logs: string[] = [];
@@ -83,6 +83,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         seed: flags["--seed"],
         blank: flags["--blank"],
         signalOnBirth: flags["--signal-on-birth"],
+        yes: flags["--yes"],
       });
     } else if (ctx.source === "api") {
       const body = ctx.args as Record<string, unknown>;
@@ -104,6 +105,8 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         seed: body.seed as boolean | undefined,
         blank: body.blank as boolean | undefined,
         signalOnBirth: body.signalOnBirth as boolean | undefined,
+        // API/HTTP path has no TTY by definition, but pass through for parity.
+        yes: (body.yes as boolean | undefined) ?? true,
       });
     }
 

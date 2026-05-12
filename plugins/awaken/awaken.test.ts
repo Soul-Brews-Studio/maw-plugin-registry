@@ -277,3 +277,103 @@ test("smoke: API dispatch missing name returns error", async () => {
   expect(result.error).toMatch(/name required/);
   mock.restore();
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. Confirmation prompt (#31) — -y/--yes + TTY decision rules
+// ─────────────────────────────────────────────────────────────────────────────
+// Note: bun:test runs without a TTY (`process.stdin.isTTY` is undefined), so
+// the prompt branch is naturally skipped throughout the rest of the suite.
+// These tests pin the flag-forwarding contract explicitly.
+
+test("CLI: --yes is forwarded to cmdBud opts", async () => {
+  const calls = setupHappyPathMocks();
+  const handler = (await import("./index")).default;
+  const result = await handler({
+    source: "cli",
+    args: ["foo", "--root", "--yes"],
+    writer: () => {},
+  } as any);
+  expect(result.ok).toBe(true);
+  expect(calls.bud.length).toBe(1);
+  expect(calls.bud[0].opts.yes).toBe(true);
+  mock.restore();
+});
+
+test("CLI: -y short form maps to --yes (and forwards as opts.yes)", async () => {
+  const calls = setupHappyPathMocks();
+  // Override parser to recognize -y → --yes (alias support)
+  mock.module("maw-js/cli/parse-args", () => ({
+    parseFlags: (args: string[], schema: any) => {
+      const out: any = { _: [] };
+      const aliases: Record<string, string> = {};
+      for (const [k, v] of Object.entries(schema)) {
+        if (typeof v === "string" && v.startsWith("--")) aliases[k] = v;
+      }
+      for (let i = 0; i < args.length; i++) {
+        let a = args[i];
+        if (aliases[a]) a = aliases[a];
+        if (a.startsWith("--")) {
+          const ty = schema[a];
+          if (ty === Boolean) out[a] = true;
+          else if (ty === Number) out[a] = Number(args[++i]);
+          else out[a] = args[++i];
+        } else {
+          out._.push(a);
+        }
+      }
+      return out;
+    },
+  }));
+  const handler = (await import("./index")).default;
+  const result = await handler({
+    source: "cli",
+    args: ["foo", "--root", "-y"],
+    writer: () => {},
+  } as any);
+  expect(result.ok).toBe(true);
+  expect(calls.bud[0].opts.yes).toBe(true);
+  mock.restore();
+});
+
+test("call: cmdAwaken with yes:true proceeds without prompting (TTY-agnostic)", async () => {
+  const calls = setupHappyPathMocks();
+  // Pretend stdin is a TTY so the only thing keeping us from prompting is `yes`
+  const savedTTY = process.stdin.isTTY;
+  Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
+  try {
+    const { cmdAwaken } = await import("./impl");
+    await cmdAwaken("foo", { root: true, yes: true });
+    expect(calls.bud.length).toBe(1);
+    expect(calls.sendText.length).toBe(1);
+  } finally {
+    Object.defineProperty(process.stdin, "isTTY", { value: savedTTY, configurable: true });
+    mock.restore();
+  }
+});
+
+test("call: cmdAwaken with dryRun:true skips prompt even in TTY", async () => {
+  const calls = setupHappyPathMocks();
+  const savedTTY = process.stdin.isTTY;
+  Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
+  try {
+    const { cmdAwaken } = await import("./impl");
+    await cmdAwaken("foo", { root: true, dryRun: true });
+    expect(calls.bud.length).toBe(1);
+    expect(calls.sendText.length).toBe(0); // dry-run bails before sendText
+  } finally {
+    Object.defineProperty(process.stdin, "isTTY", { value: savedTTY, configurable: true });
+    mock.restore();
+  }
+});
+
+test("API: yes defaults to true on the api dispatch path", async () => {
+  const calls = setupHappyPathMocks();
+  const handler = (await import("./index")).default;
+  const result = await handler({
+    source: "api",
+    args: { name: "foo", root: true },
+  } as any);
+  expect(result.ok).toBe(true);
+  expect(calls.bud[0].opts.yes).toBe(true);
+  mock.restore();
+});

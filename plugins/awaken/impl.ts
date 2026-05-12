@@ -26,11 +26,72 @@ export interface AwakenOpts extends BudOpts {
   trigger?: string;
   /** Skip the trigger send entirely (just bud+wake). */
   noTrigger?: boolean;
+  /** `-y/--yes` — skip the human-confirmation prompt (#31). */
+  yes?: boolean;
 }
 
 const DEFAULT_TRIGGER = "/awaken";
 
+/**
+ * Confirmation prompt decision table (#31):
+ *   TTY + no -y + no --dry-run  → prompt
+ *   anything else                → skip
+ *
+ * Non-TTY (piped / scripted / agent) is treated as `-y` per Unix convention.
+ * --dry-run shows the plan unconditionally via cmdBud, no destructive action.
+ */
+function isPromptingNeeded(opts: AwakenOpts): boolean {
+  if (opts.yes) return false;
+  if (opts.dryRun) return false;
+  return Boolean(process.stdin.isTTY);
+}
+
+function summarizePlan(name: string, opts: AwakenOpts): string {
+  const lines: string[] = [`  Will create:`, `    oracle:  ${name}`];
+  if (opts.repo) lines.push(`    repo:    ${opts.repo}`);
+  else if (opts.org) lines.push(`    org:     ${opts.org}`);
+  if (opts.from) lines.push(`    from:    ${opts.from}`);
+  else if (opts.root) lines.push(`    parent:  root (no lineage)`);
+  const trigger = opts.noTrigger ? "(none — --no-trigger)" : (opts.trigger ?? DEFAULT_TRIGGER);
+  lines.push(`    trigger: ${trigger}`);
+  if (opts.fast) lines.push(`    mode:    fast (skip soul sync)`);
+  if (opts.seed) lines.push(`    mode:    seed (new mind)`);
+  if (opts.blank) lines.push(`    mode:    blank (no soul)`);
+  if (opts.split) lines.push(`    layout:  split pane`);
+  return lines.join("\n");
+}
+
+/**
+ * Read a single y/n from /dev/tty so a piped stdin (which might be consumed
+ * by an upstream tool) can't break the prompt. Defaults to N on any error
+ * or non-y answer.
+ */
+function askYesNo(question: string): boolean {
+  const fs = require("fs");
+  let fd: number | null = null;
+  try {
+    fd = fs.openSync("/dev/tty", "r");
+    process.stderr.write(question);
+    const buf = Buffer.alloc(8);
+    const bytesRead = fs.readSync(fd, buf, 0, 8, null);
+    const answer = buf.toString("utf-8", 0, bytesRead).trim().toLowerCase();
+    return answer === "y" || answer === "yes";
+  } catch {
+    return false;
+  } finally {
+    if (fd !== null) { try { fs.closeSync(fd); } catch {} }
+  }
+}
+
 export async function cmdAwaken(name: string, opts: AwakenOpts = {}): Promise<void> {
+  if (isPromptingNeeded(opts)) {
+    console.log(summarizePlan(name, opts));
+    if (!askYesNo("  Proceed? [y/N] ")) {
+      console.log("  aborted — no changes made.");
+      return;
+    }
+  }
+
   const trigger = opts.noTrigger ? null : (opts.trigger ?? DEFAULT_TRIGGER);
 
   // Step 1: bud (which also wakes via finalizeBud → cmdWake noAttach)
