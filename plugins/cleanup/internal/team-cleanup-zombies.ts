@@ -19,7 +19,10 @@ export async function cmdCleanupZombies(opts: { yes?: boolean } = {}) {
     return;
   }
 
-  console.log(`\nFound \x1b[33m${zombies.length}\x1b[0m orphan claude pane(s):\n`);
+  // Preview ALWAYS prints — even with --yes — so destructive ops aren't
+  // silent. The countdown below gives the operator a moment to Ctrl-C
+  // when --yes is set. (#40)
+  console.log(`\n\x1b[33m${zombies.length}\x1b[0m orphan claude pane(s) to kill:\n`);
   for (const z of zombies) {
     console.log(`  \x1b[33m${z.paneId}\x1b[0m  ${z.info}  \x1b[90m(team: ${z.teamName} — DELETED)\x1b[0m`);
   }
@@ -29,6 +32,18 @@ export async function cmdCleanupZombies(opts: { yes?: boolean } = {}) {
     return;
   }
 
+  // Brief abort window before destructive action. Skipped in test/CI
+  // (MAW_TEST_MODE) to keep test runs fast and deterministic.
+  if (!process.env.MAW_TEST_MODE) {
+    console.log(`\n\x1b[33m! Killing in 3s — Ctrl-C to abort.\x1b[0m`);
+    for (let i = 3; i > 0; i--) {
+      process.stdout.write(`  \x1b[90m${i}...\x1b[0m\r`);
+      await Bun.sleep(1000);
+    }
+    process.stdout.write(`        \r`); // clear countdown line
+  }
+
+  console.log(`\x1b[36mKilling...\x1b[0m`);
   for (const z of zombies) {
     await tmux.killPane(z.paneId);
     console.log(`\x1b[32m✓\x1b[0m killed ${z.paneId}`);
