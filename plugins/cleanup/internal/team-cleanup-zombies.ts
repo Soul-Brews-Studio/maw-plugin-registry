@@ -1,5 +1,6 @@
-import { readdirSync, existsSync } from "fs";
+import { readdirSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { homedir } from "os";
 import { tmux } from "maw-js/sdk";
 import type { TmuxPane } from "maw-js/sdk";
 import { loadFleetEntries } from "maw-js/commands/shared/fleet-load";
@@ -75,6 +76,20 @@ export function findZombiePanes(allPanes: TmuxPane[]): ZombiePane[] {
     }
   } catch { /* no fleet dir */ }
 
+  // #38 — Fleet/*.json is too narrow. Oracles whose fleet config was removed
+  // (deactivated) but whose tmux session is still live get falsely flagged.
+  // Cross-reference against the canonical oracles.json registry. Session
+  // names follow the convention "<N>-<oracle-name>"; strip the numeric
+  // prefix and check against `.oracles[].name`.
+  const knownOracleNames = new Set<string>();
+  try {
+    const raw = readFileSync(join(homedir(), ".config", "maw", "oracles.json"), "utf-8");
+    const parsed = JSON.parse(raw) as { oracles?: Array<{ name?: string }> };
+    for (const o of parsed.oracles ?? []) {
+      if (typeof o.name === "string" && o.name) knownOracleNames.add(o.name);
+    }
+  } catch { /* no oracles.json — skip */ }
+
   // Also allow meta-view sessions (maw-view + any *-view) which mirror fleet
   // panes. Each oracle creates its meta-view as `<stem>-view` (e.g.
   // mawjs-view, mawui-view). #393 Bug F — zombie-auditor iter3 caught this:
@@ -82,31 +97,58 @@ export function findZombiePanes(allPanes: TmuxPane[]): ZombiePane[] {
   // away from being killed by `maw cleanup --zombie-agents --yes`.
   const isViewSession = (s: string) => s === "maw-view" || /-view$/.test(s);
 
+  // #38 — Strip the maw session prefix ("28-mawjs" → "mawjs") and check
+  // against the broader oracles.json registry.
+  const isKnownOracleSession = (session: string): boolean => {
+    const stripped = session.replace(/^\d+-/, "");
+    return knownOracleNames.has(stripped);
+  };
+
   // Defense-in-depth: also compute the set of pane ids that have ANY fleet
   // (or view) listing. If the same pane id appears across multiple sessions
   // (tmux-linked windows), a single safe target is enough to mark it safe.
   // This protects against tmux reporting the non-fleet session as canonical.
   const safePaneIds = new Set<string>();
   for (const p of allPanes) {
-    const session = p.target.split(":")[0];
-    if (fleetSessions.has(session) || isViewSession(session)) {
+    const session = p.target.split(":")[0] ?? "";
+    if (
+      fleetSessions.has(session) ||
+      isViewSession(session) ||
+      isKnownOracleSession(session)
+    ) {
       safePaneIds.add(p.id);
     }
   }
 
+  // #38 — Defense layer 3: window 1, pane 0 of any tmux session is the
+  // canonical "primary oracle pane" by maw's session-creation convention.
+  // Even if both the fleet AND oracles.json drift, this position-based
+  // guard prevents killing the operator's live oracle Claude. Team-spawned
+  // agents always land in window 2+ or pane 1+, never window 1, pane 0.
+  const isPrimaryOraclePane = (target: string): boolean => {
+    const m = /^[^:]+:(\d+)\.(\d+)$/.exec(target);
+    return m !== null && m[1] === "1" && m[2] === "0";
+  };
+
   const isFleetPane = (target: string): boolean => {
-    const session = target.split(":")[0];
-    return fleetSessions.has(session) || isViewSession(session);
+    const session = target.split(":")[0] ?? "";
+    return (
+      fleetSessions.has(session) ||
+      isViewSession(session) ||
+      isKnownOracleSession(session)
+    );
   };
 
   // Find claude panes that are (a) not in any team config AND
-  // (b) not in the fleet/view (by either target OR any other listing of the same pane)
+  // (b) not in fleet/view/oracles.json AND (c) not the primary pane of any
+  // session (window 1, pane 0).
   return allPanes
     .filter(p =>
       p.command?.includes("claude") &&
       !knownTeamPaneIds.has(p.id) &&
       !isFleetPane(p.target) &&
-      !safePaneIds.has(p.id)
+      !safePaneIds.has(p.id) &&
+      !isPrimaryOraclePane(p.target)
     )
     .map(p => ({
       paneId: p.id,
