@@ -1,12 +1,9 @@
 import { describe, it, expect, mock } from "bun:test";
-import { join } from "path";
 import type { InvokeContext } from "maw-js/plugin/types";
 
-const root = join(import.meta.dir, "../../..");
-
 // Use the shared mock helper to provide ALL config exports (Bun 1.3 mock leaks globally)
-const { mockConfigModule } = await import("../../../../test/helpers/mock-config");
-mock.module(join(root, "config"), () => mockConfigModule(() => ({ host: "localhost", port: 3456, peers: [] })));
+const { mockConfigModule } = await import("maw-js/test/helpers/mock-config");
+mock.module("maw-js/config", () => mockConfigModule(() => ({ host: "localhost", port: 3456, peers: [] })));
 
 // Mock the health impl directly — do NOT mock child_process (leaks globally in Bun 1.3)
 mock.module("./impl", () => ({

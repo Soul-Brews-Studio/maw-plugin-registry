@@ -1,11 +1,8 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
-import { join } from "path";
 import type { InvokeContext } from "maw-js/plugin/types";
 
-const root = join(import.meta.dir, "../../..");
-
-const { mockConfigModule } = await import("../../../../test/helpers/mock-config");
-mock.module(join(root, "config"), () => mockConfigModule(() => ({ host: "localhost", port: 3456 })));
+const { mockConfigModule } = await import("maw-js/test/helpers/mock-config");
+mock.module("maw-js/config", () => mockConfigModule(() => ({ host: "localhost", port: 3456 })));
 
 const mockAgentData = {
   agents: [
