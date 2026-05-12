@@ -143,7 +143,7 @@ export function findGaps(manifest: OracleManifestEntry[]): CrossSourceGap[] {
         kind: "oracles-json-without-runtime",
         detail:
           `oracles.json lists '${e.name}' but no fleet window, session, or agent route — ` +
-          `orphan checkout or stale cache. Wake it once or remove the directory.`,
+          `orphan checkout or stale cache. Run 'maw cleanup --prune-stale' to triage in bulk.`,
       });
     }
 
