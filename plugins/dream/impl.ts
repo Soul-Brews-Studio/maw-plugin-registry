@@ -493,40 +493,36 @@ function renderBriefing(items: DreamItem[], forgotten: ForgottenItem[], warnings
 
 // ── Per-project cards (--all mode) ───────────────────────────
 
-async function renderProjectCards(activeRepos: RepoState[], items: DreamItem[], arrsAvailable: boolean): Promise<void> {
-  for (const repo of activeRepos.slice(0, 10)) {
+async function renderProjectCards(activeRepos: RepoState[], _items: DreamItem[], arrsAvailable: boolean): Promise<void> {
+  const shown = activeRepos.slice(0, 10);
+  for (const repo of shown) {
     const momentum = await getProjectMomentum(repo.path);
     const bar = momentumBar(momentum.week, 30);
 
-    console.log(`  \x1b[1m● ${repo.name}\x1b[0m  ${bar} ${momentum.week} commits/week`);
+    console.log(`  \x1b[1m● ${repo.name}\x1b[0m  ${bar} ${momentum.week}/week`);
 
-    // Wins: extract from recent retros
     if (arrsAvailable) {
       const wins = await getProjectWins(repo.name);
       for (const w of wins.slice(0, 2)) {
         console.log(`    \x1b[32m✓\x1b[0m ${w}`);
       }
-    }
 
-    // Friction: extract from recent retros
-    if (arrsAvailable) {
       const friction = await getProjectSection(repo.name, "friction improve problem could be better", "retro", "What Could Improve");
       for (const f of friction.slice(0, 1)) {
         console.log(`    \x1b[33m⚠\x1b[0m ${f}`);
       }
-    }
 
-    // Patterns from learnings
-    const patterns = items.filter(i => i.project === repo.name && i.category === "memory").slice(0, 1);
-    for (const p of patterns) {
-      console.log(`    \x1b[35m🔗\x1b[0m ${p.title}`);
+      const patterns = await getProjectSection(repo.name, "pattern lesson root cause always never", "learning", "");
+      for (const p of patterns.slice(0, 1)) {
+        console.log(`    \x1b[35m🔗\x1b[0m ${p}`);
+      }
     }
 
     console.log(`    \x1b[36m→ maw workon ${repo.name}\x1b[0m`);
     console.log();
   }
 
-  console.log(`  \x1b[90m📊 ${activeRepos.length} active repos shown\x1b[0m`);
+  console.log(`  \x1b[90m📊 ${shown.length}/${activeRepos.length} active repos shown\x1b[0m`);
   console.log();
 }
 
@@ -548,20 +544,18 @@ async function getProjectWins(repoName: string): Promise<string[]> {
   const repoVariants = [repoName, `${repoName}-oracle`, repoName.toLowerCase()];
   const results = await arrsSearch(`${repoName} shipped completed deployed merged`, 8, "retro");
   const items: string[] = [];
-  const sectionNames = ["What Got Done", "Deliverables", "Key Deliverables", "Complete Deliverables", "Session Summary", "Summary"];
 
   for (const r of results) {
     if (!repoVariants.some(v => r.source_file.includes(v))) continue;
-    for (const sn of sectionNames) {
-      const section = extractSection(r.content, sn);
-      if (!section) continue;
-      const lines = section.split(/[-•*\n]/).map(l => l.trim()).filter(l => l.length > 15 && !/^(session|summary|what)/i.test(l));
-      for (const l of lines.slice(0, 2)) items.push(l.slice(0, 80));
-      break;
+    // Get session summary as a single clean sentence
+    const summary = extractSection(r.content, "Session Summary") || extractSection(r.content, "Summary");
+    if (summary) {
+      const firstSentence = summary.split(/[.!]\s/).filter(s => s.length > 15)[0];
+      if (firstSentence) items.push(firstSentence.slice(0, 80));
     }
-    if (items.length >= 3) break;
+    if (items.length >= 2) break;
   }
-  return items.slice(0, 3);
+  return items;
 }
 
 async function getProjectSection(repoName: string, query: string, type: string, sectionName: string): Promise<string[]> {
@@ -569,14 +563,18 @@ async function getProjectSection(repoName: string, query: string, type: string, 
   const results = await arrsSearch(`${repoName} ${query}`, 8, type);
   const items: string[] = [];
   for (const r of results) {
-    const matchesRepo = repoVariants.some(v => r.source_file.includes(v));
-    if (!matchesRepo) continue;
+    if (!repoVariants.some(v => r.source_file.includes(v))) continue;
     if (!isRecentEnough(r.source_file, 30)) continue;
-    const section = extractSection(r.content, sectionName) || extractSection(r.content, "Summary");
-    if (!section) continue;
-    const lines = section.split(/[-•*\n]/).map(l => l.trim()).filter(l => l.length > 15);
-    for (const l of lines.slice(0, 2)) {
-      items.push(l.slice(0, 80));
+
+    if (!sectionName) {
+      // No section — extract title from content or filename
+      const title = extractTitle(r.content, r.source_file);
+      if (title && !isNoise(title)) items.push(title.slice(0, 80));
+    } else {
+      const section = extractSection(r.content, sectionName);
+      if (!section) continue;
+      const firstSentence = section.split(/[.!]\s/).filter(s => s.length > 15)[0];
+      if (firstSentence) items.push(firstSentence.slice(0, 80));
     }
     if (items.length >= 3) break;
   }
