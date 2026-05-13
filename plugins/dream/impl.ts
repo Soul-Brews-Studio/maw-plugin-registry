@@ -33,7 +33,10 @@ interface DreamItem {
 }
 
 interface RepoState {
-  name: string;
+  name: string;        // display name (basename, -oracle stripped)
+  dirName: string;     // actual directory basename (used for github/arra paths)
+  owner: string;       // github owner extracted from ghq path
+  slug: string;        // `${owner}/${dirName}` for gh CLI --repo
   path: string;
   lastCommitMsg: string;
   lastCommitDate: string;
@@ -183,7 +186,7 @@ async function cmdDreamProject(projectName: string, flags: DreamFlags): Promise<
   }
 
   // GitHub issues & PRs
-  const gh = await githubIssuesAndPRs(repo.name);
+  const gh = await githubIssuesAndPRs(repo.slug);
   if (gh.issues.length > 0) {
     console.log("  \x1b[90m🐙 Open issues\x1b[0m");
     for (const i of gh.issues) console.log(`    ${i}`);
@@ -227,15 +230,15 @@ async function gitLogLines(repoPath: string, n: number): Promise<string[]> {
   } catch { return []; }
 }
 
-async function githubIssuesAndPRs(repoName: string): Promise<{ issues: string[]; prs: string[] }> {
+async function githubIssuesAndPRs(slug: string): Promise<{ issues: string[]; prs: string[] }> {
   const result = { issues: [] as string[], prs: [] as string[] };
   try {
-    const issueJson = await hostExec(`gh issue list --repo deachawatss/${repoName} --state open --limit 10 --json number,title,state 2>/dev/null`);
+    const issueJson = await hostExec(`gh issue list --repo ${slug} --state open --limit 10 --json number,title,state 2>/dev/null`);
     const issues = JSON.parse(issueJson) as GhItem[];
     if (Array.isArray(issues)) result.issues = issues.map(i => `#${i.number} ${i.title}`);
   } catch { /* gh not available */ }
   try {
-    const prJson = await hostExec(`gh pr list --repo deachawatss/${repoName} --state open --limit 10 --json number,title,state 2>/dev/null`);
+    const prJson = await hostExec(`gh pr list --repo ${slug} --state open --limit 10 --json number,title,state 2>/dev/null`);
     const prs = JSON.parse(prJson) as GhItem[];
     if (Array.isArray(prs)) result.prs = prs.map(p => `#${p.number} ${p.title}`);
   } catch { /* gh not available */ }
@@ -248,7 +251,7 @@ async function queryProjectInsights(repo: RepoState, flags: DreamFlags, deep: bo
   const items: DreamItem[] = [];
   const focused = flags.pain || flags.plan || flags.gain;
   const limit = deep ? 10 : 3;
-  const proj = `github.com/deachawatss/${repo.name}`;
+  const proj = `github.com/${repo.slug}`;
 
   if (!focused || flags.pain) {
     const results = await arrsSearch("what went wrong what error occurred how to fix", limit, "learning", proj);
@@ -670,7 +673,12 @@ async function scanRepoStates(): Promise<RepoState[]> {
 
   for (const repoPath of repoPaths) {
     if (!existsSync(repoPath)) continue;
-    const name = basename(repoPath).replace(/-oracle$/, "");
+    const dirName = basename(repoPath);
+    const name = dirName.replace(/-oracle$/, "");
+    // Extract owner from ghq path (.../github.com/<owner>/<dirName>)
+    const pathParts = repoPath.split("/");
+    const owner = pathParts[pathParts.length - 2] || "unknown";
+    const slug = `${owner}/${dirName}`;
     let lastCommitMsg = "", lastCommitDate = "", staleDays = 999;
     let uncommittedFiles = 0, orphanedWorktrees = 0, openPRs = 0;
 
@@ -694,7 +702,7 @@ async function scanRepoStates(): Promise<RepoState[]> {
 
     const recentHandoff = findLatestFile(join(repoPath, "ψ", "inbox", "handoff"), 7);
 
-    results.push({ name, path: repoPath, lastCommitMsg, lastCommitDate, staleDays, uncommittedFiles, orphanedWorktrees, openPRs, recentHandoff });
+    results.push({ name, dirName, owner, slug, path: repoPath, lastCommitMsg, lastCommitDate, staleDays, uncommittedFiles, orphanedWorktrees, openPRs, recentHandoff });
   }
 
   return results.sort((a, b) => a.staleDays - b.staleDays);
