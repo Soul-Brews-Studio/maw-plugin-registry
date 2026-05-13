@@ -134,8 +134,20 @@ async function cmdDreamProject(projectName: string, flags: DreamFlags): Promise<
 
   console.log("  \x1b[90mscanning...\x1b[0m");
   const repos = await scanRepoStates();
-  const repo = repos.find(r => r.name === projectName)
-    || repos.find(r => r.name.toLowerCase().includes(projectName.toLowerCase()));
+  // Forgiving lookup: try directory name, display name, and either
+  // form stripped of -oracle suffix. Substring match (either direction)
+  // as last resort so partial names still resolve.
+  const needleRaw = projectName.toLowerCase();
+  const needleStripped = needleRaw.replace(/-oracle$/, "");
+  const repo =
+    repos.find(r => r.dirName.toLowerCase() === needleRaw) ||
+    repos.find(r => r.name.toLowerCase() === needleRaw) ||
+    repos.find(r => r.name.toLowerCase() === needleStripped) ||
+    repos.find(r => r.dirName.toLowerCase() === needleStripped) ||
+    repos.find(r => {
+      const n = r.name.toLowerCase();
+      return n.includes(needleStripped) || needleStripped.includes(n);
+    });
 
   if (!repo) {
     const known = repos.map(r => r.name).slice(0, 20).join(", ");
@@ -674,7 +686,7 @@ async function scanRepoStates(): Promise<RepoState[]> {
   for (const repoPath of repoPaths) {
     if (!existsSync(repoPath)) continue;
     const dirName = basename(repoPath);
-    const name = dirName.replace(/-oracle$/, "");
+    const name = dirName.replace(/-oracle$/i, "");
     // Extract owner from ghq path (.../github.com/<owner>/<dirName>)
     const pathParts = repoPath.split("/");
     const owner = pathParts[pathParts.length - 2] || "unknown";
@@ -775,7 +787,7 @@ export function extractRepo(sourceFile: string): string {
           if (parts[j] !== ".claude" && parts[j] !== "worktrees") { repoDir = parts[j]!; break; }
         }
       }
-      return repoDir.replace(/-oracle$/, "");
+      return repoDir.replace(/-oracle$/i, "");
     }
   }
   return "unknown";
