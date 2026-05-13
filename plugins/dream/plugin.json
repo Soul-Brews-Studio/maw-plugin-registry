@@ -1,0 +1,15 @@
+{
+  "name": "dream",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Cross-repo pattern discovery — finds pains, plans, gains, lost work, and feelings across all repositories.",
+  "author": "Soul-Brews-Studio",
+  "license": "BUSL-1.1",
+  "cli": {
+    "command": "dream",
+    "help": "maw dream [--pain | --plan | --gain | --all | --speculate | --between]"
+  },
+  "weight": 70,
+  "tier": "extra"
+}
