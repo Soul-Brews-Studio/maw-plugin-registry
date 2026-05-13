@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-13T07:13:50Z",
+  "updated": "2026-05-13T08:09:59Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -217,6 +217,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T02:18:08Z",
+      "tier": "extra"
+    },
+    "dream": {
+      "version": "0.1.0",
+      "source": "soul-brews-studio/maw-plugin-registry/dream@v0.1.0-dream",
+      "sha256": null,
+      "summary": "Cross-repo pattern discovery \u2014 finds pains, plans, gains, lost work, and feelings across all repositories.",
+      "author": "Soul-Brews-Studio",
+      "license": "BUSL-1.1",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-13T08:00:00Z",
       "tier": "extra"
     },
     "federation": {
