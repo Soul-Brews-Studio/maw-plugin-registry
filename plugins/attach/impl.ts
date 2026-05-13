@@ -1,21 +1,19 @@
 /**
- * `maw attach <name>` cascade — Phase 1 (#25) + Tier 3 (#1236).
+ * `maw attach <name>` cascade — Phase 1 (#25) — Smart Local.
  *
- *   Tier 1 (live):        attach immediately via `maw tmux attach <session>`
- *   Tier 2 (sleeping):    prompt → `maw wake <fleet-name>` → attach
- *   Tier 3 (remote-live): SSH + tmux attach on the peer that owns it
- *   no match:             error + list of available oracles
+ *   Tier 1 (live):     attach immediately via `maw tmux attach <session>`
+ *   Tier 2 (sleeping): prompt → `maw wake <fleet-name>` → attach
+ *   no match:          error + list of available oracles
  *
- * Tier 4 (remote-sleeping wake-then-attach) is the next follow-up — this
- * iteration ships the 80% case ("remote is alive, attach me") only.
+ * Cross-node attach (Tier 3) used to live here. It was pulled back out —
+ * the built-in stays local-only. Federation lives in the `attach-ssh`
+ * plugin (registry). Install it if you want cross-node attach.
  */
-import { listSessions, getAggregatedSessions, attachRemoteSession, SshAttachError } from "maw-js/sdk";
+import { listSessions } from "maw-js/sdk";
 import { loadFleet } from "maw-js/commands/shared/fleet-load";
-import { loadConfig } from "maw-js/config";
 import {
   resolveAttachTarget,
   type ResolveResult,
-  type RemoteAlternate,
 } from "./resolve-attach-target";
 
 export interface AttachOpts {
@@ -23,23 +21,11 @@ export interface AttachOpts {
   yes?: boolean;
   /** Show what the cascade picked + planned action, no side effects. */
   dryRun?: boolean;
-  /** Pin the search to a specific node (`--node mba` or `node:agent` syntax). */
-  node?: string;
-  /** Skip Tier 1/2 entirely and only consider remote peers. */
-  remoteOnly?: boolean;
-  /**
-   * Test seam — swap the cross-node SSH attach with a stub. Defaults to the
-   * real `attachRemoteSession` from maw-js/sdk.
-   */
-  ssh?: typeof attachRemoteSession;
 }
 
 /**
  * Read a single y/n from /dev/tty (not stdin) so a piped upstream tool can't
  * break the prompt. Defaults to N on error or any non-y answer.
- * Duplicates the helper in plugins/awaken/impl.ts — Phase 1 keeps these
- * inline; a shared helper can land in a refactor PR once two more plugins
- * grow the same pattern.
  */
 function askYesNo(question: string): boolean {
   const fs = require("fs");
@@ -66,33 +52,38 @@ function listAvailable(fleet: { name: string }[], sessions: { name: string }[]):
 
 export async function cmdAttach(name: string, opts: AttachOpts = {}): Promise<void> {
   if (!name) {
-    console.error("usage: maw attach <name> [--dry-run] [-y] [--node <n>] [--remote-only]");
+    console.error("usage: maw attach <name> [--dry-run] [-y|--yes]");
     throw new Error("name required");
   }
 
-  // Cascade deps — getAggregatedSessions + namedPeers are wired here so the
-  // resolver stays pure. Tests inject the whole `deps` block via mock.module.
-  const deps = {
-    listSessions,
-    loadFleet,
-    getAggregatedSessions,
-    namedPeers: () => loadConfig().namedPeers ?? [],
-  };
-  const result: ResolveResult = await resolveAttachTarget(name, deps, {
-    node: opts.node,
-    remoteOnly: opts.remoteOnly,
-  });
+  const deps = { listSessions, loadFleet };
+  const result: ResolveResult = await resolveAttachTarget(name, deps);
 
   if (!result) {
-    const sessions = await listSessions();
-    console.error(`\x1b[31m✗\x1b[0m no oracle named '${name}' is live or in the fleet`);
-    console.error(`  available: ${listAvailable(loadFleet(), sessions)}`);
-    throw new Error(`oracle '${name}' not found`);
+    // Local Tier 1+2 missed. Delegate to wake — it runs the full chain:
+    // ghqFind → fleet pin → worktree → ghq get -u clone → GitHub org scan →
+    // scanSuggestOracle interactive "Scan now? [y/N]" → wake.
+    // After wake, re-resolve — should now be Tier 1 → attach.
+    // See ψ/memory/traces/2026-05-13/1203_attach-find-or-scan-flow.md
+    if (opts.dryRun) {
+      console.log(`  \x1b[36m·\x1b[0m [dry-run] '${name}' not local — would: maw wake ${name} → re-resolve → attach`);
+      return;
+    }
+    console.log(`  \x1b[36m·\x1b[0m '${name}' not local — delegating to wake`);
+    await spawnMaw(["wake", name]);
+    // Wake created the session. Re-resolve — should hit Tier 1 now.
+    const retried = await resolveAttachTarget(name, deps);
+    if (retried && retried.tier === 1) {
+      console.log(`  \x1b[32m→\x1b[0m attaching to ${retried.sessionName}`);
+      await spawnMaw(["tmux", "attach", retried.sessionName]);
+      return;
+    }
+    console.error(`\x1b[31m✗\x1b[0m '${name}' still not running after wake`);
+    throw new Error(`wake did not create a session for '${name}'`);
   }
 
-  // Ambiguous match: list candidates, stop. User picks one and re-runs with
-  // the full name. (Auto-prompt for selection can land in Phase 2.)
-  if (result.tier !== 3 && result.ambiguousCandidates && result.ambiguousCandidates.length > 1) {
+  // Ambiguous match: list candidates, stop. User picks one and re-runs.
+  if (result.ambiguousCandidates && result.ambiguousCandidates.length > 1) {
     console.error(`\x1b[33m⚠\x1b[0m '${name}' is ambiguous — ${result.ambiguousCandidates.length} matches:`);
     for (const c of result.ambiguousCandidates) console.error(`    • ${c}`);
     console.error(`  use the full name: \x1b[36mmaw attach <exact-name>\x1b[0m`);
@@ -102,13 +93,7 @@ export async function cmdAttach(name: string, opts: AttachOpts = {}): Promise<vo
   if (result.tier === 1) {
     if (opts.dryRun) {
       console.log(`  \x1b[36m·\x1b[0m [dry-run] Tier 1 (live) — would attach to ${result.sessionName}`);
-      if (result.remoteAlternates && result.remoteAlternates.length > 0) {
-        printRemoteAlternates(result.remoteAlternates, name);
-      }
       return;
-    }
-    if (result.remoteAlternates && result.remoteAlternates.length > 0) {
-      printRemoteAlternates(result.remoteAlternates, name);
     }
     console.log(`  \x1b[32m→\x1b[0m attaching to ${result.sessionName}`);
     await spawnMaw(["tmux", "attach", result.sessionName]);
@@ -134,108 +119,6 @@ export async function cmdAttach(name: string, opts: AttachOpts = {}): Promise<vo
     await spawnMaw(["tmux", "attach", result.fleetName]);
     return;
   }
-
-  // Tier 3 — peer reports a live session, hand the TTY off via SSH.
-  if (result.tier === 3) {
-    // Ambiguity on Tier 3: two peers both expose a session with this name.
-    // Bail loudly — operator should disambiguate via `--node` or full name.
-    if (result.ambiguousCandidates && result.ambiguousCandidates.length > 1) {
-      console.error(`\x1b[33m⚠\x1b[0m '${name}' is ambiguous across peers — ${result.ambiguousCandidates.length} matches:`);
-      for (const c of result.ambiguousCandidates) {
-        console.error(`    • ${c.sessionName} on ${c.node}`);
-      }
-      console.error(`  pin it: \x1b[36mmaw attach <node>:${name}\x1b[0m`);
-      throw new Error(`ambiguous remote: ${name}`);
-    }
-
-    if (opts.dryRun) {
-      console.log(`  \x1b[36m·\x1b[0m [dry-run] Tier 3 (remote-live) — would ssh ${result.sshAlias} → tmux attach -t '${result.sessionName}'`);
-      return;
-    }
-
-    console.log(`  \x1b[36m→\x1b[0m '${result.sessionName}' is on ${result.node} (peer ${result.peerUrl})`);
-    console.log(`  \x1b[90m  ssh ${result.sshAlias} → tmux attach -t '${result.sessionName}'\x1b[0m`);
-    console.log(`  \x1b[90m  hint: detach with prefix+d to return to your local shell\x1b[0m`);
-
-    // Strategy plugin dispatcher (#1262). If a plugin in ~/.maw/plugins/
-    // declares the `attach:strategy` capability for tier 3, hand the SSH
-    // execution off to it. `opts.ssh` is only set by tests — in that path
-    // we keep the built-in so the test seam still intercepts the call.
-    if (!opts.ssh) {
-      const stratPath = findStrategyPluginForTier(3);
-      if (stratPath) {
-        try {
-          const mod: any = await import(stratPath);
-          await (mod.default ?? mod).execute(result, opts);
-          return;
-        } catch (err: any) {
-          console.error(`[attach] strategy plugin failed: ${err?.message ?? err}; falling back to built-in`);
-          // fall through to the built-in path below
-        }
-      }
-    }
-
-    const ssh = opts.ssh ?? attachRemoteSession;
-    try {
-      ssh({
-        node: result.node,
-        sshAlias: result.sshAlias,
-        sessionName: result.sessionName,
-      });
-    } catch (err) {
-      if (err instanceof SshAttachError) {
-        // Surface the helper's friendly one-line message — never process.exit.
-        console.error(err.message);
-        throw new Error(err.message);
-      }
-      throw err;
-    }
-    return;
-  }
-}
-
-function printRemoteAlternates(alts: RemoteAlternate[], name: string): void {
-  console.log(`  \x1b[90mnote: '${name}' is also live on ${alts.length} peer(s):\x1b[0m`);
-  for (const a of alts) {
-    console.log(`  \x1b[90m    • ${a.sessionName} on ${a.node}\x1b[0m`);
-  }
-  console.log(`  \x1b[90m  pin remote: maw attach ${alts[0].node}:${name}\x1b[0m`);
-}
-
-/**
- * Walk ~/.maw/plugins/ looking for a plugin whose manifest declares the
- * `attach:strategy` capability AND targets the given tier. Returns the
- * absolute import path to the entry file, or null if none found / dir
- * missing. Honors `MAW_PLUGINS_DIR` for tests (matches maw-js's
- * installRoot()). Best-effort: any per-entry error is silently skipped so
- * a single broken manifest can't block the cascade.
- */
-function findStrategyPluginForTier(tier: number): string | null {
-  const fs = require("fs");
-  const path = require("path");
-  const os = require("os");
-  const root: string = process.env.MAW_PLUGINS_DIR || path.join(os.homedir(), ".maw", "plugins");
-  let entries: string[];
-  try {
-    entries = fs.readdirSync(root);
-  } catch {
-    return null;
-  }
-  for (const name of entries) {
-    const manifestPath = path.join(root, name, "plugin.json");
-    let manifest: any;
-    try {
-      manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-    } catch {
-      continue;
-    }
-    const caps = manifest.capabilities;
-    if (!Array.isArray(caps) || !caps.includes("attach:strategy")) continue;
-    if (manifest.strategy?.tier !== tier) continue;
-    const entryRel: string = typeof manifest.entry === "string" ? manifest.entry : "./index.ts";
-    return path.join(root, name, entryRel);
-  }
-  return null;
 }
 
 /**
