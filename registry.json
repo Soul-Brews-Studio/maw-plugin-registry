@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-13T01:19:58Z",
+  "updated": "2026-05-13T03:30:00Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -45,6 +45,16 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:39:10Z",
+      "tier": "extra"
+    },
+    "attach-ssh": {
+      "version": "0.1.0",
+      "source": "soul-brews-studio/maw-plugin-registry/attach-ssh@v0.1.0-attach-ssh",
+      "summary": "Tier 3 (remote-live) SSH+tmux attach strategy. Extracted from built-in attach (#1262).",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-13T00:00:00Z",
       "tier": "extra"
     },
     "avengers": {

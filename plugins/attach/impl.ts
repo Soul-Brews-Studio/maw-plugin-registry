@@ -156,6 +156,25 @@ export async function cmdAttach(name: string, opts: AttachOpts = {}): Promise<vo
     console.log(`  \x1b[36m→\x1b[0m '${result.sessionName}' is on ${result.node} (peer ${result.peerUrl})`);
     console.log(`  \x1b[90m  ssh ${result.sshAlias} → tmux attach -t '${result.sessionName}'\x1b[0m`);
     console.log(`  \x1b[90m  hint: detach with prefix+d to return to your local shell\x1b[0m`);
+
+    // Strategy plugin dispatcher (#1262). If a plugin in ~/.maw/plugins/
+    // declares the `attach:strategy` capability for tier 3, hand the SSH
+    // execution off to it. `opts.ssh` is only set by tests — in that path
+    // we keep the built-in so the test seam still intercepts the call.
+    if (!opts.ssh) {
+      const stratPath = findStrategyPluginForTier(3);
+      if (stratPath) {
+        try {
+          const mod: any = await import(stratPath);
+          await (mod.default ?? mod).execute(result, opts);
+          return;
+        } catch (err: any) {
+          console.error(`[attach] strategy plugin failed: ${err?.message ?? err}; falling back to built-in`);
+          // fall through to the built-in path below
+        }
+      }
+    }
+
     const ssh = opts.ssh ?? attachRemoteSession;
     try {
       ssh({
@@ -181,6 +200,42 @@ function printRemoteAlternates(alts: RemoteAlternate[], name: string): void {
     console.log(`  \x1b[90m    • ${a.sessionName} on ${a.node}\x1b[0m`);
   }
   console.log(`  \x1b[90m  pin remote: maw attach ${alts[0].node}:${name}\x1b[0m`);
+}
+
+/**
+ * Walk ~/.maw/plugins/ looking for a plugin whose manifest declares the
+ * `attach:strategy` capability AND targets the given tier. Returns the
+ * absolute import path to the entry file, or null if none found / dir
+ * missing. Honors `MAW_PLUGINS_DIR` for tests (matches maw-js's
+ * installRoot()). Best-effort: any per-entry error is silently skipped so
+ * a single broken manifest can't block the cascade.
+ */
+function findStrategyPluginForTier(tier: number): string | null {
+  const fs = require("fs");
+  const path = require("path");
+  const os = require("os");
+  const root: string = process.env.MAW_PLUGINS_DIR || path.join(os.homedir(), ".maw", "plugins");
+  let entries: string[];
+  try {
+    entries = fs.readdirSync(root);
+  } catch {
+    return null;
+  }
+  for (const name of entries) {
+    const manifestPath = path.join(root, name, "plugin.json");
+    let manifest: any;
+    try {
+      manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+    } catch {
+      continue;
+    }
+    const caps = manifest.capabilities;
+    if (!Array.isArray(caps) || !caps.includes("attach:strategy")) continue;
+    if (manifest.strategy?.tier !== tier) continue;
+    const entryRel: string = typeof manifest.entry === "string" ? manifest.entry : "./index.ts";
+    return path.join(root, name, entryRel);
+  }
+  return null;
 }
 
 /**

@@ -40,6 +40,24 @@
       "type": "string",
       "description": "Semver range of the maw-js plugin SDK the plugin targets."
     },
+    "entry": {
+      "type": "string",
+      "description": "Relative path to the plugin's entry module (e.g. ./index.ts)."
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Free-form capability strings the plugin advertises (e.g. \"attach:strategy\")."
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tier": { "type": "integer", "minimum": 1 }
+      },
+      "description": "Strategy-plugin metadata. `tier` selects which cascade tier this plugin implements."
+    },
     "api": {
       "type": "object",
       "additionalProperties": false,
