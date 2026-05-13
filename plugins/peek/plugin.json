@@ -12,5 +12,7 @@
     ],
     "help": "maw peek <agent> — peek at an agent's latest output"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

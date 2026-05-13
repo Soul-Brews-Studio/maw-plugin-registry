@@ -7,8 +7,12 @@
   "author": "Soul-Brews-Studio",
   "cli": {
     "command": "team",
-    "aliases": ["t"],
+    "aliases": [
+      "t"
+    ],
     "help": "maw team <create|spawn|send|shutdown|resume|lives|list|status|add|tasks|done|assign|delete|invite|oracle-invite|oracle-remove|members>"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

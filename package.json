@@ -4,5 +4,9 @@
   "type": "module",
   "dependencies": {
     "maw-js": "file:../maw-js"
+  },
+  "devDependencies": {
+    "ajv-cli": "5",
+    "ajv-formats": "^3.0.1"
   }
 }

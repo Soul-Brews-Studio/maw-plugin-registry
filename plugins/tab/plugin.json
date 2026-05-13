@@ -12,5 +12,7 @@
     ],
     "help": "maw tab [args] — manage tmux tabs"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

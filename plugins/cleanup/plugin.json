@@ -10,5 +10,7 @@
     "aliases": [],
     "help": "maw cleanup --zombie-agents [--yes] — kill orphan panes; maw cleanup --prune-stale [--yes|--ask|--dry-run] — prune dead oracles.json entries"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

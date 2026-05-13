@@ -9,5 +9,7 @@
     "help": "maw check [tools]   — audit installed prep tools",
     "flags": {}
   },
-  "weight": 30
+  "weight": 30,
+  "license": "MIT",
+  "schemaVersion": 1
 }

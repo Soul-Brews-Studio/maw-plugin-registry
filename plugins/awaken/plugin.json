@@ -34,7 +34,11 @@
   },
   "api": {
     "path": "/api/awaken",
-    "methods": ["POST"]
+    "methods": [
+      "POST"
+    ]
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

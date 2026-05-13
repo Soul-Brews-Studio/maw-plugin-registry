@@ -9,5 +9,7 @@
     "command": "send-text",
     "help": "maw send-text <target> \"<text>\" — type text and press Enter (smart multi-line; uses Tmux.sendText)"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

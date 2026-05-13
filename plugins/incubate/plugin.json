@@ -34,7 +34,11 @@
   },
   "api": {
     "path": "/api/incubate",
-    "methods": ["POST"]
+    "methods": [
+      "POST"
+    ]
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

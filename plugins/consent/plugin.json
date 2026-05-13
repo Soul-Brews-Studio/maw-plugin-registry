@@ -10,5 +10,7 @@
     "aliases": [],
     "help": "maw consent | list | approve <id> <pin> | reject <id> | trust <peer> [action] | untrust <peer> [action]"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

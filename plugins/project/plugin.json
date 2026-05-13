@@ -9,5 +9,7 @@
     "command": "project",
     "help": "maw project <learn|incubate|find|list> ... — scaffold stub (impl pending, see Oracle skill /project)"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

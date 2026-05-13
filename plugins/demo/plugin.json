@@ -9,5 +9,7 @@
     "command": "demo",
     "help": "maw demo — run a 90-second simulated multi-agent session (no API key required)\n\nSpawns two mock agents in tmux panes, streams scripted output with realistic\npauses, then shows $0.00 cost. Requires an active tmux session.\n\nFlags:\n  --fast   Skip sleep delays (CI / screenshot mode)\n  --help   Show this message"
   },
-  "weight": 55
+  "weight": 55,
+  "license": "MIT",
+  "schemaVersion": 1
 }

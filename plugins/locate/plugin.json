@@ -8,5 +8,7 @@
     "command": "locate",
     "help": "maw locate <oracle> [--path | --json]"
   },
-  "weight": 15
+  "weight": 15,
+  "license": "MIT",
+  "schemaVersion": 1
 }

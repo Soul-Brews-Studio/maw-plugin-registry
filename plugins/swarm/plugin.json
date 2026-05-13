@@ -8,5 +8,7 @@
     "command": "swarm",
     "help": "maw swarm [agents...] [--tiled] [--count N]"
   },
-  "weight": 5
+  "weight": 5,
+  "license": "MIT",
+  "schemaVersion": 1
 }
