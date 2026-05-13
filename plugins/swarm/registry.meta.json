@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "source": "monorepo:plugins/swarm@v1.0.0-swarm",
+  "source": "soul-brews-studio/maw-plugin-registry/swarm@v1.0.0-swarm",
   "sha256": "4bbe45a067be8c17accca049a0e5ee509a9e97342a6615b58403794b8989d18d",
   "summary": "Spawn multi-AI agent panes \u2014 claude, codex, opencode, aider side by side in colored tmux.",
   "author": "Soul-Brews-Studio",
