@@ -11,6 +11,7 @@ import { findGaps, summarizeGaps } from "./cross-source-detect";
 import { checkMawJsBranch } from "./internal/maw-js-branch-check";
 import { checkStillbornWorktrees } from "./internal/stillborn-worktrees";
 import { checkStalePeers, cmdFixStalePeers } from "./internal/stale-peers";
+import { detectBunLinkedCheckout } from "./internal/bun-link-detect";
 
 export interface DoctorResult {
   ok: boolean;
@@ -70,6 +71,20 @@ async function checkInstall(): Promise<{ name: string; ok: boolean; message: str
   const exists = existsSync(binPath);
   if (!exists) {
     console.log(`  ${C.yellow}⚠${C.reset} maw binary missing at ${binPath}`);
+    // #1281 — Skip auto-reinstall when maw-js is bun-linked to a local dev
+    // checkout. `bun add -g github:…` would silently replace the symlink
+    // with a fresh clone, blowing away the dev workflow. Tell the operator
+    // how to restore the link instead.
+    const localCheckout = detectBunLinkedCheckout();
+    if (localCheckout) {
+      console.log(`  ${C.yellow}⚠${C.reset} maw is bun-linked to dev checkout: ${localCheckout}`);
+      console.log(`  ${C.gray}run: cd ${localCheckout} && bun link${C.reset}`);
+      return {
+        name: "install",
+        ok: false,
+        message: `dev bun-link at ${localCheckout} — run bun link to restore`,
+      };
+    }
     console.log(`  ${C.gray}attempting reinstall…${C.reset}`);
     try {
       execSync("bun add -g github:Soul-Brews-Studio/maw-js", { stdio: "inherit" });
