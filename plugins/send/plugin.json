@@ -9,5 +9,7 @@
     "command": "send",
     "help": "maw send <target> \"<text>\" — type raw text into a tmux pane (no Enter)"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

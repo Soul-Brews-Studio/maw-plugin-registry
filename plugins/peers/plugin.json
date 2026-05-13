@@ -7,8 +7,12 @@
   "author": "Soul-Brews-Studio",
   "cli": {
     "command": "peers",
-    "aliases": ["peer"],
+    "aliases": [
+      "peer"
+    ],
     "help": "maw peers <add|list|info|remove> [...] — federation peer aliases (see issue #568)"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

@@ -16,7 +16,11 @@
   },
   "api": {
     "path": "/api/signals",
-    "methods": ["GET"]
+    "methods": [
+      "GET"
+    ]
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

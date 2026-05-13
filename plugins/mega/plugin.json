@@ -9,5 +9,7 @@
     "command": "mega",
     "help": "maw mega [status|stop] — manage MegaAgent multi-agent teams"
   },
-  "weight": 10
+  "weight": 10,
+  "license": "MIT",
+  "schemaVersion": 1
 }
