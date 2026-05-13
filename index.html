@@ -74,8 +74,24 @@
           return;
         }
         entries.sort(([a], [b]) => a.localeCompare(b));
+        // Derive a default GitHub URL from `source` field (e.g.
+        //   "soul-brews-studio/maw-plugin-registry/about@v0.1.0-about" →
+        //   "https://github.com/Soul-Brews-Studio/maw-plugin-registry/tree/main/plugins/about"
+        // If `homepage` is set on the plugin, that wins.
+        const githubUrlFor = (name, p) => {
+          if (p.homepage) return p.homepage;
+          if (!p.source) return null;
+          // Strip the @tag suffix, then split owner/repo[/subpath]
+          const noTag = p.source.split('@')[0];
+          const parts = noTag.split('/');
+          if (parts.length < 2) return null;
+          const [owner, repo, ...rest] = parts;
+          const subpath = rest.length ? rest.join('/') : `plugins/${name}`;
+          return `https://github.com/${owner}/${repo}/tree/main/${subpath}`;
+        };
         root.innerHTML = entries.map(([name, p]) => {
-          const home = p.homepage ? `<a href="${p.homepage}" rel="noopener">${name}</a>` : name;
+          const url = githubUrlFor(name, p);
+          const home = url ? `<a href="${url}" rel="noopener">${name}</a>` : name;
           const src = p.source ? ` • <code>${p.source}</code>` : '';
           return `<article class="plugin">
             <h2>${home}</h2>
