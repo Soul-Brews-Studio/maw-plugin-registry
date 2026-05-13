@@ -86,8 +86,16 @@
           const parts = noTag.split('/');
           if (parts.length < 2) return null;
           const [owner, repo, ...rest] = parts;
-          const subpath = rest.length ? rest.join('/') : `plugins/${name}`;
-          return `https://github.com/${owner}/${repo}/tree/main/${subpath}`;
+          // In the maw-plugin-registry monorepo, plugin folders live under plugins/<name>.
+          // For third-party single-plugin repos, the plugin is at the repo root.
+          let subpath;
+          if (repo === 'maw-plugin-registry') {
+            subpath = rest.length ? `plugins/${rest.join('/')}` : `plugins/${name}`;
+          } else {
+            subpath = rest.join('/');
+          }
+          const trail = subpath ? `/${subpath}` : '';
+          return `https://github.com/${owner}/${repo}/tree/main${trail}`;
         };
         root.innerHTML = entries.map(([name, p]) => {
           const url = githubUrlFor(name, p);
