@@ -32,7 +32,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       if (!args[0]) {
         return {
           ok: false,
-          error: "usage: maw wake <oracle|org/repo|URL> [task] [--task \"<prompt>\"] [--wt <name>] [--fresh] [--attach] [--issue N] [--pr N] [--repo org/name] [--list] [--all-local]\n       maw wake all [--kill]\n       (--new is a deprecated alias for --wt, removed in alpha.114)",
+          error: "usage: maw wake <oracle|org/repo|URL> [task] [--task \"<prompt>\"] [--wt <name>] [--fresh] [--attach] [--issue N] [--pr N] [--repo org/name] [--list] [--all-local] [--peer <alias>]\n       maw wake all [--kill]\n       (--new is a deprecated alias for --wt, removed in alpha.114)",
         };
       }
 
@@ -55,7 +55,12 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         "--list": Boolean, "--ls": "--list",
         "--split": Boolean,
         "--all-local": Boolean,
+        "--peer": String,
       }, 1);
+
+      if (flags["--peer"]) {
+        return await forwardToPeer(flags["--peer"], args[0], flags);
+      }
 
       const wakeOpts: {
         task?: string; wt?: string; prompt?: string;
@@ -111,12 +116,21 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
     const oracle = body.oracle as string | undefined;
     if (!oracle) return { ok: false, error: "missing oracle name" };
 
-    const wakeOpts: { task?: string; prompt?: string; fresh?: boolean; attach?: boolean } = {};
+    const wakeOpts: {
+      task?: string; prompt?: string; wt?: string;
+      fresh?: boolean; attach?: boolean;
+    } = {};
     if (body.task) wakeOpts.task = body.task as string;
+    if (body.wt) wakeOpts.wt = body.wt as string;
+    if (body.prompt) wakeOpts.prompt = body.prompt as string;
     if (body.issue) {
       const issueNum = body.issue as number;
       wakeOpts.prompt = await fetchGitHubPrompt("issue", issueNum, body.repo as string | undefined);
       if (!wakeOpts.task) wakeOpts.task = `issue-${issueNum}`;
+    } else if (body.pr) {
+      const prNum = body.pr as number;
+      wakeOpts.prompt = await fetchGitHubPrompt("pr", prNum, body.repo as string | undefined);
+      if (!wakeOpts.task) wakeOpts.task = `pr-${prNum}`;
     }
     if (body.fresh) wakeOpts.fresh = true;
     if (body.attach) wakeOpts.attach = true;
@@ -129,4 +143,59 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
     console.log = origLog;
     console.error = origError;
   }
+}
+
+/**
+ * Forward a `maw wake` CLI invocation to a federation peer's /api/wake
+ * endpoint instead of spawning a local tmux session. Enables cross-node
+ * agent dispatch (e.g. brain → headless GPU node) without bespoke wrappers.
+ *
+ * Alias lookup goes through `~/.maw/peers.json` (the same store managed by
+ * `maw peers`). Unknown alias surfaces as an `ok: false` plugin error
+ * rather than throwing, so the CLI layer prints a clean message. Network
+ * + non-2xx responses are mapped the same way.
+ *
+ * The forwarded body is a subset of CLI flags translated into the API
+ * handler's vocabulary (above): `oracle`, optional worktree `task`/`wt`,
+ * `prompt`, `issue`/`pr`/`repo`, `fresh`. Attach is intentionally not
+ * forwarded — there is no local tmux to attach to on the remote node.
+ */
+async function forwardToPeer(
+  alias: string,
+  oracle: string,
+  flags: Record<string, any>,
+): Promise<InvokeResult> {
+  const { resolvePeer } = await import("./internal/peer-resolve");
+  const peer = resolvePeer(alias);
+  if (!peer) return { ok: false, error: `unknown peer alias: ${alias} (see: maw peers list)` };
+
+  const positionals: string[] = Array.isArray(flags._) ? flags._ : [];
+  const body: Record<string, unknown> = { oracle };
+  if (positionals.length > 0) body.task = positionals[0];
+  if (flags["--wt"]) body.wt = flags["--wt"];
+  if (flags["--task"]) body.prompt = flags["--task"];
+  if (flags["--issue"]) body.issue = flags["--issue"];
+  if (flags["--pr"]) body.pr = flags["--pr"];
+  if (flags["--repo"]) body.repo = flags["--repo"];
+  if (flags["--fresh"]) body.fresh = true;
+
+  const { callPeerWake } = await import("./internal/peer-call");
+  let res: { ok: boolean; status?: number; data?: any };
+  try {
+    res = await callPeerWake(peer.url, body);
+  } catch (e: any) {
+    return { ok: false, error: `peer wake failed (${alias} ${peer.url}): ${e?.message || e}` };
+  }
+
+  if (!res?.ok) {
+    if (res?.status === 404) {
+      return { ok: false, error: `peer ${alias} does not support /api/wake (HTTP 404 at ${peer.url})` };
+    }
+    const detail = res?.data?.error || (res?.status ? `HTTP ${res.status}` : "no response");
+    return { ok: false, error: `peer wake failed (${alias} ${peer.url}): ${detail}` };
+  }
+
+  const summary = `\x1b[32m⚡\x1b[0m forwarded wake → ${alias} (${peer.url}) — ${oracle}`;
+  const remoteOut = typeof res.data?.output === "string" ? res.data.output : "";
+  return { ok: true, output: remoteOut ? `${summary}\n${remoteOut}` : summary };
 }
