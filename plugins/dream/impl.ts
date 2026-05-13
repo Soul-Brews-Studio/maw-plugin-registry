@@ -81,7 +81,7 @@ export async function cmdDream(flags: DreamFlags): Promise<void> {
   console.log(`\n  \x1b[35m☾\x1b[0m \x1b[1mDream\x1b[0m — ${dateStr}\n`);
 
   const arrsAvailable = await checkArra();
-  console.log("  \x1b[90mscanning...\x1b[0m");
+  console.log("  \x1b[90mdreaming...\x1b[0m");
   const repos = await scanRepoStates();
   const activeRepos = repos.filter(r => r.staleDays < 14);
 
@@ -132,7 +132,7 @@ async function cmdDreamProject(projectName: string, flags: DreamFlags): Promise<
   const arrsAvailable = await checkArra();
   console.log(arrsAvailable ? `  \x1b[32m✓\x1b[0m oracle KB connected` : `  \x1b[33m⚠\x1b[0m oracle KB offline`);
 
-  console.log("  \x1b[90mscanning...\x1b[0m");
+  console.log("  \x1b[90mdreaming...\x1b[0m");
   const repos = await scanRepoStates();
   // Forgiving lookup: try directory name, display name, and either
   // form stripped of -oracle suffix. Substring match (either direction)
