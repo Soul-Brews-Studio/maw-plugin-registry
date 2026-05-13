@@ -7,7 +7,7 @@ export const command = {
   description: "Smart attach — local live, sleeping fleet, or remote-live peer (#25 + #1236).",
 };
 
-const USAGE = "usage: maw attach <name> [--dry-run] [-y|--yes] [--node <n>] [--remote-only]";
+const USAGE = "usage: maw attach <name> [--dry-run] [-y|--yes] [--node <n>] [--remote-only] [--no-ssh]";
 
 export default async function handler(ctx: InvokeContext): Promise<InvokeResult> {
   const logs: string[] = [];
@@ -33,6 +33,8 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
           "-y": "--yes",
           "--node": String,
           "--remote-only": Boolean,
+          "--no-ssh": Boolean,
+          "--choose": "--no-ssh",
         },
         0,
       );
@@ -48,6 +50,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         yes: flags["--yes"],
         node: flags["--node"],
         remoteOnly: flags["--remote-only"],
+        noSsh: flags["--no-ssh"],
       });
     } else if (ctx.source === "api") {
       const body = ctx.args as Record<string, unknown>;
@@ -59,6 +62,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         yes: true,
         node: body.node as string | undefined,
         remoteOnly: body.remoteOnly as boolean | undefined,
+        noSsh: body.noSsh as boolean | undefined,
       });
     }
 

@@ -28,10 +28,20 @@ export interface AttachOpts {
   /** Skip Tier 1/2 entirely and only consider remote peers. */
   remoteOnly?: boolean;
   /**
+   * Tier 3 only: print strategy hints (ssh / clone / sync) and exit without
+   * SSH-attaching. Scripts that don't want the auto-attach can pass this.
+   * Closes part of #1289 — additive, doesn't change the default. */
+  noSsh?: boolean;
+  /**
    * Test seam — swap the cross-node SSH attach with a stub. Defaults to the
    * real `attachRemoteSession` from maw-js/sdk.
    */
   ssh?: typeof attachRemoteSession;
+  /**
+   * Test seam — pause helper used before auto-SSH-attach so the hint is
+   * visible. Defaults to a 1s sleep; tests pass a no-op.
+   */
+  sleep?: (ms: number) => Promise<void>;
 }
 
 /**
@@ -153,9 +163,22 @@ export async function cmdAttach(name: string, opts: AttachOpts = {}): Promise<vo
       return;
     }
 
+    // Strategy-hint block (closes #1289 — additive, default still auto-SSH).
+    // Shown BEFORE the SSH call so the user has a beat to Ctrl-C and pick a
+    // different verb. `--no-ssh` exits after the hints (scripts opt out).
     console.log(`  \x1b[36m→\x1b[0m '${result.sessionName}' is on ${result.node} (peer ${result.peerUrl})`);
     console.log(`  \x1b[90m  ssh ${result.sshAlias} → tmux attach -t '${result.sessionName}'\x1b[0m`);
+    console.log(`  \x1b[90m  hint: alternatives:\x1b[0m`);
+    console.log(`  \x1b[90m    maw clone ${name}   — clone repo + wake locally  (future)\x1b[0m`);
+    console.log(`  \x1b[90m    maw sync ${name}    — sync session, continue here (future)\x1b[0m`);
+    if (opts.noSsh) {
+      console.log(`  \x1b[90m  (--no-ssh: not attaching; pick a strategy and re-run)\x1b[0m`);
+      return;
+    }
+    console.log(`  \x1b[90m  (auto-attaching via SSH in 1s, Ctrl-C to choose)\x1b[0m`);
     console.log(`  \x1b[90m  hint: detach with prefix+d to return to your local shell\x1b[0m`);
+    const sleep = opts.sleep ?? ((ms: number) => new Promise(r => setTimeout(r, ms)));
+    await sleep(1000);
     const ssh = opts.ssh ?? attachRemoteSession;
     try {
       ssh({

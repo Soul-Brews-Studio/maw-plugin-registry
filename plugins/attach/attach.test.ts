@@ -500,7 +500,7 @@ test("Tier 3 handler: happy path — calls attachRemoteSession with right args",
   });
   try {
     const { cmdAttach } = await import("./impl");
-    await cmdAttach("homekeeper");
+    await cmdAttach("homekeeper", { sleep: async () => {} });
     expect(ctx.sshCalls.length).toBe(1);
     expect(ctx.sshCalls[0]).toEqual({
       node: "mba",
@@ -521,7 +521,7 @@ test("Tier 3 handler: namedPeers.ssh override is used as sshAlias", async () => 
   });
   try {
     const { cmdAttach } = await import("./impl");
-    await cmdAttach("homekeeper");
+    await cmdAttach("homekeeper", { sleep: async () => {} });
     expect(ctx.sshCalls[0].sshAlias).toBe("mba-tunnel");
   } finally {
     ctx.restore();
@@ -553,7 +553,7 @@ test("Tier 3 handler: ssh exit 255 / Connection refused → throws UserError-ish
   try {
     const { cmdAttach } = await import("./impl");
     let threw: Error | null = null;
-    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    try { await cmdAttach("homekeeper", { sleep: async () => {} }); } catch (e) { threw = e as Error; }
     expect(threw).not.toBeNull();
     expect(threw!.message).toContain("can't reach mba");
   } finally {
@@ -571,7 +571,7 @@ test("Tier 3 handler: Permission denied → auth-failed UserError", async () => 
   try {
     const { cmdAttach } = await import("./impl");
     let threw: Error | null = null;
-    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    try { await cmdAttach("homekeeper", { sleep: async () => {} }); } catch (e) { threw = e as Error; }
     expect(threw).not.toBeNull();
     expect(threw!.message).toContain("no SSH key for mba");
   } finally {
@@ -589,7 +589,7 @@ test("Tier 3 handler: tmux not installed on remote → tmux-missing UserError", 
   try {
     const { cmdAttach } = await import("./impl");
     let threw: Error | null = null;
-    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    try { await cmdAttach("homekeeper", { sleep: async () => {} }); } catch (e) { threw = e as Error; }
     expect(threw).not.toBeNull();
     expect(threw!.message).toContain("tmux not installed on mba");
   } finally {
@@ -607,11 +607,72 @@ test("Tier 3 handler: ambiguous across peers — refuses, prints pin hint", asyn
   try {
     const { cmdAttach } = await import("./impl");
     let threw: Error | null = null;
-    try { await cmdAttach("homekeeper"); } catch (e) { threw = e as Error; }
+    try { await cmdAttach("homekeeper", { sleep: async () => {} }); } catch (e) { threw = e as Error; }
     expect(threw).not.toBeNull();
     expect(threw!.message).toMatch(/ambiguous/i);
     expect(ctx.sshCalls.length).toBe(0);
   } finally {
+    ctx.restore();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. Tier 3 strategy hints (#1289) — print alternatives before auto-SSH
+// ─────────────────────────────────────────────────────────────────────────────
+
+test("Tier 3 hints: hint lines print BEFORE the SSH call", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  });
+  const lines: string[] = [];
+  const origLog = console.log;
+  let sshCalledAfterHints = false;
+  console.log = (...a: any[]) => { lines.push(a.map(String).join(" ")); };
+  try {
+    const { cmdAttach } = await import("./impl");
+    await cmdAttach("homekeeper", {
+      sleep: async () => {
+        // At sleep time, hints must already be in the buffer and SSH must not
+        // have been called yet — proves ordering.
+        sshCalledAfterHints = ctx.sshCalls.length === 0;
+      },
+    });
+    console.log = origLog;
+
+    const all = lines.join("\n");
+    expect(all).toMatch(/maw clone homekeeper/);
+    expect(all).toMatch(/maw sync homekeeper/);
+    expect(all).toMatch(/auto-attaching via SSH in 1s/);
+    expect(sshCalledAfterHints).toBe(true);
+    expect(ctx.sshCalls.length).toBe(1);
+  } finally {
+    console.log = origLog;
+    ctx.restore();
+  }
+});
+
+test("Tier 3 --no-ssh: prints hints and exits without SSH-attaching", async () => {
+  const ctx = setupTier3Mocks({
+    aggregated: [
+      { name: "24-homekeeper", windows: [{ name: "x" }], source: "http://mba.wg:9090", node: "mba" },
+    ],
+  });
+  const lines: string[] = [];
+  const origLog = console.log;
+  console.log = (...a: any[]) => { lines.push(a.map(String).join(" ")); };
+  try {
+    const { cmdAttach } = await import("./impl");
+    await cmdAttach("homekeeper", { noSsh: true, sleep: async () => {} });
+    console.log = origLog;
+    const all = lines.join("\n");
+    expect(all).toMatch(/maw clone homekeeper/);
+    expect(all).toMatch(/maw sync homekeeper/);
+    expect(all).toMatch(/not attaching/);
+    expect(ctx.sshCalls.length).toBe(0);
+  } finally {
+    console.log = origLog;
     ctx.restore();
   }
 });
