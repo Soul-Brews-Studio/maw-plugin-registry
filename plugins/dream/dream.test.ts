@@ -108,6 +108,10 @@ describe("extractRepo", () => {
     expect(extractRepo("../ghq/github.com/deachawatss/leaf-oracle/.claude/worktrees/agent-abc123/ψ/memory/file.md")).toBe("leaf");
   });
 
+  it("strips -Oracle suffix case-insensitively", () => {
+    expect(extractRepo("../ghq/github.com/Soul-Brews-Studio/DustBoy-Phd-Oracle/ψ/memory/file.md")).toBe("DustBoy-Phd");
+  });
+
   it("returns unknown when no ψ marker", () => {
     expect(extractRepo("/some/random/path/file.md")).toBe("unknown");
   });
