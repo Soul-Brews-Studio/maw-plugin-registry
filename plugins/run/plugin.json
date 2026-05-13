@@ -9,5 +9,7 @@
     "command": "run",
     "help": "maw run <target> \"<cmd>\" — type text into a tmux pane and press Enter"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

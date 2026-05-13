@@ -12,5 +12,7 @@
     ],
     "help": "maw find <keyword> [--oracle <name>] — search across agents and fleet data"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

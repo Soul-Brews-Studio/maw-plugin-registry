@@ -86,10 +86,13 @@ The `source` field is a bare github-style locator: `owner/repo[/subpath][@ref]`.
 "source": "soul-brews-studio/maw-plugin-registry/bg@v0.1.2-bg"
 ```
 
-The legacy `github:owner/repo#ref` form is being phased out — see
-[`scripts/migrate-source-format.ts`](./scripts/migrate-source-format.ts). Once
-the github: resolver in maw-js ships (maw-js#939), that script will rewrite all
-existing `monorepo:plugins/<name>@<tag>` entries to the bare form above.
+The migration from `monorepo:plugins/<name>@<tag>` to the bare
+`owner/repo/<name>@<tag>` form has shipped — all 72 entries now use the bare
+github form (see PR #6 + the federation/swarm finisher). The legacy
+`github:owner/repo#ref` form remains accepted for third-party entries but is
+being phased out. CI enforces this via
+[`scripts/migrate-source-format.ts --check`](./scripts/migrate-source-format.ts),
+which fails on any unknown source shape.
 
 ### Optional fields
 
@@ -100,9 +103,48 @@ existing `monorepo:plugins/<name>@<tag>` entries to the bare form above.
 
 ## What CI checks
 
-Every PR runs a JSONSchema validation against
-[`schema/registry.json`](./schema/registry.json). Keep your entry valid and the
-check turns green.
+Two workflows run on every PR:
+
+### Validation Checks
+
+**Fast checks** ([`.github/workflows/validate.yml`](./.github/workflows/validate.yml))
+— always run, seconds to complete:
+
+| check | what it does |
+|-------|--------------|
+| JSONSchema validate | `registry.json` validates against [`schema/registry.json`](./schema/registry.json) |
+| source-format guard | `bun scripts/migrate-source-format.ts --check` — rejects any unknown source shape |
+| source-format self-test | `bun scripts/migrate-source-format.ts --self-test` |
+
+**Deep PR checks** ([`.github/workflows/validate-pr.yml`](./.github/workflows/validate-pr.yml))
+— run when `registry.json`, `plugins/**`, or `schema/**` change:
+
+| step | what it does |
+|------|--------------|
+| detect changed plugins | scopes downstream checks to plugins touched by your PR |
+| regenerate-and-clean | runs `python3 scripts/build-registry.py` and asserts no `registry.json` drift — catches "forgot to run the build script" |
+| plugin-json | per-plugin JSONSchema validation of `plugins/<name>/plugin.json` against [`schema/plugin.json`](./schema/plugin.json) |
+| license | each touched plugin's `license` field must be one of: `MIT`, `Apache-2.0`, `BUSL-1.1`, `ISC`, `BSD-2-Clause`, `BSD-3-Clause` |
+| source-format | each touched plugin's `source` field matches the schema regex; legacy `monorepo:` prefix is rejected with a recovery hint |
+
+When a deep check fails, the workflow posts a comment on your PR with the
+expected/actual values and the exact recovery commands.
+
+**Deferred to a follow-up PR** (network-dependent, slow): `gh repo view` to
+prove the source repo exists, `gh release view` to prove the pinned ref is a
+GitHub release tag, and `sha256` verification of the resolved tarball. Tracked
+under defense-in-depth in issue #1.
+
+### Run the deep checks locally
+
+```bash
+# scan all plugins, warning-only on legacy entries
+bun scripts/validate-registry.ts --step source-format
+
+# scope to specific plugins (PR-equivalent — hard-fails on legacy)
+bun scripts/validate-registry.ts --step license --plugins my-plugin
+bun scripts/validate-registry.ts --step plugin-json --plugins my-plugin
+```
 
 ## Plugin side
 

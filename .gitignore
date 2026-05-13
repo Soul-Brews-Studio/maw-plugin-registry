@@ -3,3 +3,5 @@ node_modules/
 .wrangler/
 .env
 .env.*
+# transient PR-failure report written by scripts/validate-registry.ts
+.tmp-validate-failure.md

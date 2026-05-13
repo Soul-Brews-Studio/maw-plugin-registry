@@ -12,5 +12,7 @@
     ],
     "help": "maw broadcast <message> — broadcast a message to all agents"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

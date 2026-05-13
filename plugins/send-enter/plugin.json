@@ -9,5 +9,7 @@
     "command": "send-enter",
     "help": "maw send-enter <target> [--N <count>] — send Enter key to a tmux pane"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

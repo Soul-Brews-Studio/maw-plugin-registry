@@ -18,5 +18,7 @@
       "GET"
     ]
   },
-  "weight": 10
+  "weight": 10,
+  "license": "MIT",
+  "schemaVersion": 1
 }

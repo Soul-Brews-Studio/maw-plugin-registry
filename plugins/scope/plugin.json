@@ -7,8 +7,12 @@
   "author": "Soul-Brews-Studio",
   "cli": {
     "command": "scope",
-    "aliases": ["scopes"],
+    "aliases": [
+      "scopes"
+    ],
     "help": "maw scope <list|create|show|delete> [...] — manage routing scopes (Phase 1 of #642)"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

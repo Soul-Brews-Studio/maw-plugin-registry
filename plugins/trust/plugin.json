@@ -7,8 +7,12 @@
   "author": "Soul-Brews-Studio",
   "cli": {
     "command": "trust",
-    "aliases": ["trusts"],
+    "aliases": [
+      "trusts"
+    ],
     "help": "maw trust <list|add|remove> [...] — manage cross-scope trust pairs (Sub-B of #842)"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

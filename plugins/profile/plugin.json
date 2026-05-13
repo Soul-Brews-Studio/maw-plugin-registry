@@ -8,8 +8,12 @@
   "tier": "core",
   "cli": {
     "command": "profile",
-    "aliases": ["profiles"],
+    "aliases": [
+      "profiles"
+    ],
     "help": "maw profile <list|use|show|current> [...] — manage plugin profiles (Phase 1 of #640)"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

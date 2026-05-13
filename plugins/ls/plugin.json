@@ -12,5 +12,7 @@
     ],
     "help": "maw ls — list all agents and their status"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }
