@@ -1,0 +1,12 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "token",
+  "version": "0.1.0",
+  "description": "Store & restore .envrc files via pass, manage active Claude OAuth tokens (#54).",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+  "sdk": "^1.0.0",
+  "schemaVersion": 1,
+  "entry": "./index.ts"
+}

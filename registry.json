@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-01T21:12:35Z",
+  "updated": "2026-05-13T01:03:18Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -689,6 +689,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:40:04Z",
+      "tier": "extra"
+    },
+    "token": {
+      "version": "0.1.0",
+      "source": "soul-brews-studio/maw-plugin-registry/token@v0.1.0-token",
+      "sha256": null,
+      "summary": "Store & restore .envrc files via pass, manage active Claude OAuth tokens (#54).",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-13T03:30:00Z",
       "tier": "extra"
     },
     "triggers": {
