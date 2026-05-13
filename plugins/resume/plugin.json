@@ -12,5 +12,7 @@
     ],
     "help": "maw resume <agent> — resume a parked agent"
   },
-  "weight": 50
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
 }

@@ -26,5 +26,7 @@
       "POST"
     ]
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

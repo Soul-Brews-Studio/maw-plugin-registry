@@ -9,5 +9,7 @@
     "command": "pulse",
     "help": "maw pulse <add|ls|cleanup> [opts]"
   },
-  "weight": 10
+  "weight": 10,
+  "license": "MIT",
+  "schemaVersion": 1
 }

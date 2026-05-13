@@ -9,5 +9,7 @@
     "command": "attach",
     "help": "maw attach <name> [--dry-run] [-y] — attach to a live session, or wake from fleet and attach"
   },
-  "weight": 0
+  "weight": 0,
+  "license": "MIT",
+  "schemaVersion": 1
 }

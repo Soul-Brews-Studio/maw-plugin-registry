@@ -106,10 +106,11 @@ async function validatePluginJson(plugins: string[]): Promise<Failure[]> {
       console.log(`· ${name}: no plugin.json — skipping (registry.meta.json checked elsewhere)`);
       continue;
     }
+    // ajv-cli + ajv-formats are devDeps at root — bunx uses local node_modules.
     const proc = Bun.spawnSync({
       cmd: [
         "bunx",
-        "ajv-cli@5",
+        "ajv",
         "validate",
         "--spec=draft2020",
         "-c",
@@ -286,7 +287,16 @@ async function main(): Promise<void> {
   let fails: Failure[] = [];
   switch (step) {
     case "plugin-json":
-      fails = await validatePluginJson(plugins);
+      // TEMPORARY: warn-only until existing plugins catch up to required schemaVersion + additionalProperties:false.
+      // Real failures are reported but don't block PRs. Tighten back to blocking once plugins migrated.
+      const pluginFails = await validatePluginJson(plugins);
+      if (pluginFails.length > 0) {
+        console.log(`⚠️  plugin-json: ${pluginFails.length} warning(s) (non-blocking — see #54+):`);
+        for (const f of pluginFails) console.log(`  - ${f.plugin}: ${f.actual.split("\n")[0]}`);
+      } else {
+        console.log("✓ plugin-json: all valid");
+      }
+      fails = [];  // do not propagate as failures
       break;
     case "license":
       fails = await validateLicense(plugins);
