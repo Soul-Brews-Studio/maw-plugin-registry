@@ -48,25 +48,36 @@ const stripDash = (s: string) => s.replace(/-+$/, "");
  * Try every reasonable name comparison: exact, slot-suffix
  * (`-${target}`), and dash-trimmed stem. Matches the conventions
  * established by sleep/done resolvers.
+ *
+ * #1342 — when `fuzzy` is true, also accept a case-insensitive substring
+ * match (`n.includes(t)`). This is the second-pass mode used by
+ * `cmdAttach` AFTER `maw wake <input>` has succeeded: wake fuzzy-resolved
+ * the input (e.g. "wind" → "Somwind-oracle" → session "01-Somwind") but
+ * doesn't surface the resolved name structurally, so the original input no
+ * longer matches the freshly-created session under strict rules. Wake's
+ * success implies a fuzzy match exists; loosening the comparator finds it.
+ *
+ * Strict mode (default) is preserved for every other caller — fuzzy is
+ * opt-in and only enabled on the post-wake re-resolve callsite.
  */
-function nameMatches(name: string, target: string): boolean {
+function nameMatches(name: string, target: string, fuzzy: boolean = false): boolean {
   const n = name.toLowerCase();
   const t = target.toLowerCase();
-  return (
-    n === t ||
-    n.endsWith(`-${t}`) ||
-    stripDash(n) === stripDash(t)
-  );
+  if (n === t || n.endsWith(`-${t}`) || stripDash(n) === stripDash(t)) return true;
+  if (fuzzy && t.length > 0 && n.includes(t)) return true;
+  return false;
 }
 
 export async function resolveAttachTarget(
   target: string,
   deps: ResolveDeps,
+  opts: { fuzzy?: boolean } = {},
 ): Promise<ResolveResult> {
+  const fuzzy = Boolean(opts.fuzzy);
   const sessions = await deps.listSessions();
 
   // Tier 1 — live tmux session matches.
-  const runningMatches = sessions.filter(s => nameMatches(s.name, target));
+  const runningMatches = sessions.filter(s => nameMatches(s.name, target, fuzzy));
   if (runningMatches.length === 1) {
     return { tier: 1, sessionName: runningMatches[0].name };
   }
@@ -80,7 +91,7 @@ export async function resolveAttachTarget(
 
   // Tier 2 — fleet-registered, sleeping.
   const fleet = deps.loadFleet();
-  const fleetMatches = fleet.filter(f => nameMatches(f.name, target));
+  const fleetMatches = fleet.filter(f => nameMatches(f.name, target, fuzzy));
   if (fleetMatches.length === 1) {
     return { tier: 2, fleetName: fleetMatches[0].name };
   }
