@@ -1,16 +1,16 @@
 {
   "name": "ls",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "entry": "./index.ts",
   "sdk": "^1.0.0",
-  "description": "List all agents and their status.",
+  "description": "List sessions — local, on a federation peer, or aggregated across all peers.",
   "author": "Soul-Brews-Studio",
   "cli": {
     "command": "ls",
     "aliases": [
       "list"
     ],
-    "help": "maw ls — list all agents and their status"
+    "help": "maw ls [<peer>] [--all] [--json] [--fix] — list local or cross-node sessions"
   },
   "weight": 0,
   "license": "MIT",
