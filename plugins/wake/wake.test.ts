@@ -53,12 +53,37 @@ mock.module(join(src, "commands/shared/wake-resolve"), () => ({
   fetchGitHubPrompt: async (type: string, num: number) => `${type} #${num} prompt`,
 }));
 
+let lastResolveAlias: string | null = null;
+let resolvePeerImpl: (alias: string) => { url: string; node: string | null } | null = () => null;
+mock.module(join(import.meta.dir, "internal/peer-resolve"), () => ({
+  resolvePeer: (alias: string) => {
+    lastResolveAlias = alias;
+    return resolvePeerImpl(alias);
+  },
+}));
+
+let lastPeerCall: { url: string; body: any } | null = null;
+let peerCallImpl: () => any = () => ({ ok: true, status: 200, data: { ok: true, output: "remote-output" } });
+let peerCallThrows: Error | null = null;
+mock.module(join(import.meta.dir, "internal/peer-call"), () => ({
+  callPeerWake: async (url: string, body: any) => {
+    lastPeerCall = { url, body };
+    if (peerCallThrows) throw peerCallThrows;
+    return peerCallImpl();
+  },
+}));
+
 describe("wake plugin", () => {
   let handler: (ctx: InvokeContext) => Promise<any>;
 
   beforeEach(async () => {
     lastWakeCall = null;
     lastWakeAllCall = null;
+    lastResolveAlias = null;
+    lastPeerCall = null;
+    peerCallThrows = null;
+    resolvePeerImpl = () => null;
+    peerCallImpl = () => ({ ok: true, status: 200, data: { ok: true, output: "remote-output" } });
     const mod = await import("./index");
     handler = mod.default;
   });
@@ -154,5 +179,70 @@ describe("wake plugin", () => {
     const result = await handler({ source: "cli", args: ["neo"] });
     expect(result.ok).toBe(true);
     expect(lastWakeCall?.opts.attach).toBeUndefined();
+  });
+
+  it("CLI --peer <alias>: forwards body to peer /api/wake, skips local cmdWake", async () => {
+    resolvePeerImpl = (alias) => alias === "headless" ? { url: "http://10.0.0.5:7777", node: "gpu" } : null;
+    const result = await handler({
+      source: "cli",
+      args: ["neo", "fix-bug", "--peer", "headless", "--task", "go fix it", "--wt", "wt-1", "--fresh"],
+    });
+    expect(result.ok).toBe(true);
+    expect(lastResolveAlias).toBe("headless");
+    expect(lastWakeCall).toBeNull(); // local wake must NOT run
+    expect(lastPeerCall?.url).toBe("http://10.0.0.5:7777");
+    expect(lastPeerCall?.body).toEqual({
+      oracle: "neo",
+      task: "fix-bug",
+      wt: "wt-1",
+      prompt: "go fix it",
+      fresh: true,
+    });
+  });
+
+  it("CLI --peer <unknown>: returns clear error, no fetch attempted", async () => {
+    resolvePeerImpl = () => null;
+    const result = await handler({ source: "cli", args: ["neo", "--peer", "nope"] });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("unknown peer alias: nope");
+    expect(lastPeerCall).toBeNull();
+    expect(lastWakeCall).toBeNull();
+  });
+
+  it("CLI --peer with peer returning HTTP 404: surfaces 'does not support' error", async () => {
+    resolvePeerImpl = () => ({ url: "http://10.0.0.5:7777", node: "gpu" });
+    peerCallImpl = () => ({ ok: false, status: 404, data: {} });
+    const result = await handler({ source: "cli", args: ["neo", "--peer", "headless"] });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("does not support /api/wake");
+    expect(lastWakeCall).toBeNull();
+  });
+
+  it("CLI --peer with peer returning HTTP 500: surfaces underlying detail", async () => {
+    resolvePeerImpl = () => ({ url: "http://10.0.0.5:7777", node: "gpu" });
+    peerCallImpl = () => ({ ok: false, status: 500, data: { error: "spawn failed" } });
+    const result = await handler({ source: "cli", args: ["neo", "--peer", "headless"] });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("peer wake failed");
+    expect(result.error).toContain("spawn failed");
+  });
+
+  it("CLI --peer with network failure: surfaces error", async () => {
+    resolvePeerImpl = () => ({ url: "http://10.0.0.5:7777", node: "gpu" });
+    peerCallThrows = new Error("connection refused");
+    const result = await handler({ source: "cli", args: ["neo", "--peer", "headless"] });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("peer wake failed");
+    expect(result.error).toContain("connection refused");
+  });
+
+  it("API: { oracle, prompt, wt } → cmdWake receives prompt + wt", async () => {
+    const result = await handler({
+      source: "api",
+      args: { oracle: "neo", prompt: "do thing", wt: "wt-99" },
+    });
+    expect(result.ok).toBe(true);
+    expect(lastWakeCall?.opts.prompt).toBe("do thing");
+    expect(lastWakeCall?.opts.wt).toBe("wt-99");
   });
 });
