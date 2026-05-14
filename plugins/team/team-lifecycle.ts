@@ -165,7 +165,7 @@ export function cmdTeamCreate(name: string, opts: { description?: string } = {})
 export async function cmdTeamSpawn(
   teamName: string,
   role: string,
-  opts: { model?: string; prompt?: string; exec?: boolean } = {},
+  opts: { model?: string; prompt?: string; exec?: boolean; cwd?: string } = {},
 ) {
   const PSI = resolvePsi();
   const teamDir = join(PSI, "memory", "mailbox", "teams", teamName);
@@ -202,6 +202,8 @@ export async function cmdTeamSpawn(
 
   // Build spawn prompt
   const model = opts.model || "sonnet";
+  const shellQuote = (s: string) => `'${s.replace(/'/g, "'\\''")}'`;
+  const cwdPrefix = opts.cwd ? `cd ${shellQuote(opts.cwd)} && ` : "";
   const parts: string[] = [];
   parts.push(`You are '${role}' on team '${teamName}'.`);
   if (opts.prompt) parts.push(opts.prompt);
@@ -249,23 +251,23 @@ export async function cmdTeamSpawn(
     if (!process.env.TMUX) {
       console.log();
       console.log(`  \x1b[33m⚠\x1b[0m --exec requires an active tmux session ($TMUX not set).`);
-      console.log(`  \x1b[36mRun manually:\x1b[0m claude --model ${model} --prompt-file "${promptPath}"`);
+      console.log(`  \x1b[36mRun manually:\x1b[0m ${cwdPrefix}claude --model ${model} --prompt-file "${promptPath}"`);
       return;
     }
     try {
       const { hostExec } = await import("maw-js/sdk");
-      const claudeCmd = `claude --model ${model} --prompt-file '${promptPath.replace(/'/g, "'\\''")}'`;
+      const claudeCmd = `${cwdPrefix}claude --model ${model} --prompt-file '${promptPath.replace(/'/g, "'\\''")}'`;
       await hostExec(`tmux split-window -h -l 50% '${claudeCmd.replace(/'/g, "'\\''")}'`);
       console.log();
       console.log(`  \x1b[32m✓ --exec\x1b[0m spawned ${role} in a new tmux pane (right, 50%)`);
     } catch (e: any) {
       console.log();
       console.log(`  \x1b[33m⚠\x1b[0m --exec split failed: ${e?.message || e}`);
-      console.log(`  \x1b[36mRun manually:\x1b[0m claude --model ${model} --prompt-file "${promptPath}"`);
+      console.log(`  \x1b[36mRun manually:\x1b[0m ${cwdPrefix}claude --model ${model} --prompt-file "${promptPath}"`);
     }
     return;
   }
 
   console.log();
-  console.log(`  \x1b[36mRun:\x1b[0m claude --model ${model} --prompt-file "${promptPath}"`);
+  console.log(`  \x1b[36mRun:\x1b[0m ${cwdPrefix}claude --model ${model} --prompt-file "${promptPath}"`);
 }

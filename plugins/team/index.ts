@@ -7,6 +7,7 @@ import {
   cmdTeamSend, cmdTeamResume, cmdTeamLives,
 } from "./impl";
 import { parseFlags } from "maw-js/cli/parse-args";
+import { hostExec } from "maw-js/sdk";
 
 export const command = {
   name: "team",
@@ -26,6 +27,22 @@ export const command = {
 function resolveTeamFromContext(): string {
   const envTeam = process.env.MAW_TEAM;
   if (envTeam) return envTeam;
+
+  if (process.env.TMUX) {
+    try {
+      const sessionName = Bun.spawnSync({
+        cmd: ["tmux", "display-message", "-p", "#{session_name}"],
+        stdout: "pipe",
+        stderr: "pipe",
+      }).stdout.toString().trim();
+      const teamName = sessionName.replace(/^\d+-/, "");
+      const teamsDir = join(homedir(), ".claude/teams");
+      if (teamName && existsSync(join(teamsDir, teamName, "config.json"))) {
+        return teamName;
+      }
+    } catch { /* not in tmux or tmux failed */ }
+  }
+
   const teamsDir = join(homedir(), ".claude/teams");
   try {
     const live = readdirSync(teamsDir).filter(d =>
@@ -62,20 +79,33 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       cmdTeamCreate(args[1], { description });
     } else if (sub === "spawn") {
       if (!args[1] || !args[2]) {
-        logs.push("usage: maw team spawn <team> <role> [--model <model>] [--prompt <text>] [--exec]");
+        logs.push("usage: maw team spawn <team> <role> [--model <model>] [--cwd <path>] [--worktree <path>] [--prompt <text>] [--exec]");
         return { ok: false, error: "team and role required", output: logs.join("\n") };
       }
       const modelIdx = args.indexOf("--model");
       const model = modelIdx !== -1 ? args[modelIdx + 1] : undefined;
+      const cwdIdx = args.indexOf("--cwd");
+      const worktreeIdx = args.indexOf("--worktree");
+      const cwd = cwdIdx !== -1 ? args[cwdIdx + 1] : (worktreeIdx !== -1 ? args[worktreeIdx + 1] : undefined);
       const promptIdx = args.indexOf("--prompt");
       const exec = args.includes("--exec");
-      // --prompt is greedy to end-of-argv; strip --exec if it appears in the tail
+      // --prompt is greedy to end-of-argv; strip known flags if they appear in the tail.
       let prompt: string | undefined;
       if (promptIdx !== -1) {
-        const tail = args.slice(promptIdx + 1).filter(a => a !== "--exec");
+        const rawTail = args.slice(promptIdx + 1);
+        const tail: string[] = [];
+        for (let i = 0; i < rawTail.length; i++) {
+          const a = rawTail[i];
+          if (a === "--exec") continue;
+          if (a === "--model" || a === "--cwd" || a === "--worktree") {
+            i++;
+            continue;
+          }
+          tail.push(a);
+        }
         prompt = tail.join(" ") || undefined;
       }
-      await cmdTeamSpawn(args[1], args[2], { model, prompt, exec });
+      await cmdTeamSpawn(args[1], args[2], { model, prompt, exec, cwd });
     } else if (sub === "send" || sub === "msg") {
       if (!args[1] || !args[2] || !args[3]) {
         logs.push("usage: maw team send <team> <agent> <message>");
@@ -218,9 +248,37 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
         || resolveTeamFromContext();
       cmdOracleMembers(team);
 
+    } else if (sub === "enter" || sub === "send-enter") {
+      // maw team enter <agent|all> — submit pending input in agent pane(s)
+      const agent = args[1];
+      if (!agent) {
+        logs.push("usage: maw team enter <agent|all>");
+        return { ok: false, error: "agent required", output: logs.join("\n") };
+      }
+      const teamName = resolveTeamFromContext();
+      const { loadTeam } = await import("./team-helpers");
+      const team = loadTeam(teamName);
+      if (!team) {
+        logs.push(`\x1b[33m⚠\x1b[0m team '${teamName}' not found`);
+        return { ok: false, error: "team not found", output: logs.join("\n") };
+      }
+      const members = team.members.filter(m =>
+        m.tmuxPaneId && m.agentType !== "team-lead" &&
+        (agent === "all" || m.name === agent || m.agentId === agent || m.agentId === `${agent}@${teamName}`)
+      );
+      if (!members.length) {
+        logs.push(`\x1b[33m⚠\x1b[0m agent '${agent}' not found or no pane ID`);
+        logs.push(`Available: ${team.members.filter(m => m.tmuxPaneId).map(m => m.name).join(", ") || "none"}`);
+        return { ok: false, error: "agent not found", output: logs.join("\n") };
+      }
+      for (const m of members) {
+        await hostExec(`tmux send-keys -t '${m.tmuxPaneId}' Enter`);
+        console.log(`\x1b[36m↵\x1b[0m enter sent to ${m.agentId || m.name}`);
+      }
+
     } else {
       logs.push(`unknown team subcommand: ${sub}`);
-      logs.push("usage: maw team <create|spawn|send|shutdown|resume|lives|list|status|add|tasks|done|assign|delete|invite|oracle-invite|oracle-remove|members>");
+      logs.push("usage: maw team <create|spawn|send|shutdown|resume|lives|list|status|add|tasks|done|assign|delete|invite|oracle-invite|oracle-remove|members|enter>");
       return { ok: false, error: `unknown subcommand: ${sub}`, output: logs.join("\n") };
     }
 
