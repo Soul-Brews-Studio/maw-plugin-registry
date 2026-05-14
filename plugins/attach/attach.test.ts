@@ -91,6 +91,95 @@ test("resolver: live session takes precedence over fleet entry", async () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 1b. #1342 — fuzzy mode (post-wake re-resolve)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Strict mode is the default for every direct caller (`maw attach <name>`).
+// Fuzzy is opt-in via `{ fuzzy: true }` and is ONLY used by cmdAttach's
+// post-wake re-resolve path: wake resolves "wind" → "01-Somwind" but doesn't
+// surface the resolved name to the caller, so the original input no longer
+// matches under strict rules. Loosening the comparator catches wake's intent.
+//
+// Tests verify: fuzzy positive match, fuzzy false-positive guard, strict
+// default preserved (bare fuzzy input misses), and exact-input still wins.
+
+test("#1342 resolver: fuzzy mode — substring match resolves 'wind' → '01-Somwind'", async () => {
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "Somwind-oracle" }] }], []);
+  const r = await resolveAttachTarget("wind", deps, { fuzzy: true });
+  expect(r).toEqual({ tier: 1, sessionName: "01-Somwind" });
+});
+
+test("#1342 resolver: fuzzy mode — case-insensitive substring ('WIND' → '01-Somwind')", async () => {
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("WIND", deps, { fuzzy: true });
+  expect(r).toEqual({ tier: 1, sessionName: "01-Somwind" });
+});
+
+test("#1342 resolver: fuzzy mode — non-match still returns null (no false positives)", async () => {
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("zebra", deps, { fuzzy: true });
+  expect(r).toBeNull();
+});
+
+test("#1342 resolver: STRICT default preserved — bare 'wind' against '01-Somwind' → null", async () => {
+  // Regression test for the very bug #1342 fixes: under strict rules, the
+  // post-wake re-resolve missed the freshly-created session because the
+  // resolved name wasn't surfaced. This confirms strict mode (the default
+  // for every other caller) is unchanged — only the opt-in fuzzy path loosens.
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("wind", deps);
+  expect(r).toBeNull();
+});
+
+test("#1342 resolver: STRICT default — bare fuzzy input misses without opts.fuzzy", async () => {
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("wind", deps, { fuzzy: false });
+  expect(r).toBeNull();
+});
+
+test("#1342 resolver: exact name still wins under fuzzy mode (no degradation)", async () => {
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("01-Somwind", deps, { fuzzy: true });
+  expect(r).toEqual({ tier: 1, sessionName: "01-Somwind" });
+});
+
+test("#1342 resolver: slot-suffix match still works under fuzzy mode", async () => {
+  // Strict rule (n.endsWith(`-${t}`)) should still pass first under fuzzy.
+  const deps = makeDeps([{ name: "24-discord-oracle", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("discord-oracle", deps, { fuzzy: true });
+  expect(r).toEqual({ tier: 1, sessionName: "24-discord-oracle" });
+});
+
+test("#1342 resolver: fuzzy reaches Tier 2 — substring matches sleeping fleet entry", async () => {
+  const deps = makeDeps([], [{ name: "01-Somwind", windows: [{ name: "x" }] }]);
+  const r = await resolveAttachTarget("wind", deps, { fuzzy: true });
+  expect(r).toEqual({ tier: 2, fleetName: "01-Somwind" });
+});
+
+test("#1342 resolver: fuzzy with empty target string → null (defensive)", async () => {
+  // Guard against `t.length > 0` regression — empty target must never match
+  // every session via the includes("") short-circuit.
+  const deps = makeDeps([{ name: "01-Somwind", windows: [{ name: "x" }] }], []);
+  const r = await resolveAttachTarget("", deps, { fuzzy: true });
+  expect(r).toBeNull();
+});
+
+test("#1342 resolver: fuzzy match still detects ambiguity", async () => {
+  // Two sessions both contain "win" — fuzzy must report ambiguous, not
+  // silently pick one. Same surface the strict-mode ambiguous case provides.
+  const deps = makeDeps(
+    [
+      { name: "01-Somwind", windows: [{ name: "x" }] },
+      { name: "02-Winterfell", windows: [{ name: "x" }] },
+    ],
+    [],
+  );
+  const r = await resolveAttachTarget("win", deps, { fuzzy: true });
+  expect(r?.tier).toBe(1);
+  expect(r?.ambiguousCandidates).toEqual(["01-Somwind", "02-Winterfell"]);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 2. Handler tests — cascade + flag plumbing
 // ─────────────────────────────────────────────────────────────────────────────
 

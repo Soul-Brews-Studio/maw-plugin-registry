@@ -72,7 +72,16 @@ export async function cmdAttach(name: string, opts: AttachOpts = {}): Promise<vo
     console.log(`  \x1b[36m·\x1b[0m '${name}' not local — delegating to wake`);
     await spawnMaw(["wake", name]);
     // Wake created the session. Re-resolve — should hit Tier 1 now.
-    const retried = await resolveAttachTarget(name, deps);
+    //
+    // #1342 — wake fuzzy-resolves the original input (e.g. "wind" →
+    // "Somwind-oracle", session "01-Somwind") but doesn't surface the
+    // resolved name structurally to this caller. A strict re-resolve using
+    // the original input therefore misses the session wake just created.
+    // Pass `fuzzy: true` so the second pass uses a case-insensitive
+    // substring comparator that matches wake's intent. Wake's success
+    // implies a fuzzy match exists; if not, the same `still not running
+    // after wake` error fires as before.
+    const retried = await resolveAttachTarget(name, deps, { fuzzy: true });
     if (retried && retried.tier === 1) {
       console.log(`  \x1b[32m→\x1b[0m attaching to ${retried.sessionName}`);
       await spawnMaw(["tmux", "attach", retried.sessionName]);
