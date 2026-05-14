@@ -32,6 +32,28 @@ maw() {
     command maw "$@"
   fi
 }
+# claude() wrapper — auto-fallback when --continue fails (no prior session).
+# Lets \`maw wake\` send a clean \`claude --dangerously-skip-permissions --continue\`
+# instead of a verbose \`{ X || Y; }\` fallback chain.
+claude() {
+  if [[ "$*" == *"--continue"* ]]; then
+    command claude "$@" || command claude "\${@/--continue/}"
+  else
+    command claude "$@"
+  fi
+}
+# claude46 — Opus 4.6 (1M context). Delegates to claude() for --continue fallback.
+claude46() {
+  ANTHROPIC_MODEL="claude-opus-4-6[1m]" claude "$@"
+}
+# claude47 — Opus 4.7. Delegates to claude() for --continue fallback.
+claude47() {
+  ANTHROPIC_MODEL="claude-opus-4-7" claude "$@"
+}
+# thclaws — CLI REPL mode. --accept-all = auto-approve (like --dangerously-skip-permissions).
+thclaws-cli() {
+  thclaws --cli --accept-all "$@"
+}
 # TODO(shellenv): tab completion for 'maw warp' via compdef + 'command maw completions oracles'
 `;
 }
