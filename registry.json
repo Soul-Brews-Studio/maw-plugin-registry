@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-13T08:09:59Z",
+  "updated": "2026-05-14T05:38:18Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -382,6 +382,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-05-13T13:45:00Z",
+      "tier": "extra"
+    },
+    "oracle-workon": {
+      "version": "0.1.0-alpha",
+      "source": "soul-brews-studio/maw-plugin-registry/oracle-workon@v0.1.0-alpha-oracle-workon",
+      "sha256": null,
+      "summary": "Alpha: Spawn a worktree team for oracle work \u2014 composes maw wake + maw swarm",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-14T12:00:00Z",
       "tier": "extra"
     },
     "overview": {
