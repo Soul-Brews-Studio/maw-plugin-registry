@@ -1,10 +1,7 @@
 import { describe, it, expect, mock } from "bun:test";
-import { join } from "path";
 import type { InvokeContext } from "maw-js/plugin/types";
 
-const root = join(import.meta.dir, "../../..");
-
-mock.module(join(root, "commands/shared/fleet"), () => ({
+mock.module("maw-js/commands/shared/fleet", () => ({
   cmdSleep: async () => {
     console.log("fleet stopped");
   },
