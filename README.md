@@ -29,6 +29,11 @@ The custom domain `maw.soulbrews.studio` is configured in the Cloudflare Pages
 dashboard (manual step by the maintainer — see the repo INCUBATED_BY breadcrumb
 for context).
 
+## How to use plugins
+
+If you are running `maw` and want to discover, install, enable, disable, or
+remove community plugins, see [USING.md](./USING.md).
+
 ## How to add a plugin
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). TL;DR: open a PR that appends one
