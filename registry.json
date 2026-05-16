@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-14T15:30:21Z",
+  "updated": "2026-05-16T17:11:29Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -251,6 +251,17 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:40:01Z",
       "tier": "extra"
+    },
+    "fleet-ui": {
+      "version": "0.1.0",
+      "source": "soul-brews-studio/maw-plugin-registry/fleet-ui@v0.1.0-fleet-ui",
+      "sha256": null,
+      "summary": "Browser dashboard for fleet control: list sessions and click wake/kill/done/sleep.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-16T17:00:00Z",
+      "tier": "standard"
     },
     "health": {
       "version": "0.1.0",

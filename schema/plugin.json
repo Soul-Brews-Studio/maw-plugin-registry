@@ -40,15 +40,68 @@
       "type": "string",
       "description": "Semver range of the maw-js plugin SDK the plugin targets."
     },
+    "target": {
+      "enum": ["js", "wasm"],
+      "description": "Plugin compile target. Current registry plugins normally use js."
+    },
     "entry": {
       "type": "string",
       "description": "Relative path to the plugin's entry module (e.g. ./index.ts)."
+    },
+    "weight": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Dispatch/order weight; lower values run first."
+    },
+    "tier": {
+      "enum": ["core", "standard", "extra"],
+      "description": "Default install tier for maw-js plugin loading."
     },
     "capabilities": {
       "type": "array",
       "items": { "type": "string" },
       "uniqueItems": true,
       "description": "Free-form capability strings the plugin advertises (e.g. \"attach:strategy\")."
+    },
+    "capabilityNamespaces": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true,
+      "description": "Plugin-owned capability namespaces accepted for this manifest."
+    },
+    "cli": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true
+        },
+        "help": {
+          "type": "string"
+        },
+        "flags": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^--[A-Za-z0-9][A-Za-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "enum": ["boolean", "string", "number"]
+          }
+        }
+      }
     },
     "strategy": {
       "type": "object",
@@ -72,6 +125,40 @@
           "uniqueItems": true,
           "items": {
             "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          }
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serve": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "Command a runner may use to start the persistent plugin process."
+            },
+            "prefix": {
+              "type": "string",
+              "pattern": "^/[A-Za-z0-9_\\-/.]*$",
+              "description": "Gateway prefix the process registers, e.g. /api/fleet-ui."
+            },
+            "health": {
+              "type": "string",
+              "pattern": "^/[A-Za-z0-9_\\-/.]*$"
+            },
+            "events": {
+              "type": "array",
+              "items": { "type": "string" },
+              "uniqueItems": true
+            },
+            "eventPath": {
+              "type": "string",
+              "pattern": "^/[A-Za-z0-9_\\-/.]*$"
+            }
           }
         }
       }
