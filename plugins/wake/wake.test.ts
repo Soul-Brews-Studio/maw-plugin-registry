@@ -8,10 +8,8 @@ let lastWakeAllCall: { opts: any } | null = null;
 // Bun's module cache key is the normalized path WITHOUT the .ts extension.
 // Use join() from the src root — same convention as stop.test.ts and other plugin
 // tests — so the mock key matches what bun uses for the dynamic imports in the handler.
-const src = join(import.meta.dir, "../../..");
-
 // Mock config to prevent getEnvVars resolution failure in CI (Bun 1.3 mock.module bug)
-mock.module(join(src, "config"), () => ({
+mock.module("maw-js/config", () => ({
   loadConfig: () => ({ node: "test", agents: {}, env: {} }),
   buildCommand: () => "echo test",
   getEnvVars: () => ({}),
@@ -21,7 +19,7 @@ mock.module(join(src, "config"), () => ({
   validateConfig: (c: any) => c,
 }));
 
-mock.module(join(src, "commands/shared/wake"), () => ({
+mock.module("maw-js/commands/shared/wake", () => ({
   cmdWake: async (oracle: string, opts: any) => {
     lastWakeCall = { oracle, opts };
     console.log(`woke ${oracle}`);
@@ -35,7 +33,7 @@ mock.module(join(src, "commands/shared/wake"), () => ({
   resolveFleetSession: () => null,
 }));
 
-mock.module(join(src, "commands/shared/fleet"), () => ({
+mock.module("maw-js/commands/shared/fleet", () => ({
   cmdWakeAll: async (opts: any) => {
     lastWakeAllCall = { opts };
     console.log("wake all");
@@ -44,12 +42,12 @@ mock.module(join(src, "commands/shared/fleet"), () => ({
   cmdWakeAll_: null,
 }));
 
-mock.module(join(src, "commands/shared/wake-target"), () => ({
+mock.module("maw-js/commands/shared/wake-target", () => ({
   parseWakeTarget: () => null,
   ensureCloned: async () => {},
 }));
 
-mock.module(join(src, "commands/shared/wake-resolve"), () => ({
+mock.module("maw-js/commands/shared/wake-resolve", () => ({
   fetchGitHubPrompt: async (type: string, num: number) => `${type} #${num} prompt`,
 }));
 
