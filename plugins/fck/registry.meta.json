@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "source": "soul-brews-studio/maw-plugin-registry/fck@v0.1.0-fck",
+  "sha256": null,
+  "summary": "thefuck-style typo and command correction for maw CLI and shell commands.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+  "addedAt": "2026-05-17T00:25:00Z",
+  "tier": "standard"
+}

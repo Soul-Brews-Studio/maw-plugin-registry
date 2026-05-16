@@ -1,0 +1,35 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "fck",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "tier": "standard",
+  "description": "thefuck-style typo and command correction for maw CLI and shell commands.",
+  "author": "Soul-Brews-Studio",
+  "capabilities": [
+    "shell:correct",
+    "proc:execute",
+    "sdk:plugin"
+  ],
+  "cli": {
+    "command": "fck",
+    "aliases": ["fuck", "please", "damnit"],
+    "help": "maw fck [--command <cmd>] [--stderr <text>] [--stdout <text>] [--json] [--execute --yes] [--ai] [--list]",
+    "flags": {
+      "--command": "string",
+      "--stderr": "string",
+      "--stdout": "string",
+      "--json": "boolean",
+      "--execute": "boolean",
+      "--yes": "boolean",
+      "--ai": "boolean",
+      "--spark": "boolean",
+      "--list": "boolean",
+      "--install-shell": "boolean"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}
