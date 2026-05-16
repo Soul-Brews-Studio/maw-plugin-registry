@@ -1,7 +1,7 @@
 import { describe, it, expect, mock } from "bun:test";
 import type { InvokeContext } from "maw-js/plugin/types";
 
-const { mockConfigModule } = await import("maw-js/test/helpers/mock-config");
+const { mockConfigModule } = await import("../../test/helpers/mock-config");
 
 mock.module("maw-js/config", () => mockConfigModule(() => ({
   namedPeers: [{ name: "white", url: "http://white.local:3456" }],

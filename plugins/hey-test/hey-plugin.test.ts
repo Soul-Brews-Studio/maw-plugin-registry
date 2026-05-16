@@ -31,7 +31,7 @@ mock.module("maw-js/plugin/registry", () => ({
   invokePlugin: async (_plugin: LoadedPlugin, _ctx: unknown) => fakeInvokeResult,
 }));
 
-const { mockConfigModule } = await import("maw-js/test/helpers/mock-config");
+const { mockConfigModule } = await import("../../test/helpers/mock-config");
 mock.module("maw-js/config", () => mockConfigModule(() => ({ node: "local-node", port: 3456 })));
 
 mock.module("maw-js/core/transport/ssh", () => ({
