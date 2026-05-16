@@ -1,18 +1,23 @@
 # attach-ssh
 
-Tier 3 (remote-live) SSH + tmux attach strategy for `maw attach`.
+Explicit SSH + tmux attach command and Tier 3 strategy for `maw attach`.
 
-When `maw attach <name>` (or `maw a <name>`) resolves to a session running on
-a federation peer, the built-in attach plugin hands control off to any
-installed plugin that declares the `attach:strategy` capability with
-`strategy.tier: 3`. This plugin is the reference implementation — it SSHes
-into the peer and runs `tmux attach -t <session>` so your terminal takes
-over the remote pane. Extracted from the built-in attach (#1262) so the
-SSH + tmux glue can be disabled, replaced, or evolved independently. See
-[../attach](../attach) for the cascade host.
+The host-side Tier 3 dispatcher that used to call `attach:strategy` plugins is
+currently dormant, so this plugin also exposes a direct CLI command:
 
-## Install
-
-```
+```sh
 maw plugin install attach-ssh
+maw plugin enable attach-ssh
+maw attach-ssh m5:54-mawjs --dry-run
+maw attach-ssh m5 54-mawjs
+maw attach-ssh m5:54-mawjs --ssh-alias m5.wg
 ```
+
+`--ssh-alias` defaults to the node name. The remote command is:
+
+```sh
+ssh -tt <ssh-alias> "tmux attach-session -t '<session>'"
+```
+
+The default export still carries `default.execute(target)` for future hosts that
+load the plugin as an `attach:strategy` with `strategy.tier: 3`.

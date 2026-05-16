@@ -50,7 +50,7 @@
     "attach-ssh": {
       "version": "0.1.0",
       "source": "soul-brews-studio/maw-plugin-registry/attach-ssh@v0.1.0-attach-ssh",
-      "summary": "Tier 3 (remote-live) SSH+tmux attach strategy. Extracted from built-in attach.",
+      "summary": "Explicit SSH+tmux attach command plus Tier 3 attach strategy.",
       "author": "Soul-Brews-Studio",
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
