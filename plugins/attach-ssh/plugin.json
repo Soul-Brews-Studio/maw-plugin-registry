@@ -1,12 +1,24 @@
 {
   "name": "attach-ssh",
   "version": "0.1.0",
-  "description": "Tier 3 (remote-live) SSH+tmux attach strategy. Extracted from built-in attach (#1262).",
+  "description": "Explicit SSH+tmux attach command plus Tier 3 attach strategy.",
   "author": "Soul-Brews-Studio",
   "license": "MIT",
   "entry": "./index.ts",
-  "capabilities": ["attach:strategy"],
-  "strategy": { "tier": 3 },
+  "capabilities": [
+    "attach:strategy"
+  ],
+  "strategy": {
+    "tier": 3
+  },
   "schemaVersion": 1,
-  "sdk": "^1.0.0-alpha.1"
+  "sdk": "^1.0.0-alpha.1",
+  "cli": {
+    "command": "attach-ssh",
+    "help": "maw attach-ssh <node>:<session> [--ssh-alias <alias>] [--dry-run] \u2014 attach to a remote tmux session over SSH",
+    "flags": {
+      "--ssh-alias": "string",
+      "--dry-run": "boolean"
+    }
+  }
 }
