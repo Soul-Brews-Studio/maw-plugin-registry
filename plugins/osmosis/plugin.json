@@ -20,6 +20,7 @@
       "--no-worktrees": "boolean",
       "--sessions": "boolean",
       "--all": "boolean",
+      "--diff": "boolean",
       "--apply": "boolean",
       "--yes": "boolean",
       "--y": "boolean",
