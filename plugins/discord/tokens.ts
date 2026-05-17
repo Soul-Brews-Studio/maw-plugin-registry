@@ -6,65 +6,7 @@
  *
  * No side effects. Pure functions. Audit-friendly.
  */
-import { hostExec } from "maw-js/sdk";
-import { existsSync, readdirSync, statSync } from "fs";
-import { join } from "path";
-import { homedir } from "os";
-
-const PASS_DIR = join(homedir(), ".password-store", "discord");
-
-interface TokenEntry {
-  name: string;
-  file: string;
-  sizeBytes: number;
-  mtime: Date;
-}
-
-function listTokens(): TokenEntry[] {
-  if (!existsSync(PASS_DIR)) return [];
-  return readdirSync(PASS_DIR)
-    .filter(f => f.endsWith(".gpg"))
-    .map(f => {
-      const file = join(PASS_DIR, f);
-      const stat = statSync(file);
-      return {
-        name: f.replace(/\.gpg$/, ""),
-        file,
-        sizeBytes: stat.size,
-        mtime: stat.mtime,
-      };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-
-async function decryptToken(name: string): Promise<string | null> {
-  try {
-    const out = await hostExec(`pass show discord/${name} 2>/dev/null`);
-    return out.trim() || null;
-  } catch {
-    return null;
-  }
-}
-
-async function pingDiscord(token: string): Promise<{ ok: boolean; status: number; username?: string }> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 5000);
-  try {
-    const res = await fetch("https://discord.com/api/v10/users/@me", {
-      headers: { Authorization: `Bot ${token}` },
-      signal: ctrl.signal,
-    });
-    if (res.ok) {
-      const data: any = await res.json();
-      return { ok: true, status: res.status, username: data.username };
-    }
-    return { ok: false, status: res.status };
-  } catch {
-    return { ok: false, status: 0 };
-  } finally {
-    clearTimeout(timer);
-  }
-}
+import { listPassTokens, decryptToken, pingDiscord } from "./lib";
 
 export const cmdTokens = {
   /**
@@ -72,9 +14,9 @@ export const cmdTokens = {
    * Shows: name, size, last-modified. No reveals, no network.
    */
   async ls(log: (s: string) => void): Promise<void> {
-    const tokens = listTokens();
+    const tokens = listPassTokens();
     if (tokens.length === 0) {
-      log(`✗ no tokens in ${PASS_DIR}`);
+      log(`✗ no tokens in pass (~/.password-store/discord/)`);
       log("hint: pass insert discord/<bot>-token");
       return;
     }
@@ -99,18 +41,18 @@ export const cmdTokens = {
    * Optional <bot> arg narrows to one entry.
    */
   async check(log: (s: string) => void, only?: string): Promise<void> {
-    const tokens = listTokens();
+    const tokens = listPassTokens();
     if (tokens.length === 0) {
       log(`✗ no tokens to check`);
       return;
     }
 
     const filtered = only
-      ? tokens.filter(t => t.name === only || t.name === `${only}-token`)
+      ? tokens.filter(t => t.name === only || t.name === `${only}-token` || t.bot === only)
       : tokens;
 
     if (filtered.length === 0) {
-      log(`✗ no token matching '${only}' (tried '${only}' and '${only}-token')`);
+      log(`✗ no token matching '${only}' (tried '${only}', '${only}-token', bot=='${only}')`);
       return;
     }
 

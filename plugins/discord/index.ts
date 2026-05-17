@@ -1,21 +1,26 @@
 import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 import { cmdTokens } from "./tokens";
+import { cmdStatus } from "./status";
 
 export const command = {
   name: "discord",
-  description: "Discord fleet ops — tokens, bind, status, route, pair.",
+  description: "Discord fleet ops — tokens, status, (bind/pair/route/serve coming).",
 };
 
 function printUsage(log: (s: string) => void): void {
   log("usage: maw discord <subcommand> [args]");
   log("");
-  log("subcommands:");
-  log("  tokens ls              list all Discord bot tokens in pass (no reveal)");
-  log("  tokens check [bot]     verify each token decrypts + Discord REST returns 200");
-  log("  bind <bot>             (not implemented) end-to-end onboard for a bot");
-  log("  status                 (not implemented) all bots on this host, last heartbeat");
-  log("  route <from> <to>      (not implemented) channel-map.json entry");
-  log("  pair <oracle> <chan>   (not implemented) access.json + channel-map bootstrap");
+  log("subcommands (v0.2):");
+  log("  tokens ls                          list all Discord bot tokens in pass (no reveal)");
+  log("  tokens check [bot]                 verify each token decrypts + Discord REST 200");
+  log("  status [bot] [--check] [--redact] [--json]");
+  log("                                     fleet inspection from this host — pass × legacy × hybrid × tmux × registry");
+  log("");
+  log("subcommands (v0.3 planned):");
+  log("  bind <bot>                         end-to-end onboard (ghq get + direnv + maw wake)");
+  log("  pair <oracle> <channel>            access.json + channel-map.json bootstrap");
+  log("  route <from> <to>                  channel-map.json entry");
+  log("  serve [--detach] [--port N]        discord daemon — heartbeat, presence, webhook receive");
   log("");
   log("token strategy: HYBRID — tokens in pass (central), .discord/ config in bot repo.");
   log("see: ψ/outbox/ideas/2026-05-17_self-contained-bot-repo-gpg-pattern.md");
@@ -51,9 +56,14 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       return { ok: true, output: logs.join("\n") };
     }
 
-    if (sub === "bind" || sub === "status" || sub === "route" || sub === "pair") {
-      log(`✗ '${sub}' not implemented yet (v0.1 ships with 'tokens' only).`);
-      log("planned for v0.2 — see plugin.json for full subcommand list.");
+    if (sub === "status") {
+      await cmdStatus.run(log, args.slice(1));
+      return { ok: true, output: logs.join("\n") };
+    }
+
+    if (sub === "bind" || sub === "pair" || sub === "route" || sub === "serve") {
+      log(`✗ '${sub}' not implemented yet (v0.2 ships with 'tokens' + 'status' only).`);
+      log("planned for v0.3 — see 'maw discord' for full subcommand list.");
       return { ok: false, error: `${sub} not implemented`, output: logs.join("\n") };
     }
 
