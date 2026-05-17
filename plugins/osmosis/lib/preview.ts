@@ -1,6 +1,6 @@
 import { type Config } from "./types";
 import { type PlanRow } from "./plan";
-import { buildRsyncArgs, runRsync, partitionRsyncOutput, renderPreview } from "./rsync";
+import { buildRsyncArgs, runRsync, partitionRsyncOutput, renderPreview, humanizeStatLine } from "./rsync";
 
 export type PreviewResult = PlanRow & {
   previewFiles: string[];
@@ -50,7 +50,7 @@ export function renderPreviews(previews: PreviewResult[], cfg: Config): void {
         }
       }
       console.log(`     ─ ${common} files shared with ${baseline!.label}\n`);
-      for (const s of pv.previewStats.slice(0, 6)) console.log(`   ${s}`);
+      for (const s of pv.previewStats.slice(0, 6)) console.log(`   ${humanizeStatLine(s)}`);
       console.log("");
     } else {
       renderPreview(pv.previewFiles, pv.previewStats, cfg.verbose);

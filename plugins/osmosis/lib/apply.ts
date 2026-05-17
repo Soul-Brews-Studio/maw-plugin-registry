@@ -2,7 +2,19 @@ import { type Config } from "./types";
 import { type PlanRow } from "./plan";
 import { type PreviewResult } from "./preview";
 import { fmtBytes } from "./paths";
-import { buildRsyncArgs, runRsync, partitionRsyncOutput, promptYesNo } from "./rsync";
+import { buildRsyncArgs, runRsync, partitionRsyncOutput, promptYesNo, humanizeStatLine } from "./rsync";
+
+function summarizeTransfer(stats: string[]): string {
+  const fileLine = stats.find((s) => /Number of files transferred/.test(s));
+  const sizeLine = stats.find((s) => /Total transferred file size/.test(s));
+  const m = fileLine?.match(/Number of files transferred:\s*([\d,]+)/);
+  const count = m ? m[1] : "?";
+  if (sizeLine) {
+    const sm = humanizeStatLine(sizeLine).match(/Total transferred file size:\s*(.+)$/);
+    if (sm) return `${count} files, ${sm[1]}`;
+  }
+  return `${count} files`;
+}
 
 export async function confirmApply(
   plan: PlanRow[],
@@ -29,23 +41,25 @@ export async function runApply(
   const failures: string[] = [];
   let skipped = 0;
 
-  for (const p of plan) {
+  for (let i = 0; i < plan.length; i++) {
+    const p = plan[i];
+    const label = p.label.padEnd(40);
     if (p.skip) {
-      if (!cfg.json) console.log(`   ${p.label} … ⊘ skipped (${p.skipReason})`);
+      if (!cfg.json) console.log(`   [${i + 1}/${plan.length}] ⊘ ${label}  skipped (${p.skipReason})`);
       skipped++;
       continue;
     }
     const src = cfg.direction === "push" ? p.realLocal : `${cfg.host}:${p.remotePath}`;
     const dst = cfg.direction === "push" ? `${cfg.host}:${p.remotePath}` : p.localPath;
-    if (!cfg.json) process.stdout.write(`   ${p.label} …`);
+    if (!cfg.json) console.log(`   [${i + 1}/${plan.length}] ⏳ ${label}  transferring…`);
     const { code, lines } = await runRsync(buildRsyncArgs(src, dst, true));
     if (code !== 0) {
       failures.push(`${p.label} (exit ${code})`);
-      if (!cfg.json) console.log(` ✖ exit ${code}`);
+      if (!cfg.json) console.log(`   [${i + 1}/${plan.length}] ✖ ${label}  exit ${code}`);
     } else {
       const { stats } = partitionRsyncOutput(lines);
-      const transferred = stats.find((s) => /Number of files transferred/.test(s));
-      if (!cfg.json) console.log(` ✓ ${transferred ? transferred.trim() : "done"}`);
+      const summary = summarizeTransfer(stats);
+      if (!cfg.json) console.log(`   [${i + 1}/${plan.length}] ✓ ${label}  ${summary}`);
     }
   }
 
