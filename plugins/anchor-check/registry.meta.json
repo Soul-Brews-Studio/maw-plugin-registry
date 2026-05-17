@@ -1,0 +1,11 @@
+{
+  "version": "1.1.0",
+  "source": "natkingsize2/maw-plugin-anchor-check@v1.1.0",
+  "sha256": null,
+  "summary": "Filter decisions/specs against 3 anchors (Mission 4Q · Goal · Reality) with cyber-safe BLOCK + DEFENSIVE_CONTEXT bypass.",
+  "author": "natkingsize2",
+  "license": "MIT",
+  "homepage": "https://github.com/natkingsize2/maw-plugin-anchor-check",
+  "addedAt": "2026-05-18T01:08:00Z",
+  "tier": "extra"
+}

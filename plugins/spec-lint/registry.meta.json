@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "source": "natkingsize2/maw-plugin-spec-lint@v1.0.0",
+  "sha256": null,
+  "summary": "Pre-flight check spec files — cyber-classifier heuristic + 300-line discipline. Exit codes 0/1/2 for chaining before maw wake.",
+  "author": "natkingsize2",
+  "license": "MIT",
+  "homepage": "https://github.com/natkingsize2/maw-plugin-spec-lint",
+  "addedAt": "2026-05-18T01:08:00Z",
+  "tier": "extra"
+}
