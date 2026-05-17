@@ -1,0 +1,24 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "session-chain",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "tier": "standard",
+  "description": "Session history as a linked list — chain sessions across /forward, /compact, and continues.",
+  "author": "Soul-Brews-Studio",
+  "capabilities": ["fs:read", "sdk:plugin"],
+  "cli": {
+    "command": "session-chain",
+    "help": "maw session-chain [list|show|graph] [--limit N] [--json] [--repo name]",
+    "flags": {
+      "--limit": "number",
+      "--json": "boolean",
+      "--repo": "string"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}
