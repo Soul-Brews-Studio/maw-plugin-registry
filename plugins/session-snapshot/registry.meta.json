@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "source": "natkingsize2/maw-plugin-session-snapshot@v1.0.0",
+  "sha256": null,
+  "summary": "Write hot/log session state to Oracle in one command — combines hot-write + log-session + jod per spec-hot-log-convention.",
+  "author": "natkingsize2",
+  "license": "MIT",
+  "homepage": "https://github.com/natkingsize2/maw-plugin-session-snapshot",
+  "addedAt": "2026-05-18T01:08:00Z",
+  "tier": "extra"
+}

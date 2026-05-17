@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "source": "natkingsize2/maw-plugin-fleet-reap@v0.1.0",
+  "sha256": null,
+  "summary": "Audit stale Claude sessions, verify deps, safely reclaim RAM (NEVER_KILL guards, dry-run default).",
+  "author": "natkingsize2",
+  "license": "MIT",
+  "homepage": "https://github.com/natkingsize2/maw-plugin-fleet-reap",
+  "addedAt": "2026-05-18T01:08:00Z",
+  "tier": "extra"
+}

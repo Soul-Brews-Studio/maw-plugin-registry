@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-17T11:08:47Z",
+  "updated": "2026-05-17T17:58:46Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -12,6 +12,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T02:18:08Z",
+      "tier": "extra"
+    },
+    "anchor-check": {
+      "version": "1.1.0",
+      "source": "natkingsize2/maw-plugin-anchor-check@v1.1.0",
+      "sha256": null,
+      "summary": "Filter decisions/specs against 3 anchors (Mission 4Q \u00b7 Goal \u00b7 Reality) with cyber-safe BLOCK + DEFENSIVE_CONTEXT bypass.",
+      "author": "natkingsize2",
+      "license": "MIT",
+      "homepage": "https://github.com/natkingsize2/maw-plugin-anchor-check",
+      "addedAt": "2026-05-18T01:08:00Z",
       "tier": "extra"
     },
     "archive": {
@@ -263,6 +274,17 @@
       "addedAt": "2026-04-29T01:40:01Z",
       "tier": "extra"
     },
+    "fleet-reap": {
+      "version": "0.1.0",
+      "source": "natkingsize2/maw-plugin-fleet-reap@v0.1.0",
+      "sha256": null,
+      "summary": "Audit stale Claude sessions, verify deps, safely reclaim RAM (NEVER_KILL guards, dry-run default).",
+      "author": "natkingsize2",
+      "license": "MIT",
+      "homepage": "https://github.com/natkingsize2/maw-plugin-fleet-reap",
+      "addedAt": "2026-05-18T01:08:00Z",
+      "tier": "extra"
+    },
     "fleet-ui": {
       "version": "0.1.0",
       "source": "soul-brews-studio/maw-plugin-registry/fleet-ui@v0.1.0-fleet-ui",
@@ -416,6 +438,17 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-05-14T12:00:00Z",
       "tier": "extra"
+    },
+    "osmosis": {
+      "version": "0.1.0",
+      "source": "soul-brews-studio/maw-plugin-registry/osmosis@main",
+      "sha256": null,
+      "summary": "Cross-host repo sync with a safety membrane \u2014 case-collisions, secret-sniff, AppleDouble filter. Dry-run by default.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-17T18:10:00Z",
+      "tier": "standard"
     },
     "overview": {
       "version": "0.1.0",
@@ -635,6 +668,17 @@
       "addedAt": "2026-05-17T11:00:00Z",
       "tier": "standard"
     },
+    "session-snapshot": {
+      "version": "1.0.0",
+      "source": "natkingsize2/maw-plugin-session-snapshot@v1.0.0",
+      "sha256": null,
+      "summary": "Write hot/log session state to Oracle in one command \u2014 combines hot-write + log-session + jod per spec-hot-log-convention.",
+      "author": "natkingsize2",
+      "license": "MIT",
+      "homepage": "https://github.com/natkingsize2/maw-plugin-session-snapshot",
+      "addedAt": "2026-05-18T01:08:00Z",
+      "tier": "extra"
+    },
     "shellenv": {
       "version": "0.1.2",
       "source": "soul-brews-studio/maw-plugin-registry/shellenv@v0.1.2-shellenv",
@@ -676,6 +720,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:40:04Z",
+      "tier": "extra"
+    },
+    "spec-lint": {
+      "version": "1.0.0",
+      "source": "natkingsize2/maw-plugin-spec-lint@v1.0.0",
+      "sha256": null,
+      "summary": "Pre-flight check spec files \u2014 cyber-classifier heuristic + 300-line discipline. Exit codes 0/1/2 for chaining before maw wake.",
+      "author": "natkingsize2",
+      "license": "MIT",
+      "homepage": "https://github.com/natkingsize2/maw-plugin-spec-lint",
+      "addedAt": "2026-05-18T01:08:00Z",
       "tier": "extra"
     },
     "split": {
