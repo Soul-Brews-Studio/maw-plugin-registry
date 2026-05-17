@@ -11,7 +11,8 @@
   "capabilities": ["fs:read"],
   "cli": {
     "command": "osmosis",
-    "help": "maw osmosis (--push <host> | --pull <host>) [--repo X] [--owner Y] [--no-worktrees] [--sessions | --all] [--apply [--yes]] [--safe [--force]] [--json] [--verbose]",
+    "aliases": ["sync"],
+    "help": "maw osmosis|sync (--push <host> | --pull <host>) [--repo X] [--owner Y] [--no-worktrees] [--sessions | --all] [--apply [--yes]] [--safe [--force]] [--json] [--verbose]",
     "flags": {
       "--push": "string",
       "--pull": "string",
