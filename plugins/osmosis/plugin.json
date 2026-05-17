@@ -1,0 +1,36 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "osmosis",
+  "version": "0.3.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "tier": "standard",
+  "description": "Bidirectional rsync between trusted fleet hosts (m5 ↔ remote). Dry-run by default; --apply to commit.",
+  "author": "Soul-Brews-Studio",
+  "capabilities": ["fs:read"],
+  "cli": {
+    "command": "osmosis",
+    "help": "maw osmosis (--push <host> | --pull <host>) [--repo X] [--owner Y] [--no-worktrees] [--sessions | --all] [--apply [--yes]] [--safe [--force]] [--json] [--verbose]",
+    "flags": {
+      "--push": "string",
+      "--pull": "string",
+      "--repo": "string",
+      "--owner": "string",
+      "--no-worktrees": "boolean",
+      "--sessions": "boolean",
+      "--all": "boolean",
+      "--apply": "boolean",
+      "--yes": "boolean",
+      "--y": "boolean",
+      "-y": "boolean",
+      "--safe": "boolean",
+      "--force": "boolean",
+      "--json": "boolean",
+      "--verbose": "boolean"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "source": "soul-brews-studio/maw-plugin-registry/osmosis@main",
+  "sha256": null,
+  "summary": "Cross-host repo sync with a safety membrane — case-collisions, secret-sniff, AppleDouble filter. Dry-run by default.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+  "addedAt": "2026-05-17T18:10:00Z",
+  "tier": "standard"
+}
