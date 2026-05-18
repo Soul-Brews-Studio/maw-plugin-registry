@@ -12,10 +12,11 @@
   "cli": {
     "command": "osmosis",
     "aliases": ["sync"],
-    "help": "maw osmosis|sync (--push <host> | --pull <host>) [--repo X] [--owner Y] [--no-worktrees] [--sessions | --all] [--apply [--yes]] [--safe [--force]] [--json] [--verbose]",
+    "help": "maw osmosis|sync (--push [user@]host | --pull [user@]host) [--user USER] [--repo X] [--owner Y] [--no-worktrees] [--sessions | --all] [--apply [--yes]] [--safe [--force]] [--json] [--verbose]",
     "flags": {
       "--push": "string",
       "--pull": "string",
+      "--user": "string",
       "--repo": "string",
       "--owner": "string",
       "--no-worktrees": "boolean",
