@@ -2,6 +2,7 @@ import type { InvokeContext, InvokeResult } from "maw-js/plugin/types";
 import { cmdTokens } from "./tokens";
 import { cmdStatus } from "./status";
 import { cmdBind } from "./bind";
+import { cmdAccess } from "./access";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -28,9 +29,10 @@ function printVersion(log: (s: string) => void): void {
   log("  ✓ tokens ls / check        v0.1");
   log("  ✓ status [bot] [flags]     v0.3.1 (real online/where via bun ancestry)");
   log("  ✓ bind <bot>               v0.3 (rewrite to use 'maw wake' pending)");
-  log("  ⏸ pair <oracle> <chan>     v0.4 planned");
-  log("  ⏸ route <from> <to>        v0.4 planned");
-  log("  ⏸ serve [--detach]         v0.5 planned (engine.serve infrastructure)");
+  log("  ✓ access <bot> ...         v0.4 (list/show/map/add/rm/set/allow/lockdown)");
+  log("  ⏸ pair <oracle> <chan>     v0.5 planned");
+  log("  ⏸ route <from> <to>        v0.5 planned");
+  log("  ⏸ serve (after_send hook)  v0.5 planned (replaces daemon — engine.serve)");
 }
 
 function printUsage(log: (s: string) => void): void {
@@ -43,12 +45,14 @@ function printUsage(log: (s: string) => void): void {
   log("  status [bot] [--check] [--redact] [--json]");
   log("                                     fleet inspection from this host — pass × legacy × hybrid × tmux × registry");
   log("  bind <bot> [--apply] [--restart] [--session <name>] [--force]");
-  log("                                     end-to-end Discord-online for a bot on this host (NEW v0.3)");
+  log("                                     end-to-end Discord-online for a bot on this host");
+  log("  access <bot> <list|show|map|add|rm|set|allow|lockdown> [...]");
+  log("                                     channel + allowlist management per bot (NEW v0.4)");
   log("");
   log("subcommands (planned):");
-  log("  pair <oracle> <channel>            access.json + channel-map.json bootstrap (v0.4)");
-  log("  route <from> <to>                  channel-map.json entry (v0.4)");
-  log("  serve [--detach]                   discord daemon — engine.serve pattern (v0.5)");
+  log("  pair <oracle> <channel>            access.json + channel-map.json bootstrap (v0.5)");
+  log("  route <from> <to>                  channel-map.json entry (v0.5)");
+  log("  serve (hook handler)               wires after_send → Discord post (v0.5)");
   log("");
   log("token strategy: HYBRID — tokens in pass (central), .discord/ config in bot repo.");
   log("see: ψ/outbox/ideas/2026-05-17_self-contained-bot-repo-gpg-pattern.md");
@@ -99,9 +103,14 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       return { ok: true, output: logs.join("\n") };
     }
 
+    if (sub === "access") {
+      await cmdAccess.run(log, args.slice(1));
+      return { ok: true, output: logs.join("\n") };
+    }
+
     if (sub === "pair" || sub === "route" || sub === "serve") {
-      log(`✗ '${sub}' not implemented yet (v0.3 ships tokens + status + bind).`);
-      log("planned for v0.4-v0.5 — see 'maw discord' for full subcommand list.");
+      log(`✗ '${sub}' not implemented yet (v0.4 ships tokens + status + bind + access).`);
+      log("planned for v0.5 — see 'maw discord' for full subcommand list.");
       return { ok: false, error: `${sub} not implemented`, output: logs.join("\n") };
     }
 
