@@ -1,0 +1,27 @@
+{
+  "name": "absorb",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Retire one oracle into another with consent, provenance, and namespaced vault donation.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "absorb",
+    "help": "maw absorb <donor> --into <receiver> [--dry-run] [--yes --reason <why>] [--no-fleet] [--no-archive] [--no-broadcast] [--json]",
+    "flags": {
+      "--into": "string",
+      "--dry-run": "boolean",
+      "--yes": "boolean",
+      "--consent": "boolean",
+      "--reason": "string",
+      "--fleet-dir": "string",
+      "--no-fleet": "boolean",
+      "--no-archive": "boolean",
+      "--no-broadcast": "boolean",
+      "--json": "boolean"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}
