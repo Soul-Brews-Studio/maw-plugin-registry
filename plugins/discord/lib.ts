@@ -146,3 +146,69 @@ export function fmtSize(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
   return `${(bytes / 1024).toFixed(1)}K`;
 }
+
+/**
+ * Find a running bun process for the discord plugin whose env DISCORD_STATE_DIR
+ * matches the bot's state-dir. Returns the bun pid + the owning tmux session
+ * (walked through claude parent + tmux pane lookup), or null if not online.
+ *
+ * Used by `bind` for the "already online?" pre-flight check and by v0.3 status
+ * to replace the brittle name-grep tmux lookup.
+ */
+export async function findOnlineBunForBot(bot: string): Promise<{
+  bunPid: number;
+  claudePid?: number;
+  tmuxSession?: string;
+} | null> {
+  try {
+    // Find all bun processes running the discord plugin
+    const bunList = await hostExec(`pgrep -f 'discord/0.0.4' 2>/dev/null || true`);
+    const pids = bunList.split("\n").map(s => s.trim()).filter(s => /^\d+$/.test(s));
+
+    for (const pidStr of pids) {
+      const pid = parseInt(pidStr, 10);
+      // Read env to check DISCORD_STATE_DIR
+      const env = await hostExec(`ps Eww -p ${pid} 2>/dev/null || true`);
+      const match = env.match(/DISCORD_STATE_DIR=(\S+)/);
+      if (!match) continue;
+      const stateDir = match[1]!;
+      // Must end with /<bot>
+      if (!stateDir.endsWith(`/${bot}`) && !stateDir.endsWith(`/${bot}/`)) continue;
+
+      // Walk up to claude parent
+      const parentRaw = await hostExec(`ps -o ppid= -p ${pid} 2>/dev/null || true`);
+      const claudePid = parseInt(parentRaw.trim(), 10);
+
+      // Find tmux session containing this claude via pane_pid ancestry
+      // We need ancestry walk because pane_pid is typically a shell (zsh) that spawned claude
+      let tmuxSession: string | undefined;
+      try {
+        const panes = await hostExec(`tmux list-panes -a -F '#{session_name}|#{pane_pid}' 2>/dev/null || true`);
+        // For each pane_pid, check if claudePid is a descendant
+        for (const line of panes.split("\n").filter(Boolean)) {
+          const [sess, panePidStr] = line.split("|");
+          const panePid = parseInt(panePidStr || "0", 10);
+          if (!panePid) continue;
+          // Walk claudePid's parents to see if any is panePid
+          let cursor = claudePid;
+          for (let i = 0; i < 6; i++) {
+            if (cursor === panePid) {
+              tmuxSession = sess;
+              break;
+            }
+            const parent = await hostExec(`ps -o ppid= -p ${cursor} 2>/dev/null || true`);
+            const next = parseInt(parent.trim(), 10);
+            if (!next || next === cursor || next === 1) break;
+            cursor = next;
+          }
+          if (tmuxSession) break;
+        }
+      } catch { /* tmux not available */ }
+
+      return { bunPid: pid, claudePid: isFinite(claudePid) ? claudePid : undefined, tmuxSession };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
