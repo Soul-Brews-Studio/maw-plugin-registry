@@ -2,7 +2,7 @@ import { stat } from "node:fs/promises";
 import { type Config, UsageError } from "./types";
 import { parseArgs, help } from "./config";
 import { ghBase } from "./paths";
-import { ghqRoot, ghqRemoteRoot, ghqResolveOwner, remoteHomedir } from "./ghq";
+import { ghqRoot, ghqRemoteRoot, ghqResolveRepo, resolveFleetRepo, remoteHomedir } from "./ghq";
 import { enumerateTargets } from "./targets";
 import { type PlanRow, buildPlan, renderPlan } from "./plan";
 import { runPreviews, renderPreviews } from "./preview";
@@ -37,7 +37,7 @@ export async function execute(args: string[], options: { exitOnMissing?: boolean
   }
 
   const localRoot = await ghqRoot();
-  const ownerErr = await resolveOwner(cfg, args, localRoot);
+  const ownerErr = await resolveRepository(cfg, args, localRoot);
   if (ownerErr) {
     console.error(`✖ ${ownerErr}`);
     if (options.exitOnMissing) process.exitCode = 1;
@@ -121,15 +121,46 @@ export async function execute(args: string[], options: { exitOnMissing?: boolean
   await runApply(plan, cfg, options);
 }
 
-async function resolveOwner(cfg: Config, args: string[], localRoot: string): Promise<string | null> {
+export type ResolveRepositoryDeps = {
+  stat?: typeof stat;
+  resolveFleetRepo?: typeof resolveFleetRepo;
+  ghqResolveRepo?: typeof ghqResolveRepo;
+};
+
+export async function resolveRepository(
+  cfg: Config,
+  args: string[],
+  localRoot: string,
+  deps: ResolveRepositoryDeps = {},
+): Promise<string | null> {
   if (args.includes("--owner")) return null;
-  const tryPath = `${ghBase(localRoot)}/${cfg.owner}/${cfg.repo}`;
-  try { await stat(tryPath); return null; } catch { /* not found locally */ }
+
+  const resolveFromFleet = deps.resolveFleetRepo ?? resolveFleetRepo;
+  const resolveFromGhq = deps.ghqResolveRepo ?? ghqResolveRepo;
+  const statPath = deps.stat ?? stat;
+
   try {
-    const resolved = await ghqResolveOwner(cfg.repo);
-    if (resolved && resolved !== cfg.owner) {
-      cfg.owner = resolved;
-      cfg.derivedFrom = `${resolved}/${cfg.repo} (via ghq)`;
+    const fleet = await resolveFromFleet(cfg.repo);
+    if (fleet && (fleet.owner !== cfg.owner || fleet.repo !== cfg.repo)) {
+      cfg.owner = fleet.owner;
+      cfg.repo = fleet.repo;
+      cfg.derivedFrom = `${fleet.owner}/${fleet.repo} (via ${fleet.source})`;
+      return null;
+    }
+  } catch (e) {
+    if (e instanceof UsageError) return e.message;
+    throw e;
+  }
+
+  const tryPath = `${ghBase(localRoot)}/${cfg.owner}/${cfg.repo}`;
+  try { await statPath(tryPath); return null; } catch { /* not found locally */ }
+
+  try {
+    const resolved = await resolveFromGhq(cfg.repo);
+    if (resolved && (resolved.owner !== cfg.owner || resolved.repo !== cfg.repo)) {
+      cfg.owner = resolved.owner;
+      cfg.repo = resolved.repo;
+      cfg.derivedFrom = `${resolved.owner}/${resolved.repo} (via ghq)`;
     }
     return null;
   } catch (e) {
