@@ -45,8 +45,10 @@ export async function execute(args: string[], options: { exitOnMissing?: boolean
     return;
   }
 
-  let remoteRoot = localRoot;
-  try { remoteRoot = await ghqRemoteRoot(cfg.host); } catch { /* surfaced via targetState */ }
+  let remoteRoot = cfg.remoteUser ? `/opt/${cfg.remoteUser}/Code` : localRoot;
+  if (!cfg.remoteUser) {
+    try { remoteRoot = await ghqRemoteRoot(cfg.host); } catch { /* surfaced via targetState */ }
+  }
   const remoteHome = await remoteHomedir(cfg.host);
 
   const { targets, warnings } = await enumerateTargets(cfg, localRoot, remoteRoot, remoteHome);

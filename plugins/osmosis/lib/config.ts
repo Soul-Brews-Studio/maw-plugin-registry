@@ -1,6 +1,7 @@
 import { type Config, type Direction, UsageError } from "./types";
 
 const VALID_NAME = /^[A-Za-z0-9._-]+$/;
+const VALID_HOST_TARGET = /^(?:([A-Za-z0-9._-]+)@)?([A-Za-z0-9._-]+)$/;
 
 export function deriveFromPwd(cwd: string): { owner?: string; repo?: string; worktreeSuffix?: string } {
   const m = cwd.match(/\/opt\/Code\/github\.com\/([^/]+)\/([^/]+)/);
@@ -24,6 +25,23 @@ export function validate(name: string, value: string): void {
   }
 }
 
+export function parseHostTarget(raw: string, userFlag = ""): { host: string; remoteUser?: string } {
+  const m = raw.match(VALID_HOST_TARGET);
+  if (!m) {
+    throw new UsageError(`invalid host: ${JSON.stringify(raw)} — must match ${VALID_HOST_TARGET}`);
+  }
+  const userFromHost = m[1] || "";
+  const hostOnly = m[2];
+  if (userFlag && userFromHost && userFlag !== userFromHost) {
+    throw new UsageError(`invalid host: --user ${JSON.stringify(userFlag)} conflicts with ${JSON.stringify(raw)}`);
+  }
+  if (userFlag) validate("user", userFlag);
+  if (userFromHost) validate("user", userFromHost);
+  validate("host", hostOnly);
+  const remoteUser = userFlag || userFromHost || undefined;
+  return { host: remoteUser ? `${remoteUser}@${hostOnly}` : hostOnly, remoteUser };
+}
+
 export function parseArgs(argv: string[], cwd: string = process.cwd()): Config {
   const get = (name: string, fallback: string) => {
     const i = argv.indexOf(name);
@@ -45,9 +63,11 @@ export function parseArgs(argv: string[], cwd: string = process.cwd()): Config {
   if (!host) {
     throw new UsageError("must specify --push <host> or --pull <host>");
   }
+  const hostTarget = parseHostTarget(host, get("--user", ""));
 
   const cfg: Config = {
-    host,
+    host: hostTarget.host,
+    remoteUser: hostTarget.remoteUser,
     direction,
     repo: get("--repo", derived.repo ?? ""),
     owner: get("--owner", derived.owner ?? "laris-co"),
@@ -63,7 +83,6 @@ export function parseArgs(argv: string[], cwd: string = process.cwd()): Config {
     derivedFrom,
   };
 
-  validate("host", cfg.host);
   validate("owner", cfg.owner);
   if (cfg.repo) validate("repo", cfg.repo);
   return cfg;
@@ -75,8 +94,9 @@ export function help(): string {
     "",
     "  rsync between m5 and a trusted fleet host. Worktrees synced by default.",
     "",
-    "  --push <host>     m5 → host",
-    "  --pull <host>     host → m5",
+    "  --push [user@]host  m5 → host (user targets /opt/<user>/Code)",
+    "  --pull [user@]host  host → m5 (user targets /opt/<user>/Code)",
+    "  --user USER       alternate spelling for USER@host",
     "  --repo NAME       repo name (default: derived from pwd)",
     "  --owner OWNER     github owner (default: pwd; ghq resolves; fallback laris-co)",
     "  --no-worktrees    repo only, skip <repo>.wt-* siblings",

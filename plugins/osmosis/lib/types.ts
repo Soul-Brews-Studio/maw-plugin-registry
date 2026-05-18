@@ -2,6 +2,7 @@ export type Direction = "push" | "pull";
 
 export type Config = {
   host: string;
+  remoteUser?: string;
   direction: Direction;
   repo: string;
   owner: string;
