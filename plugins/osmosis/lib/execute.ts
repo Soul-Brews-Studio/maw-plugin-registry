@@ -6,6 +6,7 @@ import { ghqRoot, ghqRemoteRoot, ghqResolveRepo, resolveFleetRepo, remoteHomedir
 import { enumerateTargets } from "./targets";
 import { type PlanRow, buildPlan, renderPlan } from "./plan";
 import { runPreviews, renderPreviews } from "./preview";
+import { collectDirtyReports, dirtyInspectionErrors, renderDirtyReports, summarizeDirty } from "./dirty";
 import { confirmApply, runApply } from "./apply";
 import { runMembrane } from "./membrane";
 
@@ -78,6 +79,32 @@ export async function execute(args: string[], options: { exitOnMissing?: boolean
   }
   if (!cfg.json) renderPlan(plan, repos.length, sessions.length, cfg);
 
+  let dirtyReports = [] as Awaited<ReturnType<typeof collectDirtyReports>>;
+  if (!cfg.force) {
+    dirtyReports = await collectDirtyReports(plan, cfg);
+    if (!cfg.json) renderDirtyReports(dirtyReports, cfg.host, cfg.verbose);
+    const dirtySummary = summarizeDirty(dirtyReports);
+    const dirtyErrors = dirtyInspectionErrors(dirtyReports);
+    if (cfg.diff) {
+      if (cfg.json) console.log(JSON.stringify({ ok: true, mode: "diff", dirty: dirtySummary, reports: dirtyReports }, null, 2));
+      return;
+    }
+    if (cfg.apply && dirtyErrors.length > 0) {
+      const msg = `dirty check could not inspect both sides; re-run with --force to bypass: ${dirtyErrors.join("; ")}`;
+      if (cfg.json) console.log(JSON.stringify({ ok: false, error: msg, dirty: dirtySummary }));
+      else console.error(`✖ ${msg}`);
+      if (options.exitOnMissing) process.exitCode = 2;
+      return;
+    }
+    if (cfg.apply && dirtySummary.conflict > 0) {
+      const msg = `dirty check found ${dirtySummary.conflict} conflict${dirtySummary.conflict === 1 ? "" : "s"}; resolve manually or re-run with --force`;
+      if (cfg.json) console.log(JSON.stringify({ ok: false, error: msg, dirty: dirtySummary }));
+      else console.error(`✖ ${msg}`);
+      if (options.exitOnMissing) process.exitCode = 2;
+      return;
+    }
+  }
+
   if (cfg.safe) {
     const aborted = await safeStep(plan, cfg, options);
     if (aborted) return;
@@ -99,6 +126,7 @@ export async function execute(args: string[], options: { exitOnMissing?: boolean
         realLocal: p.realLocal, files: p.files, bytes: p.bytes,
         remoteState: typeof p.remoteState === "string" ? p.remoteState : "error",
       })),
+      dirty: cfg.force ? undefined : summarizeDirty(dirtyReports),
       summary: {
         transfers: plan.length,
         files: plan.reduce((s, p) => s + p.files, 0),
