@@ -16,10 +16,11 @@
 import {
   listPassTokens, decryptToken, pingDiscord,
   findLegacyStateDir, findHybridDiscord, findTmuxSession,
-  loadStateDirsRegistry, fmtSize,
+  loadStateDirsRegistry, findOnlineBunForBot, fmtSize,
 } from "./lib";
 import { readdirSync, statSync } from "fs";
 import { join } from "path";
+import { hostname } from "os";
 
 interface BotRow {
   bot: string;
@@ -28,6 +29,9 @@ interface BotRow {
   legacyPath: string | null;
   hybridPath: string | null;
   tmuxLine: string | null;
+  online: boolean;
+  onlineSession: string | null;
+  onlineBunPid: number | null;
   discordOK?: boolean;
   discordStatus?: number;
   discordUsername?: string;
@@ -48,13 +52,17 @@ function classifyBot(row: BotRow): { severity: Severity; reason: string } {
   if (row.discordOK === false) {
     return { severity: "error", reason: `Discord REST returned ${row.discordStatus}` };
   }
-  // info: hybrid pattern not yet applied (migration TODO)
-  if (row.inPass && row.inRegistry && !row.hybridPath) {
-    return { severity: "info", reason: "legacy state-dir only — hybrid pattern not applied" };
+  // error: tmux exists but no Gateway bun (orphan tmux — bind verification failure)
+  if (row.tmuxLine && !row.online) {
+    return { severity: "error", reason: "tmux session exists but no Gateway bun — orphan (bind incomplete)" };
   }
-  // warn: registered, has hybrid, but not running locally (probably fine, just offline on this host)
-  if (row.inRegistry && !row.tmuxLine) {
-    return { severity: "warn", reason: "not running locally on this host" };
+  // info: hybrid pattern not yet applied (migration TODO)
+  if (row.inPass && row.inRegistry && !row.hybridPath && row.online) {
+    return { severity: "info", reason: "online but using legacy state-dir — hybrid pattern not applied" };
+  }
+  // warn: registered, has hybrid/legacy, but not running locally (probably fine, just offline on this host)
+  if (row.inRegistry && !row.online) {
+    return { severity: "warn", reason: "offline on this host" };
   }
   return { severity: "ok", reason: "" };
 }
@@ -71,7 +79,18 @@ async function gatherRows(): Promise<BotRow[]> {
     const legacyPath = findLegacyStateDir(bot);
     const hybridPath = await findHybridDiscord(bot);
     const tmuxLine = await findTmuxSession(bot);
-    rows.push({ bot, inPass, inRegistry, legacyPath, hybridPath, tmuxLine });
+    const onlineInfo = await findOnlineBunForBot(bot);
+    rows.push({
+      bot,
+      inPass,
+      inRegistry,
+      legacyPath,
+      hybridPath,
+      tmuxLine,
+      online: !!onlineInfo,
+      onlineSession: onlineInfo?.tmuxSession ?? null,
+      onlineBunPid: onlineInfo?.bunPid ?? null,
+    });
   }
   return rows;
 }
@@ -156,11 +175,12 @@ export const cmdStatus = {
   },
 
   emitTable(log: (s: string) => void, rows: BotRow[], opts: StatusOpts): void {
-    log(`🔍 maw discord status — ${rows.length} bot(s) | ${opts.redact ? "REDACTED · " : ""}${opts.check ? "with Discord REST" : "stat only — use --check for REST"}`);
+    const host = hostname().split(".")[0];
+    log(`🔍 maw discord status @ ${host} — ${rows.length} bot(s) | ${opts.redact ? "REDACTED · " : ""}${opts.check ? "with Discord REST" : "online/where via bun ancestry — use --check for REST"}`);
     log("");
     const head = opts.check
-      ? "  bot                          pass  legacy  hybrid  tmux  reg  discord       severity"
-      : "  bot                          pass  legacy  hybrid  tmux  reg               severity";
+      ? "  bot                          online  where (tmux session)              path                                              reg  discord       severity"
+      : "  bot                          online  where (tmux session)              path                                              reg  severity";
     log(head);
     log("  " + "─".repeat(head.length - 2));
 
@@ -169,10 +189,11 @@ export const cmdStatus = {
       const cls = classifyBot(row);
       counts[cls.severity]++;
       const bot = row.bot.padEnd(28);
-      const pass = sym(row.inPass).padEnd(5);
-      const legacy = sym(!!row.legacyPath).padEnd(7);
-      const hybrid = sym(!!row.hybridPath).padEnd(7);
-      const tmux = sym(!!row.tmuxLine).padEnd(5);
+      const online = row.online ? "✓ ON  " : "✗ off ";
+      const where = (row.onlineSession || (row.tmuxLine ? "(orphan tmux)" : "—")).padEnd(33);
+      const path = (row.hybridPath || row.legacyPath || "—")
+        .replace(process.env.HOME || "~", "~")
+        .padEnd(49);
       const reg = sym(row.inRegistry).padEnd(4);
       const sev = `${sevIcon(cls.severity)} ${cls.severity}`;
 
@@ -182,14 +203,15 @@ export const cmdStatus = {
           : row.discordOK
             ? `✓ 200 ${(row.discordUsername || "—").slice(0, 6).padEnd(7)}`
             : `✗ ${(row.discordStatus || "ERR").toString().padEnd(11)}`;
-        log(`  ${bot}${pass} ${legacy} ${hybrid} ${tmux} ${reg} ${discord} ${sev}`);
+        log(`  ${bot}${online}  ${where} ${path} ${reg} ${discord} ${sev}`);
       } else {
-        log(`  ${bot}${pass} ${legacy} ${hybrid} ${tmux} ${reg}              ${sev}`);
+        log(`  ${bot}${online}  ${where} ${path} ${reg} ${sev}`);
       }
     }
 
     log("");
-    log(`summary: ${counts.ok} ok · ${counts.warn} warn · ${counts.info} info · ${counts.error} error`);
+    log(`summary @ ${host}: ${counts.ok} ok · ${counts.warn} warn · ${counts.info} info · ${counts.error} error`);
+    log(`  online: ${rows.filter(r => r.online).length}/${rows.length}  ·  legend: ✓ ON = Gateway bun verified · ✗ off = no bun on this host`);
     if (counts.error > 0) {
       log(`run 'maw discord status <bot>' for details on any error/info row`);
     }
@@ -197,8 +219,22 @@ export const cmdStatus = {
 
   emitDetailed(log: (s: string) => void, row: BotRow, opts: StatusOpts): void {
     const cls = classifyBot(row);
-    log(`🔍 ${row.bot}    ${sevIcon(cls.severity)} ${cls.severity}${cls.reason ? ` — ${cls.reason}` : ""}`);
+    const host = hostname().split(".")[0];
+    log(`🔍 ${row.bot}  @ ${host}    ${sevIcon(cls.severity)} ${cls.severity}${cls.reason ? ` — ${cls.reason}` : ""}`);
     log("");
+
+    // Online state (real Gateway, bun ancestry-verified)
+    if (row.online) {
+      log(`  Gateway:           ✓ ONLINE on ${host}`);
+      log(`                       bun pid:      ${row.onlineBunPid}`);
+      log(`                       tmux session: ${row.onlineSession || "(detached)"}`);
+    } else if (row.tmuxLine) {
+      log(`  Gateway:           ✗ OFFLINE — tmux session present but no Gateway bun (orphan)`);
+      log(`                       orphan tmux:  ${row.tmuxLine}`);
+    } else {
+      log(`  Gateway:           ✗ OFFLINE on ${host}`);
+    }
+
 
     // Pass token
     if (row.inPass) {
@@ -238,13 +274,6 @@ export const cmdStatus = {
       log(`  Hybrid .discord/:  ✗ not migrated yet (run 'maw discord bind' once shipped)`);
     }
 
-    // tmux
-    if (row.tmuxLine) {
-      log(`  Local tmux:        ✓ ${row.tmuxLine}`);
-    } else {
-      log(`  Local tmux:        ✗ not running on this host`);
-    }
-
     // Registry
     if (row.inRegistry) {
       log(`  state-dirs.ts:     ✓ registered (discord-oracle dashboard sees it)`);
@@ -265,22 +294,30 @@ export const cmdStatus = {
   },
 
   emitJson(log: (s: string) => void, rows: BotRow[], _opts: StatusOpts): void {
-    const out = rows.map(r => {
-      const cls = classifyBot(r);
-      return {
-        bot: r.bot,
-        severity: cls.severity,
-        reason: cls.reason,
-        in_pass: r.inPass,
-        in_registry: r.inRegistry,
-        legacy_path: r.legacyPath,
-        hybrid_path: r.hybridPath,
-        tmux_running: !!r.tmuxLine,
-        discord_ok: r.discordOK,
-        discord_status: r.discordStatus,
-        discord_username: r.discordUsername,
-      };
-    });
+    const host = hostname().split(".")[0];
+    const out = {
+      host,
+      bots: rows.map(r => {
+        const cls = classifyBot(r);
+        return {
+          bot: r.bot,
+          severity: cls.severity,
+          reason: cls.reason,
+          online: r.online,
+          online_session: r.onlineSession,
+          online_bun_pid: r.onlineBunPid,
+          path: r.hybridPath || r.legacyPath,
+          in_pass: r.inPass,
+          in_registry: r.inRegistry,
+          legacy_path: r.legacyPath,
+          hybrid_path: r.hybridPath,
+          tmux_present: !!r.tmuxLine,
+          discord_ok: r.discordOK,
+          discord_status: r.discordStatus,
+          discord_username: r.discordUsername,
+        };
+      }),
+    };
     log(JSON.stringify(out, null, 2));
   },
 };

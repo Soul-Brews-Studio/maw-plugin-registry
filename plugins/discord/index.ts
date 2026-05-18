@@ -26,8 +26,8 @@ function printVersion(log: (s: string) => void): void {
   log("");
   log("subcommand status:");
   log("  ✓ tokens ls / check        v0.1");
-  log("  ✓ status [bot] [flags]     v0.2");
-  log("  ✓ bind <bot>               v0.3 (ships in this version)");
+  log("  ✓ status [bot] [flags]     v0.3.1 (real online/where via bun ancestry)");
+  log("  ✓ bind <bot>               v0.3 (rewrite to use 'maw wake' pending)");
   log("  ⏸ pair <oracle> <chan>     v0.4 planned");
   log("  ⏸ route <from> <to>        v0.4 planned");
   log("  ⏸ serve [--detach]         v0.5 planned (engine.serve infrastructure)");
