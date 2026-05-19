@@ -16,7 +16,7 @@
 import {
   listPassTokens, decryptToken, pingDiscord,
   findLegacyStateDir, findHybridDiscord, findTmuxSession,
-  loadStateDirsRegistry, findOnlineBunForBot, fmtSize,
+  loadStateDirsRegistry, loadAnchors, findOnlineBunForBot, fmtSize,
 } from "./lib";
 import { readdirSync, statSync } from "fs";
 import { join } from "path";
@@ -32,6 +32,7 @@ interface BotRow {
   online: boolean;
   onlineSession: string | null;
   onlineBunPid: number | null;
+  anchor: string | null;
   discordOK?: boolean;
   discordStatus?: number;
   discordUsername?: string;
@@ -70,6 +71,7 @@ function classifyBot(row: BotRow): { severity: Severity; reason: string } {
 async function gatherRows(): Promise<BotRow[]> {
   const tokens = listPassTokens();
   const registry = await loadStateDirsRegistry();
+  const anchors = await loadAnchors();
   const allBots = new Set<string>([...tokens.map(t => t.bot), ...registry]);
 
   const rows: BotRow[] = [];
@@ -90,6 +92,7 @@ async function gatherRows(): Promise<BotRow[]> {
       online: !!onlineInfo,
       onlineSession: onlineInfo?.tmuxSession ?? null,
       onlineBunPid: onlineInfo?.bunPid ?? null,
+      anchor: anchors[bot] ?? null,
     });
   }
   return rows;
@@ -113,10 +116,6 @@ async function addDiscordChecks(rows: BotRow[]): Promise<void> {
     row.discordStatus = ping.status;
     row.discordUsername = ping.username;
   }
-}
-
-function sym(b: boolean): string {
-  return b ? "✓" : "·";
 }
 
 function sevIcon(s: Severity): string {
@@ -178,42 +177,36 @@ export const cmdStatus = {
     const host = hostname().split(".")[0];
     log(`🔍 maw discord status @ ${host} — ${rows.length} bot(s) | ${opts.redact ? "REDACTED · " : ""}${opts.check ? "with Discord REST" : "online/where via bun ancestry — use --check for REST"}`);
     log("");
-    const head = opts.check
-      ? "  bot                          online  where (tmux session)              path                                              reg  discord       severity"
-      : "  bot                          online  where (tmux session)              path                                              reg  severity";
+    const head = "  bot                          online  anchor              drift  where (tmux session)              severity";
     log(head);
     log("  " + "─".repeat(head.length - 2));
 
     const counts: Record<Severity, number> = { ok: 0, warn: 0, info: 0, error: 0 };
+    let driftCount = 0;
     for (const row of rows) {
       const cls = classifyBot(row);
       counts[cls.severity]++;
       const bot = row.bot.padEnd(28);
       const online = row.online ? "✓ ON  " : "✗ off ";
+      const anchor = (row.anchor || "—").padEnd(18);
+      // Drift detection: bot is online HERE but its anchor is elsewhere → ⚠ drift
+      const hostNow = host;
+      const isHere = row.anchor === hostNow || row.anchor === `nat@${hostNow}` || row.anchor?.endsWith(`@${hostNow}`) || row.anchor?.endsWith(`@${hostNow}.wg`);
+      let drift = "  ─  ";
+      if (row.online && row.anchor && !isHere) { drift = "⚠ here"; driftCount++; }
+      else if (row.online && row.anchor) drift = " ✓ ok ";
+      else if (!row.online && row.anchor && isHere) drift = "⚠ down";
       const where = (row.onlineSession || (row.tmuxLine ? "(orphan tmux)" : "—")).padEnd(33);
-      const path = (row.hybridPath || row.legacyPath || "—")
-        .replace(process.env.HOME || "~", "~")
-        .padEnd(49);
-      const reg = sym(row.inRegistry).padEnd(4);
       const sev = `${sevIcon(cls.severity)} ${cls.severity}`;
-
-      if (opts.check) {
-        const discord = row.discordOK === undefined
-          ? "—            "
-          : row.discordOK
-            ? `✓ 200 ${(row.discordUsername || "—").slice(0, 6).padEnd(7)}`
-            : `✗ ${(row.discordStatus || "ERR").toString().padEnd(11)}`;
-        log(`  ${bot}${online}  ${where} ${path} ${reg} ${discord} ${sev}`);
-      } else {
-        log(`  ${bot}${online}  ${where} ${path} ${reg} ${sev}`);
-      }
+      log(`  ${bot}${online}  ${anchor}  ${drift}  ${where} ${sev}`);
     }
 
     log("");
     log(`summary @ ${host}: ${counts.ok} ok · ${counts.warn} warn · ${counts.info} info · ${counts.error} error`);
-    log(`  online: ${rows.filter(r => r.online).length}/${rows.length}  ·  legend: ✓ ON = Gateway bun verified · ✗ off = no bun on this host`);
-    if (counts.error > 0) {
-      log(`run 'maw discord status <bot>' for details on any error/info row`);
+    log(`  online: ${rows.filter(r => r.online).length}/${rows.length}  ·  anchors: ${rows.filter(r => r.anchor).length}/${rows.length}  ·  drift: ${driftCount}`);
+    log(`  legend: ✓ ON = Gateway bun verified · anchor = canonical host (state-dirs.ts ANCHORS) · drift = bot online but not on anchor host`);
+    if (counts.error > 0 || driftCount > 0) {
+      log(`run 'maw discord status <bot>' for details on any error/drift row`);
     }
   },
 
