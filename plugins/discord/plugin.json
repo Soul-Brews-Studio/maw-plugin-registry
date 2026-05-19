@@ -1,6 +1,6 @@
 {
   "name": "discord",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "entry": "./index.ts",
   "sdk": "^1.0.0",
   "description": "Discord fleet ops — tokens, bind, status, route, pair. Hybrid pattern (token in pass, config in repo).",
