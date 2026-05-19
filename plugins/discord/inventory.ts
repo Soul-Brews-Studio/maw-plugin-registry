@@ -72,6 +72,40 @@ async function fetchGuilds(token: string): Promise<Guild[]> {
   return await res.json() as Guild[];
 }
 
+// Per-process user-name cache so repeated id→name lookups don't refetch
+const _userCache: Map<string, string> = new Map();
+
+async function resolveUserName(token: string, userId: string): Promise<string> {
+  if (_userCache.has(userId)) return _userCache.get(userId)!;
+  try {
+    const res = await fetch(`https://discord.com/api/v10/users/${userId}`, {
+      headers: { Authorization: `Bot ${token}` },
+    });
+    if (res.status === 429) {
+      const retry = parseFloat(res.headers.get("retry-after") || "1");
+      await new Promise(r => setTimeout(r, (retry + 0.2) * 1000));
+      return resolveUserName(token, userId);
+    }
+    if (!res.ok) { _userCache.set(userId, userId); return userId; }
+    const u: any = await res.json();
+    const name = u.global_name || u.username || userId;
+    _userCache.set(userId, name);
+    return name;
+  } catch {
+    _userCache.set(userId, userId);
+    return userId;
+  }
+}
+
+async function resolveUserList(token: string, ids: string[]): Promise<string[]> {
+  const out: string[] = [];
+  for (const id of ids) {
+    out.push(await resolveUserName(token, id));
+    await new Promise(r => setTimeout(r, 80));
+  }
+  return out;
+}
+
 async function fetchChannels(token: string, guildId: string, retries = 2): Promise<Channel[]> {
   for (let i = 0; i <= retries; i++) {
     const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
@@ -218,20 +252,26 @@ export const cmdMembers = {
       return;
     }
     const { flags } = parseFlags(args.slice(2));
+    const ids: string[] = cfg.allowFrom || [];
+    const names = await resolveUserList(pre.token, ids);
+    const pairs = ids.map((id, i) => ({ id, name: names[i]! }));
     const result = {
       bot,
       channel: { id: channelId, name: channelArg },
       requireMention: cfg.requireMention,
-      allowFrom: cfg.allowFrom || [],
-      effective: (cfg.allowFrom || []).length === 0 ? "EVERYONE (no allowlist)" : `${(cfg.allowFrom || []).length} user(s)`,
+      allowFrom: pairs,
+      effective: ids.length === 0 ? "EVERYONE (no allowlist)" : `${ids.length} user(s)`,
     };
     if (flags.json) { log(JSON.stringify(result, null, 2)); return; }
     log(`👥 ${bot} · #${channelArg} (${channelId})`);
     log(`   requireMention: ${result.requireMention}`);
-    log(`   allowFrom:      ${result.allowFrom.length ? result.allowFrom.join(", ") : "(none)"}`);
+    if (pairs.length === 0) {
+      log(`   allowFrom:      (none)`);
+    } else {
+      log(`   allowFrom:`);
+      for (const p of pairs) log(`     · ${p.name.padEnd(18)} (${p.id})`);
+    }
     log(`   effective:      ${result.effective}`);
-    log("");
-    log(`   ℹ to list Discord channel members, use --with-discord-members (v0.4.3 — paginated, rate-limited)`);
   },
 };
 
@@ -276,6 +316,12 @@ export const cmdInventory = {
       return;
     }
 
+    // Pre-resolve all unique user ids referenced in access.json for nicer rendering
+    const allIds = new Set<string>();
+    for (const r of rows) for (const c of r.channels) (c.allowFrom || []).forEach(id => allIds.add(id));
+    const nameById = new Map<string, string>();
+    for (const id of allIds) nameById.set(id, await resolveUserName(pre.token, id));
+
     let totalEnabled = 0;
     let totalChannels = 0;
     log(`📋 ${bot} — full inventory`);
@@ -288,7 +334,9 @@ export const cmdInventory = {
       for (const c of channels.sort((a, b) => a.channel.name.localeCompare(b.channel.name))) {
         if (c.enabled) {
           const mention = c.mention ? "✓ tag " : "○ all ";
-          const allow = c.allowFrom!.length === 0 ? "EVERYONE" : `${c.allowFrom!.length} user(s)`;
+          const allow = c.allowFrom!.length === 0
+            ? "EVERYONE"
+            : c.allowFrom!.map(id => nameById.get(id) || id).join(", ");
           log(`     ✓ #${c.channel.name.padEnd(36)} ${mention} ${allow}`);
         } else {
           log(`     · #${c.channel.name.padEnd(36)} (in guild, no access)`);
@@ -296,6 +344,6 @@ export const cmdInventory = {
       }
       log("");
     }
-    log(`summary: ${guilds.length} server(s) · ${totalChannels} channels visible · ${totalEnabled} enabled in access.json`);
+    log(`summary: ${guilds.length} server(s) · ${totalChannels} channels visible · ${totalEnabled} enabled · ${nameById.size} unique allow-users resolved`);
   },
 };
