@@ -3,6 +3,7 @@ import { cmdTokens } from "./tokens";
 import { cmdStatus } from "./status";
 import { cmdBind } from "./bind";
 import { cmdAccess } from "./access";
+import { cmdGuilds, cmdChannels, cmdMembers, cmdInventory } from "./inventory";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -30,6 +31,7 @@ function printVersion(log: (s: string) => void): void {
   log("  ✓ status [bot] [flags]     v0.3.1 (real online/where via bun ancestry)");
   log("  ✓ bind <bot>               v0.3 (rewrite to use 'maw wake' pending)");
   log("  ✓ access <bot> ...         v0.4 (list/show/map/add/rm/set/allow/lockdown)");
+  log("  ✓ guilds/channels/members/inventory <bot>  v0.4.2 (Discord-state visibility)");
   log("  ⏸ pair <oracle> <chan>     v0.5 planned");
   log("  ⏸ route <from> <to>        v0.5 planned");
   log("  ⏸ serve (after_send hook)  v0.5 planned (replaces daemon — engine.serve)");
@@ -105,6 +107,26 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
 
     if (sub === "access") {
       await cmdAccess.run(log, args.slice(1));
+      return { ok: true, output: logs.join("\n") };
+    }
+
+    if (sub === "guilds") {
+      await cmdGuilds.run(log, args.slice(1));
+      return { ok: true, output: logs.join("\n") };
+    }
+
+    if (sub === "channels") {
+      await cmdChannels.run(log, args.slice(1));
+      return { ok: true, output: logs.join("\n") };
+    }
+
+    if (sub === "members") {
+      await cmdMembers.run(log, args.slice(1));
+      return { ok: true, output: logs.join("\n") };
+    }
+
+    if (sub === "inventory") {
+      await cmdInventory.run(log, args.slice(1));
       return { ok: true, output: logs.join("\n") };
     }
 
