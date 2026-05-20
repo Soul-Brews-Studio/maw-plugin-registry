@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-18T15:30:40Z",
+  "updated": "2026-05-20T01:05:49Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -109,6 +109,16 @@
       "addedAt": "2026-04-29T02:19:51Z",
       "tier": "extra"
     },
+    "buddy": {
+      "version": "0.1.0",
+      "source": "soul-brews-studio/maw-plugin-registry/buddy@v0.1.0-buddy",
+      "summary": "Spawn cross-engine buddy pairs on shared worktrees \u2014 identity-primed at birth.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+      "addedAt": "2026-05-20T08:30:00Z",
+      "tier": "extra"
+    },
     "capture": {
       "version": "0.1.0",
       "source": "soul-brews-studio/maw-plugin-registry/capture@v0.1.0-capture",
@@ -206,17 +216,6 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:40:03Z",
       "tier": "extra"
-    },
-    "dig": {
-      "version": "0.1.0",
-      "source": "soul-brews-studio/maw-plugin-registry/dig@main",
-      "sha256": null,
-      "summary": "Session mining CLI \u2014 human/AI message separation, time-range filters, keyword grep across Claude Code .jsonl history.",
-      "author": "Soul-Brews-Studio",
-      "license": "MIT",
-      "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
-      "addedAt": "2026-05-17T12:00:00Z",
-      "tier": "standard"
     },
     "doctor": {
       "version": "0.1.0",
