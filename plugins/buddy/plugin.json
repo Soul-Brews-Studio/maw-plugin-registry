@@ -1,0 +1,28 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "buddy",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "tier": "standard",
+  "description": "Spawn cross-engine buddy pairs on shared worktrees — identity-primed at birth.",
+  "author": "Soul-Brews-Studio",
+  "capabilities": ["fs:read", "sdk:plugin"],
+  "cli": {
+    "command": "buddy",
+    "help": "maw buddy <oracle> <task> [--engine-a claude] [--engine-b codex] [--role-a spec] [--role-b impl] [--wt <name>] [--no-prime] [--dry-run]",
+    "flags": {
+      "--engine-a": "string",
+      "--engine-b": "string",
+      "--role-a": "string",
+      "--role-b": "string",
+      "--wt": "string",
+      "--no-prime": "boolean",
+      "--dry-run": "boolean"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}

@@ -1,0 +1,239 @@
+[
+  {
+    "name": "default claude×codex pair on shared worktree",
+    "input": {
+      "selfName": "maw-js-fix-resolver-claude",
+      "buddyName": "maw-js-fix-resolver-codex",
+      "selfAddress": "maw-js-fix-resolver-claude",
+      "buddyAddress": "maw-js-fix-resolver-codex",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "fix the resolver",
+      "taskContextPath": "ψ/inbox/buddy/fix-resolver.md",
+      "worktreePath": "/opt/Code/github.com/Soul-Brews-Studio/maw-js.wt-fix-resolver"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are maw-js-fix-resolver-claude, paired with maw-js-fix-resolver-codex.\n\n  TASK: fix the resolver\n  CONTEXT: ψ/inbox/buddy/fix-resolver.md\n  WORKTREE: /opt/Code/github.com/Soul-Brews-Studio/maw-js.wt-fix-resolver\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: maw-js-fix-resolver-claude\n  BUDDY ADDRESS: maw-js-fix-resolver-codex\n\n  TALK TO YOUR BUDDY:\n    maw hey maw-js-fix-resolver-codex \"<message>\"\n\n  Example:\n    maw hey maw-js-fix-resolver-codex \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek maw-js-fix-resolver-codex\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey maw-js-fix-resolver-codex \"<message>\"",
+      "selfAddress": "maw-js-fix-resolver-claude",
+      "buddyAddress": "maw-js-fix-resolver-codex"
+    }
+  },
+  {
+    "name": "minimal input fills in all defaults",
+    "input": {
+      "selfName": "A",
+      "buddyName": "B",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "T",
+      "taskContextPath": "ctx.md",
+      "worktreePath": "/wt"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are A, paired with B.\n\n  TASK: T\n  CONTEXT: ctx.md\n  WORKTREE: /wt\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: A\n  BUDDY ADDRESS: B\n\n  TALK TO YOUR BUDDY:\n    maw hey B \"<message>\"\n\n  Example:\n    maw hey B \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek B\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey B \"<message>\"",
+      "selfAddress": "A",
+      "buddyAddress": "B"
+    }
+  },
+  {
+    "name": "custom roles — frontend × backend",
+    "input": {
+      "selfName": "shop-checkout-claude",
+      "buddyName": "shop-checkout-codex",
+      "selfAddress": "shop-checkout-claude",
+      "buddyAddress": "shop-checkout-codex",
+      "selfRole": "frontend",
+      "buddyRole": "backend",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "wire checkout to stripe",
+      "taskContextPath": "ψ/inbox/buddy/wire-checkout-to-stripe.md",
+      "worktreePath": "/repos/shop.wt-checkout"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are shop-checkout-claude, paired with shop-checkout-codex.\n\n  TASK: wire checkout to stripe\n  CONTEXT: ψ/inbox/buddy/wire-checkout-to-stripe.md\n  WORKTREE: /repos/shop.wt-checkout\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: shop-checkout-claude\n  BUDDY ADDRESS: shop-checkout-codex\n\n  TALK TO YOUR BUDDY:\n    maw hey shop-checkout-codex \"<message>\"\n\n  Example:\n    maw hey shop-checkout-codex \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: frontend\n  BUDDY ROLE: backend\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek shop-checkout-codex\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey shop-checkout-codex \"<message>\"",
+      "selfAddress": "shop-checkout-claude",
+      "buddyAddress": "shop-checkout-codex"
+    }
+  },
+  {
+    "name": "lead pane present — lead report line included",
+    "input": {
+      "selfName": "kit-build-claude",
+      "buddyName": "kit-build-codex",
+      "selfAddress": "kit-build-claude",
+      "buddyAddress": "kit-build-codex",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "kit build",
+      "taskContextPath": "ψ/inbox/buddy/kit-build.md",
+      "worktreePath": "/repos/kit.wt-build",
+      "leadPane": "lead-oracle",
+      "leadName": "mawjs-oracle"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are kit-build-claude, paired with kit-build-codex.\n\n  TASK: kit build\n  CONTEXT: ψ/inbox/buddy/kit-build.md\n  WORKTREE: /repos/kit.wt-build\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: kit-build-claude\n  BUDDY ADDRESS: kit-build-codex\n  LEAD: mawjs-oracle\n  LEAD ADDRESS: lead-oracle\n\n  TALK TO YOUR BUDDY:\n    maw hey kit-build-codex \"<message>\"\n\n  Example:\n    maw hey kit-build-codex \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek kit-build-codex\n  REPORT TO LEAD: maw hey lead-oracle \"DONE <summary + evidence>\"\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey kit-build-codex \"<message>\"",
+      "selfAddress": "kit-build-claude",
+      "buddyAddress": "kit-build-codex"
+    }
+  },
+  {
+    "name": "no lead pane — no lead report line",
+    "input": {
+      "selfName": "solo-claude",
+      "buddyName": "solo-codex",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "solo task",
+      "taskContextPath": "ctx.md",
+      "worktreePath": "/wt"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are solo-claude, paired with solo-codex.\n\n  TASK: solo task\n  CONTEXT: ctx.md\n  WORKTREE: /wt\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: solo-claude\n  BUDDY ADDRESS: solo-codex\n\n  TALK TO YOUR BUDDY:\n    maw hey solo-codex \"<message>\"\n\n  Example:\n    maw hey solo-codex \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek solo-codex\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey solo-codex \"<message>\"",
+      "selfAddress": "solo-claude",
+      "buddyAddress": "solo-codex"
+    }
+  },
+  {
+    "name": "custom system name override",
+    "input": {
+      "selfName": "X",
+      "buddyName": "Y",
+      "selfRole": "a",
+      "buddyRole": "b",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "T",
+      "taskContextPath": "c.md",
+      "worktreePath": "/w",
+      "systemName": "marathon"
+    },
+    "expected": {
+      "message": "[m5:marathon] You are X, paired with Y.\n\n  TASK: T\n  CONTEXT: c.md\n  WORKTREE: /w\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: X\n  BUDDY ADDRESS: Y\n\n  TALK TO YOUR BUDDY:\n    maw hey Y \"<message>\"\n\n  Example:\n    maw hey Y \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: a\n  BUDDY ROLE: b\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek Y\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey Y \"<message>\"",
+      "selfAddress": "X",
+      "buddyAddress": "Y"
+    }
+  },
+  {
+    "name": "multi-host addresses differ from names (identity collision case)",
+    "input": {
+      "selfName": "buddy-ship-claude",
+      "buddyName": "buddy-ship-codex",
+      "selfAddress": "m5:buddy-ship-claude",
+      "buddyAddress": "white:buddy-ship-codex",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "ship buddy",
+      "taskContextPath": "ψ/inbox/buddy/ship-buddy.md",
+      "worktreePath": "/repos/maw-plugin-registry.wt-buddy-ship"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are buddy-ship-claude, paired with buddy-ship-codex.\n\n  TASK: ship buddy\n  CONTEXT: ψ/inbox/buddy/ship-buddy.md\n  WORKTREE: /repos/maw-plugin-registry.wt-buddy-ship\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: m5:buddy-ship-claude\n  BUDDY ADDRESS: white:buddy-ship-codex\n\n  TALK TO YOUR BUDDY:\n    maw hey white:buddy-ship-codex \"<message>\"\n\n  Example:\n    maw hey white:buddy-ship-codex \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek white:buddy-ship-codex\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey white:buddy-ship-codex \"<message>\"",
+      "selfAddress": "m5:buddy-ship-claude",
+      "buddyAddress": "white:buddy-ship-codex"
+    }
+  },
+  {
+    "name": "claude × claude (same engine pair)",
+    "input": {
+      "selfName": "spec-claude",
+      "buddyName": "impl-claude",
+      "selfAddress": "spec-claude",
+      "buddyAddress": "impl-claude",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "claude",
+      "task": "twin claude pair",
+      "taskContextPath": "ctx.md",
+      "worktreePath": "/wt"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are spec-claude, paired with impl-claude.\n\n  TASK: twin claude pair\n  CONTEXT: ctx.md\n  WORKTREE: /wt\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: spec-claude\n  BUDDY ADDRESS: impl-claude\n\n  TALK TO YOUR BUDDY:\n    maw hey impl-claude \"<message>\"\n\n  Example:\n    maw hey impl-claude \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: claude\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek impl-claude\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey impl-claude \"<message>\"",
+      "selfAddress": "spec-claude",
+      "buddyAddress": "impl-claude"
+    }
+  },
+  {
+    "name": "task with shell metacharacters round-trips into TASK line",
+    "input": {
+      "selfName": "esc-a",
+      "buddyName": "esc-b",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "fix `printf` $PATH bug",
+      "taskContextPath": "ctx.md",
+      "worktreePath": "/wt"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are esc-a, paired with esc-b.\n\n  TASK: fix `printf` $PATH bug\n  CONTEXT: ctx.md\n  WORKTREE: /wt\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: esc-a\n  BUDDY ADDRESS: esc-b\n\n  TALK TO YOUR BUDDY:\n    maw hey esc-b \"<message>\"\n\n  Example:\n    maw hey esc-b \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek esc-b\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey esc-b \"<message>\"",
+      "selfAddress": "esc-a",
+      "buddyAddress": "esc-b"
+    }
+  },
+  {
+    "name": "buddyAddress is rendered literally in hey commands (target is not shell-quoted)",
+    "input": {
+      "selfName": "esc2-a",
+      "buddyName": "esc2-b",
+      "selfAddress": "esc2-a",
+      "buddyAddress": "host\"weird$:esc2-b",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "T",
+      "taskContextPath": "ctx.md",
+      "worktreePath": "/wt"
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are esc2-a, paired with esc2-b.\n\n  TASK: T\n  CONTEXT: ctx.md\n  WORKTREE: /wt\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: esc2-a\n  BUDDY ADDRESS: host\"weird$:esc2-b\n\n  TALK TO YOUR BUDDY:\n    maw hey host\"weird$:esc2-b \"<message>\"\n\n  Example:\n    maw hey host\"weird$:esc2-b \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Use maw hey for sync. Send ACK, first-move plan, blocker/escalation, and DONE with evidence. Batch updates; do not loop or message yourself.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek host\"weird$:esc2-b\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read the context file, ACK your buddy, state your intended write scope, then propose your first move.",
+      "talkCommand": "maw hey host\"weird$:esc2-b \"<message>\"",
+      "selfAddress": "esc2-a",
+      "buddyAddress": "host\"weird$:esc2-b"
+    }
+  },
+  {
+    "name": "custom cadence and firstMove overrides",
+    "input": {
+      "selfName": "ov-a",
+      "buddyName": "ov-b",
+      "selfRole": "spec",
+      "buddyRole": "impl",
+      "engine": "claude",
+      "buddyEngine": "codex",
+      "task": "overrides",
+      "taskContextPath": "ctx.md",
+      "worktreePath": "/wt",
+      "cadence": "Sync every 10 minutes via maw hey; checkpoint at each fixture.",
+      "firstMove": "Read ctx.md, then ACK with your read of the task."
+    },
+    "expected": {
+      "message": "[m5:buddy-system] You are ov-a, paired with ov-b.\n\n  TASK: overrides\n  CONTEXT: ctx.md\n  WORKTREE: /wt\n  LINEAGE: Buddy pair born by maw buddy\n\n  SELF ADDRESS: ov-a\n  BUDDY ADDRESS: ov-b\n\n  TALK TO YOUR BUDDY:\n    maw hey ov-b \"<message>\"\n\n  Example:\n    maw hey ov-b \"I'll handle the spec, you handle impl\"\n\n  YOUR ROLE: spec\n  BUDDY ROLE: impl\n  YOUR ENGINE: claude\n  BUDDY ENGINE: codex\n\n  OWNERSHIP: Shared worktree. State intended write scope before editing; do not revert buddy edits; coordinate before touching the same files.\n  CADENCE: Sync every 10 minutes via maw hey; checkpoint at each fixture.\n  VERIFICATION: Agree on the smallest test/build command that proves done, then report the exact evidence.\n  GIT: Do not commit or push unless the lead explicitly assigns that responsibility.\n  LOOP GUARD: Do not maw hey yourself. Avoid infinite ping-pong; prefer concise batched updates.\n  PEEK: maw tmux peek ov-b\n\n  DONE: Report DONE via maw hey to your buddy with evidence and any remaining risks.\n  START NOW: Read ctx.md, then ACK with your read of the task.",
+      "talkCommand": "maw hey ov-b \"<message>\"",
+      "selfAddress": "ov-a",
+      "buddyAddress": "ov-b"
+    }
+  }
+]
