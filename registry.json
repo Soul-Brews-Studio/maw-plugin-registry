@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-22T01:15:37Z",
+  "updated": "2026-05-22T17:17:10Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -775,6 +775,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:40:04Z",
+      "tier": "extra"
+    },
+    "team-agent": {
+      "version": "1.2.0",
+      "source": "soul-brews-studio/maw-plugin-registry/team-agent@v1.2.0",
+      "sha256": null,
+      "summary": "Manual team-agent spawn \u2014 create Claude Code teams from the shell without needing TeamCreate tool; CLI wraps team-agent tutorial, presets, and SendMessage-equivalent msg verb.",
+      "author": "Soul-Brews-Studio",
+      "license": "MIT",
+      "homepage": "https://github.com/Soul-Brews-Studio/digger-oracle",
+      "addedAt": "2026-05-23T00:10:00Z",
       "tier": "extra"
     },
     "token": {
