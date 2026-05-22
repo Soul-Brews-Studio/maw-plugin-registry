@@ -180,17 +180,35 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
   const inTmux = !!process.env.TMUX;
 
   const claudeBin = findClaudeBin();
-  const env = `CLAUDECODE=1 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`;
+  // Forward auth env from the calling shell so spawned panes (which inherit
+  // the tmux server's frozen env, not direnv-injected vars) can authenticate.
+  // Known auth vars: CLAUDE_CODE_OAUTH_TOKEN (subscription/team mode),
+  // ANTHROPIC_API_KEY (API key auth), CLAUDE_TOKEN_NAME (display).
+  const authEnvParts: string[] = [];
+  for (const key of ["CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY", "CLAUDE_TOKEN_NAME"]) {
+    const val = process.env[key];
+    if (val) authEnvParts.push(`${key}=${shellQuote(val)}`);
+  }
+  const authEnv = authEnvParts.length ? authEnvParts.join(" ") + " " : "";
+  const env = `CLAUDECODE=1 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 ${authEnv}`.trim();
+
+  // Teammate's --session-id is OPT-IN — by default claude.exe auto-generates
+  // its own (avoids the "session-id already in use" runtime registry lock when
+  // panes are killed but the registry still holds the UUID). Pass --with-session-id
+  // to fix the teammate's UUID for repeatable spawns / config tracking.
+  const withSessionId = flags["--with-session-id"] === true || flags["--session-id"] !== undefined;
   const cmdParts = [
     `env ${env} ${shellQuote(claudeBin)}`,
-    `--session-id ${teammateSessionId}`,
+  ];
+  if (withSessionId) cmdParts.push(`--session-id ${teammateSessionId}`);
+  cmdParts.push(
     `--agent-id ${m.role}@${team}`,
     `--agent-name ${m.role}`,
     `--team-name ${team}`,
     `--agent-color ${m.color}`,
     `--parent-session-id ${parent}`,
     `--model ${model}`,
-  ];
+  );
   if (systemPrompt) cmdParts.push(`--system-prompt ${shellQuote(systemPrompt)}`);
   cmdParts.push(`--dangerously-skip-permissions`);
   const cmd = cmdParts.join(" \\\n");
