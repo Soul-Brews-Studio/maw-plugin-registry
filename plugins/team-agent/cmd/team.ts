@@ -320,10 +320,38 @@ export async function cmdLs(args: string[], flags: Record<string, unknown>): Pro
 
 export async function cmdMsg(args: string[], flags: Record<string, unknown>): Promise<void> {
   const team = args[0];
+  const all = flags["--all"] === true;
+
+  // --all: broadcast to every non-shell teammate (skip shell-lead and any agentType==="shell")
+  // signature shifts: args[1] is the text (not a role)
+  if (all) {
+    const text = args.slice(1).join(" ");
+    if (!team || !text) {
+      throw new Error("usage: maw team-agent msg <team> --all \"<text>\" [--by <sender>]");
+    }
+    const cfg = readConfig(team);
+    const targets = cfg.members.filter((m: any) => m.agentType !== "shell" && m.name);
+    if (targets.length === 0) {
+      throw new Error(`no broadcast targets in team ${team} (no claude.exe members)`);
+    }
+    const by = (flags["--by"] as string) || "shell";
+    const summary = text.split(/\s+/).slice(0, 8).join(" ").slice(0, 60);
+    const ts = nowISO();
+
+    console.log(`\x1b[36m📢\x1b[0m broadcasting to ${targets.length} teammate(s) in ${team}:`);
+    for (const m of targets) {
+      const entry = { from: by, text, summary, timestamp: ts, color: undefined, read: false };
+      appendInbox(team, m.name, entry);
+      console.log(`  \x1b[32m✓\x1b[0m ${m.name}  ${inboxPath(team, m.name)}`);
+    }
+    return;
+  }
+
+  // single-role send (original behavior)
   const role = args[1];
   const text = args.slice(2).join(" ");
   if (!team || !role || !text) {
-    throw new Error("usage: maw team-agent msg <team> <role> \"<text>\" [--by <sender>]");
+    throw new Error("usage: maw team-agent msg <team> <role> \"<text>\" [--by <sender>]\n   or: maw team-agent msg <team> --all \"<text>\" [--by <sender>]");
   }
   readConfig(team); // verify team exists
   const by = (flags["--by"] as string) || "shell";
