@@ -1,0 +1,53 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "team-agent",
+  "version": "1.2.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "tier": "extra",
+  "description": "Manual team-agent spawn — shell-driven TeamCreate teammates without needing Claude tools. Wraps maw tile --path --cmd + writes ~/.claude/teams/<name>/ config + inboxes directly.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "capabilities": [
+    "fs:read",
+    "fs:write",
+    "sdk:plugin"
+  ],
+  "cli": {
+    "command": "team-agent",
+    "help": "maw team-agent <subcommand> [args] — manual team-agent spawn (no Claude needed). Subcommands: create | spawn | ls | msg | shutdown | kill | delete | help",
+    "flags": {
+      "--mission": "string",
+      "--color": "string",
+      "--model": "string",
+      "--parent": "string",
+      "--session-id": "string",
+      "--by": "string",
+      "--confirm": "boolean",
+      "--dry-run": "boolean",
+      "--json": "boolean",
+      "--bare": "boolean",
+      "--quiet": "boolean",
+      "--human": "boolean",
+      "--decimal": "boolean",
+      "--marker": "string",
+      "--system-prompt": "string",
+      "--all": "boolean",
+      "--preset": "string",
+      "--roles": "string",
+      "--force": "boolean",
+      "--here": "boolean",
+      "--yes": "boolean",
+      "-y": "boolean",
+      "--no-attach": "boolean",
+      "--list": "boolean",
+      "--split": "boolean",
+      "--switch": "boolean",
+      "--apply": "boolean",
+      "--out": "string"
+    }
+  },
+  "weight": 50,
+  "schemaVersion": 1
+}

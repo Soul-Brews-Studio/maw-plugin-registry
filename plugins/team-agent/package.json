@@ -1,0 +1,15 @@
+{
+  "name": "maw-team-agent-plugin",
+  "private": true,
+  "type": "module",
+  "description": "maw plugin: team-agent — manual TeamCreate spawn + tutorial",
+  "scripts": {
+    "typecheck": "bunx tsc --noEmit",
+    "test": "bunx tsc --noEmit && bun test"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/bun": "latest",
+    "@types/node": "latest"
+  }
+}
