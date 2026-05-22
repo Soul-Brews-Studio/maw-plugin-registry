@@ -48,7 +48,7 @@ export default async function handler(ctx: InvokeContext): Promise<InvokeResult>
       const a = rawArgs[i];
       if (a?.startsWith("--")) {
         // Honor known boolean flags so they don't greedily consume the next arg.
-        const BOOLS = new Set(["--all", "--confirm", "--apply", "--force", "--here", "--yes", "-y", "--no-attach", "--list", "--split", "--switch", "--bare", "--quiet", "--human", "--decimal", "--dry-run", "--json", "--with-session-id"]);
+        const BOOLS = new Set(["--all", "--confirm", "--apply", "--force", "--here", "--yes", "-y", "--no-attach", "--list", "--split", "--switch", "--bare", "--quiet", "--human", "--decimal", "--dry-run", "--json"]);
         const next = rawArgs[i + 1];
         if (!BOOLS.has(a) && next && !next.startsWith("--")) { flags[a] = next; i++; }
         else { flags[a] = true; }

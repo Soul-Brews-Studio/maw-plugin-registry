@@ -45,8 +45,7 @@
       "--split": "boolean",
       "--switch": "boolean",
       "--apply": "boolean",
-      "--out": "string",
-      "--with-session-id": "boolean"
+      "--out": "string"
     }
   },
   "weight": 50,

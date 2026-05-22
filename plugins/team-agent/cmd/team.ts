@@ -180,10 +180,8 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
   const inTmux = !!process.env.TMUX;
 
   const claudeBin = findClaudeBin();
-  // Forward auth env from the calling shell so spawned panes (which inherit
+  // Forward auth env from the caller's shell so spawned panes (which inherit
   // the tmux server's frozen env, not direnv-injected vars) can authenticate.
-  // Known auth vars: CLAUDE_CODE_OAUTH_TOKEN (subscription/team mode),
-  // ANTHROPIC_API_KEY (API key auth), CLAUDE_TOKEN_NAME (display).
   const authEnvParts: string[] = [];
   for (const key of ["CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY", "CLAUDE_TOKEN_NAME"]) {
     const val = process.env[key];
@@ -192,14 +190,12 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
   const authEnv = authEnvParts.length ? authEnvParts.join(" ") + " " : "";
   const env = `CLAUDECODE=1 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 ${authEnv}`.trim();
 
-  // Teammate's --session-id is OPT-IN — by default claude.exe auto-generates
-  // its own (avoids the "session-id already in use" runtime registry lock when
-  // panes are killed but the registry still holds the UUID). Pass --with-session-id
-  // to fix the teammate's UUID for repeatable spawns / config tracking.
+  // Teammate's --session-id is OPT-IN (per ccc-oracle feature request):
+  // default = omit so claude.exe auto-generates and avoids "session-id already
+  // in use" runtime-registry locks. Pass --with-session-id (or an explicit
+  // --session-id <uuid>) to keep the old fixed-UUID behavior.
   const withSessionId = flags["--with-session-id"] === true || flags["--session-id"] !== undefined;
-  const cmdParts = [
-    `env ${env} ${shellQuote(claudeBin)}`,
-  ];
+  const cmdParts: string[] = [`env ${env} ${shellQuote(claudeBin)}`];
   if (withSessionId) cmdParts.push(`--session-id ${teammateSessionId}`);
   cmdParts.push(
     `--agent-id ${m.role}@${team}`,
@@ -235,11 +231,15 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
   //   --split:   new tmux PANE in the current window (no separate session)
   const useSplit = flags["--split"] === true;
   const sessionName = `${team}-${m.role}`;
+  // Add --print so maw new returns JSON {session, window, pane_id, ...} we can
+  // parse to capture the pane_id at spawn time (closes the "killed 0 pane(s)"
+  // gap — cleanup needs pane_id to actually kill the right pane later).
   const mawArgs = useSplit
-    ? ["new", "--split", "--path", m.cwd, "--cmd", cmd]
-    : ["new", sessionName, "--path", m.cwd, "--cmd", cmd, "--no-attach"];
+    ? ["new", "--split", "--path", m.cwd, "--cmd", cmd, "--print"]
+    : ["new", sessionName, "--path", m.cwd, "--cmd", cmd, "--no-attach", "--print"];
   const result = spawnSync("maw", mawArgs, {
-    stdio: "inherit",
+    stdio: ["inherit", "pipe", "inherit"],
+    encoding: "utf-8",
   });
   if (result.status !== 0) {
     throw new Error(useSplit
@@ -247,12 +247,29 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
       : `maw new failed (exit ${result.status}) — session may already exist: ${sessionName}`);
   }
 
+  // Parse the JSON payload printed by maw new --print to capture pane_id.
+  let capturedPaneId = "";
+  try {
+    const stdout = (result.stdout || "").trim();
+    // Find the last JSON-looking line (maw may print loader noise before it)
+    const lines = stdout.split("\n").filter((l: string) => l.trim().startsWith("{"));
+    if (lines.length) {
+      const info = JSON.parse(lines[lines.length - 1]);
+      if (info && typeof info.pane_id === "string") {
+        capturedPaneId = info.pane_id;
+        console.log(`  \x1b[32m✓\x1b[0m spawned pane ${capturedPaneId}${info.session ? ` (session ${info.session})` : ""}`);
+      }
+    }
+  } catch (e: any) {
+    console.log(`  \x1b[33m⚠\x1b[0m could not parse maw new --print output: ${e.message}`);
+  }
+
   // Hint how to view the worker if outside tmux
-  if (!inTmux) {
+  if (!inTmux && !useSplit) {
     console.log(`  \x1b[90m→ attach: tmux attach -t ${sessionName}\x1b[0m`);
   }
 
-  // Record the member in config.json
+  // Record the member in config.json — tmuxPaneId now populated when --print parses successfully
   cfg.members.push({
     agentId: `${m.role}@${team}`,
     name: m.role,
@@ -265,7 +282,7 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
     runCounter: teammateCounter || null,
     shortRef: teammateShortRef || null,
     joinedAt: nowMs(),
-    tmuxPaneId: "",
+    tmuxPaneId: capturedPaneId,
     cwd: m.cwd,
     subscriptions: [],
   });
