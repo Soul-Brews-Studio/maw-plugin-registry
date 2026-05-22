@@ -131,11 +131,36 @@ export async function loadStateDirsRegistry(): Promise<Set<string>> {
   if (!existsSync(file)) return new Set();
   try {
     const content = readFileSync(file, "utf8");
-    // Match keys of the STATE_DIRS object: `"<bot-name>":`
-    const matches = content.matchAll(/"([a-z][a-z0-9-]+)":/gi);
+    // Limit to STATE_DIRS block (avoid matching ANCHORS keys)
+    const stateBlock = content.split(/export const ANCHORS/)[0]!;
+    const matches = stateBlock.matchAll(/"([a-z][a-z0-9-]+)":/gi);
     return new Set(Array.from(matches, m => m[1]!));
   } catch {
     return new Set();
+  }
+}
+
+/**
+ * Parse the ANCHORS export from discord-oracle/src/state-dirs.ts.
+ * Returns bot → canonical-host mapping. Bots not in ANCHORS have no anchor.
+ */
+export async function loadAnchors(): Promise<Record<string, string>> {
+  const repo = await findGhqPath("discord-oracle");
+  if (!repo) return {};
+  const file = join(repo, "src", "state-dirs.ts");
+  if (!existsSync(file)) return {};
+  try {
+    const content = readFileSync(file, "utf8");
+    const block = content.split(/export const ANCHORS[^{]*{/)[1];
+    if (!block) return {};
+    const body = block.split(/^};/m)[0] || "";
+    const out: Record<string, string> = {};
+    for (const m of body.matchAll(/"([a-z][a-z0-9-]+)"\s*:\s*"([^"]+)"/gi)) {
+      out[m[1]!] = m[2]!;
+    }
+    return out;
+  } catch {
+    return {};
   }
 }
 
