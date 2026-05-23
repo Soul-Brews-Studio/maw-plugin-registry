@@ -32,8 +32,21 @@ export function findClaudeBin(): string {
 }
 
 export function shellQuote(s: string): string {
+  // Allowlist of chars safe to pass unquoted to a shell. Fast path returns
+  // the string as-is.
   if (/^[A-Za-z0-9_@.\-\/:]+$/.test(s)) return s;
-  return `'${s.replace(/'/g, "'\\''")}'`;
+
+  // For strings with special chars, escape each meta-char with `\`. We use
+  // backslash-escaping instead of single-quote wrapping because the latter
+  // can lose its quote layer in nested eval scenarios — specifically the
+  // `maw new --cmd "$cmd" → tmux send to pane → zsh evaluates` chain.
+  // Single quotes get consumed once by tmux/zsh, then brackets in the
+  // resulting string get re-globbed by zsh ("no matches found").
+  //
+  // Backslash escapes survive one layer of eval (the `\[` becomes `[` after
+  // one pass, but no glob fires). Reported by ccc-oracle 2026-05-23 for
+  // `--model 'claude-opus-4-6[1m]'` 1M-context modifier.
+  return s.replace(/([\\$`"'\s\[\]\(\)\*\?\<\>\|\&;{}!])/g, "\\$1");
 }
 
 /**

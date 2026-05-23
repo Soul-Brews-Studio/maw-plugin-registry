@@ -203,7 +203,7 @@ export async function cmdSpawn(args: string[], flags: Record<string, unknown>): 
     `--team-name ${team}`,
     `--agent-color ${m.color}`,
     `--parent-session-id ${parent}`,
-    `--model ${model}`,
+    `--model ${shellQuote(model)}`,
   );
   if (systemPrompt) cmdParts.push(`--system-prompt ${shellQuote(systemPrompt)}`);
   cmdParts.push(`--dangerously-skip-permissions`);
