@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-22T17:17:10Z",
+  "updated": "2026-05-31T10:14:09Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -767,8 +767,8 @@
       "tier": "extra"
     },
     "team": {
-      "version": "0.1.1",
-      "source": "soul-brews-studio/maw-plugin-registry/team@v0.1.1-team",
+      "version": "0.1.2",
+      "source": "soul-brews-studio/maw-plugin-registry/team@v0.1.2-team",
       "sha256": null,
       "summary": "Agent team engine with worktree cwd spawn, inbox send, status, tasks, and pane submit.",
       "author": "Soul-Brews-Studio",

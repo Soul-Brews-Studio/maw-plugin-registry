@@ -1,6 +1,6 @@
 {
-  "version": "0.1.1",
-  "source": "soul-brews-studio/maw-plugin-registry/team@v0.1.1-team",
+  "version": "0.1.2",
+  "source": "soul-brews-studio/maw-plugin-registry/team@v0.1.2-team",
   "sha256": null,
   "summary": "Agent team engine with worktree cwd spawn, inbox send, status, tasks, and pane submit.",
   "author": "Soul-Brews-Studio",

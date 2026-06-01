@@ -37,14 +37,21 @@ export function loadTeam(name: string): TeamConfig | null {
 }
 
 /**
- * Resolve ψ/ directory by walking UP from cwd looking for an oracle root
- * (marked by CLAUDE.md + ψ/). Falls back to cwd/ψ for backward compat when
- * no marker is found. Prevents rogue nested vaults when the CLI is run from
- * a sub-directory (#393 — Bug A).
+ * Resolve the ψ/ vault directory, cwd-INDEPENDENT first so that create and
+ * delete (and launchd daemons with an arbitrary cwd) always agree on one vault:
+ *   1. MAW_PSI env override — explicit; works from any cwd.
+ *   2. Walk UP from cwd for an oracle root (CLAUDE.md + ψ/ both present).
+ *   3. ~/ψ — stable fallback; never mints a stray ψ in an arbitrary cwd.
+ * Prevents rogue nested vaults when the CLI is run from a sub-directory
+ * (#393 — Bug A) and vault-orphans when run from outside any oracle root.
  */
 export function resolvePsi(): string {
+  // 1. Explicit override — the unconditional binding.
+  const env = process.env.MAW_PSI?.trim();
+  if (env) return env;
+
+  // 2. Walk up looking for an oracle root (CLAUDE.md + ψ/ both present)
   let dir = process.cwd();
-  // Walk up looking for an oracle root (CLAUDE.md + ψ/ both present)
   while (true) {
     const psi = join(dir, "ψ");
     if (existsSync(psi) && existsSync(join(dir, "CLAUDE.md"))) return psi;
@@ -52,8 +59,8 @@ export function resolvePsi(): string {
     if (parent === dir) break; // reached filesystem root
     dir = parent;
   }
-  // Fallback: legacy behavior — cwd/ψ, callers mkdir as needed
-  return join(process.cwd(), "ψ");
+  // 3. Stable fallback: ~/ψ — not process.cwd()/ψ, which silently orphans.
+  return join(homedir(), "ψ");
 }
 
 /**
