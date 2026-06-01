@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
 import { homedir } from "os";
 import { loadConfig } from "maw-js/config";
 import { parseFlags } from "maw-js/cli/parse-args";
@@ -18,12 +18,30 @@ interface ContactsFile {
   updated: string;
 }
 
+/**
+ * Resolve the ψ/ vault, cwd-INDEPENDENT first, so contacts.json lands in the
+ * same vault the team plugin uses (see plugins/team/team-helpers.resolvePsi):
+ *   1. config.psiPath  — explicit config (contacts-specific, kept first).
+ *   2. MAW_PSI env      — explicit override; works from any cwd / daemon.
+ *   3. walk UP from cwd for an oracle root (CLAUDE.md + ψ/ both present).
+ *   4. ~/ψ              — stable fallback; never cwd-relative (which orphans).
+ */
 function resolvePsiPath(): string {
   const config = loadConfig();
   if (config.psiPath) return config.psiPath;
-  const cwd = process.cwd();
-  if (existsSync(join(cwd, "ψ"))) return join(cwd, "ψ");
-  return join(cwd, "psi");
+
+  const env = process.env.MAW_PSI?.trim();
+  if (env) return env;
+
+  let dir = process.cwd();
+  while (true) {
+    const psi = join(dir, "ψ");
+    if (existsSync(psi) && existsSync(join(dir, "CLAUDE.md"))) return psi;
+    const parent = dirname(dir);
+    if (parent === dir) break; // reached filesystem root
+    dir = parent;
+  }
+  return join(homedir(), "ψ");
 }
 
 function loadContacts(): ContactsFile {

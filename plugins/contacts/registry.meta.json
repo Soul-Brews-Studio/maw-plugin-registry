@@ -1,7 +1,7 @@
 {
-  "version": "0.1.0",
-  "source": "soul-brews-studio/maw-plugin-registry/contacts@v0.1.0-contacts",
-  "sha256": "07d9153d378eb4150ac3b4a1d836177980473b764f2a233f46d1ed37aa5c8da2",
+  "version": "0.1.1",
+  "source": "soul-brews-studio/maw-plugin-registry/contacts@v0.1.1-contacts",
+  "sha256": null,
   "summary": "Manage oracle contacts \u2014 add, remove, list",
   "author": "Soul-Brews-Studio",
   "license": "MIT",
