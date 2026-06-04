@@ -1,0 +1,29 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "session-carry",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "tier": "standard",
+  "description": "Carry Claude Code session JSONLs cross-node — places them at the DESTINATION's encoded project dir so /resume finds them even when source and dest paths differ. Dry-run by default; --apply to commit.",
+  "author": "Soul-Brews-Studio",
+  "capabilities": ["fs:read"],
+  "cli": {
+    "command": "session-carry",
+    "aliases": ["scarry"],
+    "help": "maw session-carry --src-dir NAME|PATH --node HOST --dest-user USER --dest-dir ENC [--min-mb N] [--subagents] [--apply]",
+    "flags": {
+      "--src-dir": "string",
+      "--node": "string",
+      "--dest-user": "string",
+      "--dest-dir": "string",
+      "--min-mb": "string",
+      "--subagents": "boolean",
+      "--apply": "boolean"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}

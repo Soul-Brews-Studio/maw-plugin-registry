@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "source": "soul-brews-studio/maw-plugin-registry/session-carry@main",
+  "sha256": null,
+  "summary": "Cross-node Claude session carry — reconciles path-encoding (m5 cwd != remote cwd) by placing JSONLs at the dest's encoded project dir so /resume finds them. Dry-run by default; --apply to commit. Fills the gap osmosis --sessions skips silently on encoding mismatch.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+  "addedAt": "2026-06-04T10:50:00Z",
+  "tier": "standard"
+}
