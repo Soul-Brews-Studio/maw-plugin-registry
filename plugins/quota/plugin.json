@@ -1,10 +1,11 @@
 {
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
   "name": "quota",
   "version": "1.0.0",
   "entry": "./index.ts",
   "sdk": "^1.0.0",
-  "description": "Claude Code subscription quota — remaining prompts, weekly hours, time-to-reset.",
-  "author": "Soul-Brews-Studio",
+  "description": "Claude Code subscription quota — utilization and time-to-reset from Anthropic API.",
+  "author": "meganechan",
   "cli": {
     "command": "quota",
     "aliases": ["q"],
