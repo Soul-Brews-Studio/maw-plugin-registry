@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "source": "meganechan/maw-plugin-quota@v1.0.0",
+  "sha256": null,
+  "summary": "Claude Code subscription quota — utilization and time-to-reset from Anthropic API.",
+  "author": "meganechan",
+  "license": "MIT",
+  "homepage": "https://github.com/meganechan/maw-plugin-quota",
+  "addedAt": "2026-06-09T00:00:00Z",
+  "tier": "extra"
+}

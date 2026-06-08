@@ -1,0 +1,22 @@
+{
+  "name": "quota",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Claude Code subscription quota — remaining prompts, weekly hours, time-to-reset.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "quota",
+    "aliases": ["q"],
+    "help": "maw quota [--json] [--check [--warn N --critical N]]",
+    "flags": {
+      "--json": "boolean",
+      "--check": "boolean",
+      "--warn": "number",
+      "--critical": "number"
+    }
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}

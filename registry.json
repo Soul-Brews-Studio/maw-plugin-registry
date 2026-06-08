@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-22T17:17:10Z",
+  "updated": "2026-06-08T17:07:59Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -546,6 +546,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T02:49:08Z",
+      "tier": "extra"
+    },
+    "quota": {
+      "version": "1.0.0",
+      "source": "meganechan/maw-plugin-quota@v1.0.0",
+      "sha256": null,
+      "summary": "Claude Code subscription quota \u2014 utilization and time-to-reset from Anthropic API.",
+      "author": "meganechan",
+      "license": "MIT",
+      "homepage": "https://github.com/meganechan/maw-plugin-quota",
+      "addedAt": "2026-06-09T00:00:00Z",
       "tier": "extra"
     },
     "rename": {
