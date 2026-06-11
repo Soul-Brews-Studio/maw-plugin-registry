@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-06-11T03:37:34Z",
+  "updated": "2026-06-11T03:44:38Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -232,7 +232,7 @@
     },
     "dropbox": {
       "version": "1.0.0",
-      "source": "Soul-Brews-Studio/maw-plugin-registry/plugins/dropbox",
+      "source": "soul-brews-studio/maw-plugin-registry/dropbox@v1.0.0",
       "sha256": null,
       "summary": "P2P file sharing via WebRTC \u2014 maw dropbox send <file> to any peer.",
       "author": "PhD Oracle (laris-co)",
