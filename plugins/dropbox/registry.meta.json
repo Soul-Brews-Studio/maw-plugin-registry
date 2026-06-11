@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "source": "Soul-Brews-Studio/maw-plugin-registry/plugins/dropbox",
+  "sha256": null,
+  "summary": "P2P file sharing via WebRTC — maw dropbox send <file> to any peer.",
+  "author": "PhD Oracle (laris-co)",
+  "license": "MIT",
+  "homepage": "https://github.com/the-oracle-keeps-the-human-human/phd-satellite-data/tree/main/phd/dropbox",
+  "addedAt": "2026-06-11T03:30:00Z"
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-05-22T17:17:10Z",
+  "updated": "2026-06-11T03:37:34Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -229,6 +229,16 @@
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-05-13T08:00:00Z",
       "tier": "extra"
+    },
+    "dropbox": {
+      "version": "1.0.0",
+      "source": "Soul-Brews-Studio/maw-plugin-registry/plugins/dropbox",
+      "sha256": null,
+      "summary": "P2P file sharing via WebRTC \u2014 maw dropbox send <file> to any peer.",
+      "author": "PhD Oracle (laris-co)",
+      "license": "MIT",
+      "homepage": "https://github.com/the-oracle-keeps-the-human-human/phd-satellite-data/tree/main/phd/dropbox",
+      "addedAt": "2026-06-11T03:30:00Z"
     },
     "fck": {
       "version": "0.1.0",

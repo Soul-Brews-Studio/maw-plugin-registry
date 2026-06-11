@@ -1,0 +1,16 @@
+{
+  "name": "dropbox",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "P2P file sharing via WebRTC DataChannel — send files peer-to-peer to any Oracle.",
+  "author": "PhD Oracle (laris-co)",
+  "capabilities": ["fs:read", "fs:write", "net"],
+  "cli": {
+    "command": "dropbox",
+    "help": "maw dropbox <send|peers|list|index|watch|start|stop|status> — P2P file sharing"
+  },
+  "weight": 50,
+  "license": "MIT",
+  "schemaVersion": 1
+}
