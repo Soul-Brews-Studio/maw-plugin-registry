@@ -2,8 +2,15 @@ import { execSync } from "child_process";
 import { existsSync, readdirSync, statSync, readFileSync } from "fs";
 import { join, basename } from "path";
 
-const AUTH_KEY = process.env.AUTH_KEY || "phd-2206dc9f50c6f156337f6c4467677604";
+const AUTH_KEY = process.env.AUTH_KEY;
 const SIGNAL_URL = process.env.SIGNAL_URL || "wss://phd-signaling.laris.workers.dev/ws";
+
+if (!AUTH_KEY) {
+  throw new Error(
+    "AUTH_KEY not set — get the key from your team's private channel, " +
+    "then: export AUTH_KEY=<key>"
+  );
+}
 
 function formatSize(b: number): string {
   if (b < 1024) return `${b} B`;
@@ -129,7 +136,7 @@ maw dropbox — P2P file sharing via WebRTC DataChannel
   Shortcuts: s=send, p=peers, ls=list, i=index, v=version
 
   Env:
-    AUTH_KEY      Signaling auth (default: built-in)
+    AUTH_KEY      Signaling auth (REQUIRED — get from private channel)
     PEER_NAME     Your peer name (default: cli-HHMM-hash)
     SIGNAL_URL    Signaling server (default: phd-signaling.laris.workers.dev)
 
