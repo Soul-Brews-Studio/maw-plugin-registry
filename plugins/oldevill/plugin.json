@@ -1,0 +1,16 @@
+{
+  "name": "oldevill",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Oldevill Oracle — identity, philosophy, status, voice (Light, Shadow, Spirit).",
+  "author": "Keng (oldevill)",
+  "cli": {
+    "command": "oldevill",
+    "aliases": ["odv"],
+    "help": "maw oldevill <whoami|philosophy|status|say|chronicle|voice> [args]"
+  },
+  "weight": 10,
+  "license": "MIT",
+  "schemaVersion": 1
+}
