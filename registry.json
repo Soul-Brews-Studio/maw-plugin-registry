@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/registry.json",
   "schemaVersion": 1,
-  "updated": "2026-06-11T03:44:38Z",
+  "updated": "2026-06-14T04:59:29Z",
   "plugins": {
     "about": {
       "version": "0.1.0",
@@ -392,6 +392,17 @@
       "license": "MIT",
       "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
       "addedAt": "2026-04-29T01:39:53Z",
+      "tier": "extra"
+    },
+    "oldevill": {
+      "version": "0.1.0",
+      "source": "oldevill14/oldevill-oracle@v0.1.0",
+      "sha256": null,
+      "summary": "Oldevill Oracle \u2014 identity, philosophy, status, voice (Light, Shadow, Spirit).",
+      "author": "Keng (oldevill)",
+      "license": "MIT",
+      "homepage": "https://github.com/oldevill14/oldevill-oracle",
+      "addedAt": "2026-06-14T04:00:00Z",
       "tier": "extra"
     },
     "on": {
