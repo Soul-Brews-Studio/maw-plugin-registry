@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "source": "soul-brews-studio/maw-plugin-registry/reindex-gpu@v1.0.0-reindex-gpu",
+  "sha256": null,
+  "summary": "Thin GPU orchestration for arra bge-m3 reindexing.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+  "addedAt": "2026-06-18T13:05:44Z",
+  "tier": "extra"
+}
