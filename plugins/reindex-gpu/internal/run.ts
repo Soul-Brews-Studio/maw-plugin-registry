@@ -28,12 +28,14 @@ export async function runReindex(options: Options): Promise<OpResult> {
 
   console.log(`reindex via GPU endpoint ${probe.endpoint}`);
   console.log(`OLLAMA_BASE_URL=${probe.baseUrl}`);
-  console.log(`OLLAMA_EMBED_BATCH=${batch}`);
+  console.log(`batch=${batch} (ORACLE_EMBED_BATCH_SIZE + OLLAMA_EMBED_BATCH)`);
   if (options.dataDir) console.log(`ORACLE_DATA_DIR=${options.dataDir}`);
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     OLLAMA_BASE_URL: probe.baseUrl,
+    // ORACLE_EMBED_BATCH_SIZE is canonical (arra main #1433); OLLAMA_EMBED_BATCH is interim for the deployed VPS arra until it aligns to main.
+    ORACLE_EMBED_BATCH_SIZE: String(batch),
     OLLAMA_EMBED_BATCH: String(batch),
     ORACLE_EMBEDDING_MODEL: MODEL,
   };
