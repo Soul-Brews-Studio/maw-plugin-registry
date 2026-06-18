@@ -1,0 +1,27 @@
+import { definePlugin } from "maw-js/sdk";
+
+export default definePlugin({
+  "name": "reindex-gpu",
+  "version": "1.0.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "description": "Thin GPU orchestration for arra bge-m3 reindexing.",
+  "author": "Soul-Brews-Studio",
+  "cli": {
+    "command": "reindex-gpu",
+    "aliases": [
+      "rgpu"
+    ],
+    "help": "maw reindex-gpu <status|run|tunnel|setup> [flags]"
+  },
+  "api": {
+    "path": "/api/reindex-gpu",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  "weight": 10,
+  "license": "MIT",
+  "schemaVersion": 1
+} as const);
