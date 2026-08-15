@@ -1,0 +1,28 @@
+{
+  "name": "@maw/cross-team-queue",
+  "version": "0.1.2",
+  "description": "Unified inbox view across multiple oracle vaults — first plugin in the maw registry",
+  "license": "BUSL-1.1",
+  "repository": "Soul-Brews-Studio/maw-cross-team-queue",
+  "type": "module",
+  "main": "src/index.ts",
+  "files": [
+    "src/",
+    "plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bun test test/"
+  },
+  "peerDependencies": {
+    "@maw/sdk": "^1.0.0-alpha"
+  },
+  "keywords": [
+    "maw",
+    "maw-plugin",
+    "vault",
+    "inbox",
+    "queue"
+  ]
+}

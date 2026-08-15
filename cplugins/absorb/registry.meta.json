@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "source": "soul-brews-studio/maw-plugin-registry/absorb@v0.1.0-absorb",
+  "summary": "Retire one oracle into another with consent, provenance, and namespaced vault donation.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "homepage": "https://github.com/Soul-Brews-Studio/maw-plugin-registry",
+  "addedAt": "2026-05-18T00:00:00Z",
+  "tier": "extra"
+}

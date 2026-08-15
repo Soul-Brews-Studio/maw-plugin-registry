@@ -1,0 +1,30 @@
+{
+  "name": "maw-shellenv",
+  "version": "0.1.2",
+  "description": "Emit shell init code for the maw warp ergonomic — eval-style install for zsh/bash",
+  "license": "MIT",
+  "repository": "Soul-Brews-Studio/maw-shellenv",
+  "type": "module",
+  "main": "src/index.ts",
+  "files": [
+    "src/",
+    "plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bun test tests/"
+  },
+  "peerDependencies": {
+    "@maw-js/sdk": "^1.0.0-alpha"
+  },
+  "keywords": [
+    "maw",
+    "maw-plugin",
+    "shellenv",
+    "shell",
+    "zsh",
+    "bash",
+    "warp"
+  ]
+}

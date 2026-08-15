@@ -1,0 +1,41 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "fleet-ui",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "tier": "standard",
+  "description": "Browser dashboard for fleet control: list sessions and click wake/kill/done/sleep.",
+  "author": "Soul-Brews-Studio",
+  "capabilities": [
+    "tmux:fleet",
+    "proc:control",
+    "sdk:engine"
+  ],
+  "api": {
+    "path": "/api/fleet-ui",
+    "methods": ["GET"]
+  },
+  "engine": {
+    "serve": {
+      "command": "maw fleet-ui serve",
+      "prefix": "/api/fleet-ui",
+      "health": "/health",
+      "eventPath": "/events",
+      "events": ["MessageSend", "MessageDeliver", "MessageFail"]
+    }
+  },
+  "cli": {
+    "command": "fleet-ui",
+    "help": "maw fleet-ui serve [--detach] [--engine URL] [--port N] | status [--engine URL] | stop [--engine URL] | --json",
+    "flags": {
+      "--detach": "boolean",
+      "--engine": "string",
+      "--port": "number",
+      "--json": "boolean"
+    }
+  },
+  "weight": 40,
+  "license": "MIT",
+  "schemaVersion": 1
+}

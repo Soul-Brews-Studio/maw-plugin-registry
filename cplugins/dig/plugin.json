@@ -1,0 +1,31 @@
+{
+  "$schema": "https://maw.soulbrews.studio/schema/plugin.json",
+  "name": "dig",
+  "version": "0.1.0",
+  "entry": "./index.ts",
+  "sdk": "^1.0.0",
+  "target": "js",
+  "tier": "standard",
+  "description": "Session mining CLI — human/AI message separation, time-range filters, keyword grep across Claude Code .jsonl history.",
+  "author": "Soul-Brews-Studio",
+  "license": "MIT",
+  "capabilities": ["fs:read", "sdk:plugin"],
+  "cli": {
+    "command": "dig",
+    "help": "maw dig [N | --recent Nm | --all | --timeline | --deep | --human | --ai | --tools | --grep KW | --oracle NAME | --repo PATH]",
+    "flags": {
+      "--recent": "string",
+      "--all": "boolean",
+      "--timeline": "boolean",
+      "--deep": "boolean",
+      "--human": "boolean",
+      "--ai": "boolean",
+      "--tools": "boolean",
+      "--grep": "string",
+      "--oracle": "string",
+      "--repo": "string"
+    }
+  },
+  "weight": 30,
+  "schemaVersion": 1
+}

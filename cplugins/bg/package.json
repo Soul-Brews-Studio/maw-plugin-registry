@@ -1,0 +1,28 @@
+{
+  "name": "@maw/bg",
+  "version": "0.1.2",
+  "description": "Run long commands in detached tmux; sample output non-destructively",
+  "license": "MIT",
+  "repository": "Soul-Brews-Studio/maw-bg",
+  "type": "module",
+  "main": "src/index.ts",
+  "files": [
+    "src/",
+    "plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bun test tests/"
+  },
+  "peerDependencies": {
+    "@maw-js/sdk": "^1.0.0-alpha"
+  },
+  "keywords": [
+    "maw",
+    "maw-plugin",
+    "bg",
+    "tmux",
+    "background"
+  ]
+}

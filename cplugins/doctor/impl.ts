@@ -1,0 +1,414 @@
+import { existsSync, readFileSync, readlinkSync } from "fs";
+import { execSync } from "child_process";
+import { homedir } from "os";
+import { join, dirname, resolve } from "path";
+import { loadPeers } from "./internal/peers-store";
+import { findDuplicateIdentities, formatDuplicate } from "./internal/duplicate-detect";
+import { loadConfig } from "maw-js/config";
+import { C } from "maw-js/commands/shared/fleet-doctor-fixer";
+import { loadManifestCached, invalidateManifest } from "maw-js/lib/oracle-manifest";
+import { findGaps, summarizeGaps } from "./cross-source-detect";
+import { checkMawJsBranch } from "./internal/maw-js-branch-check";
+import { checkStillbornWorktrees } from "./internal/stillborn-worktrees";
+import { checkStalePeers, cmdFixStalePeers } from "./internal/stale-peers";
+import { detectBunLinkedCheckout } from "./internal/bun-link-detect";
+
+export interface DoctorResult {
+  ok: boolean;
+  checks: Array<{ name: string; ok: boolean; message: string }>;
+}
+
+export async function cmdDoctor(args: string[] = []): Promise<DoctorResult> {
+  const flags = new Set(args.filter(a => a.startsWith("--")));
+  const positional = args.filter(a => !a.startsWith("--"));
+  const only = positional[0];
+  const allowDrift = flags.has("--allow-drift");
+  const smoke = flags.has("--smoke") || only === "smoke";
+  const checks: DoctorResult["checks"] = [];
+
+  // #1238 — `maw doctor --fix-stale` short-circuits the normal check
+  // suite: this is a destructive sweep, not a diagnostic. Returns the
+  // fix result directly so index.ts surfaces it unchanged.
+  if (flags.has("--fix-stale")) {
+    return await cmdFixStalePeers();
+  }
+
+  if (smoke) {
+    const smokeChecks = await runSmokeTests();
+    for (const c of smokeChecks) checks.push(c);
+  } else {
+    if (!only || only === "install" || only === "all") {
+      checks.push(await checkInstall());
+    }
+    if (!only || only === "version" || only === "all") {
+      const vChecks = await checkVersionDrift();
+      for (const c of vChecks) checks.push(c);
+    }
+    if (!only || only === "peers" || only === "all") {
+      checks.push(checkPeerDuplicates());
+      checks.push(checkStalePeers());
+    }
+    if (!only || only === "manifest" || only === "all") {
+      checks.push(checkCrossSourceConsistency());
+    }
+    if (!only || only === "maw-js" || only === "all") {
+      checks.push(await checkMawJsBranch());
+    }
+    if (!only || only === "worktrees" || only === "all") {
+      checks.push(checkStillbornWorktrees());
+    }
+  }
+
+  const hardOk = checks.every(c => c.ok);
+  const onlyDriftFails = !hardOk && checks.every(c => c.ok || c.name.startsWith("version:"));
+  const ok = hardOk || (allowDrift && onlyDriftFails);
+  renderResults(checks, ok);
+  return { ok, checks };
+}
+
+async function checkInstall(): Promise<{ name: string; ok: boolean; message: string }> {
+  const binPath = join(homedir(), ".bun/bin/maw");
+  const exists = existsSync(binPath);
+  if (!exists) {
+    console.log(`  ${C.yellow}⚠${C.reset} maw binary missing at ${binPath}`);
+    // #1281 — Skip auto-reinstall when maw-js is bun-linked to a local dev
+    // checkout. `bun add -g github:…` would silently replace the symlink
+    // with a fresh clone, blowing away the dev workflow. Tell the operator
+    // how to restore the link instead.
+    const localCheckout = detectBunLinkedCheckout();
+    if (localCheckout) {
+      console.log(`  ${C.yellow}⚠${C.reset} maw is bun-linked to dev checkout: ${localCheckout}`);
+      console.log(`  ${C.gray}run: cd ${localCheckout} && bun link${C.reset}`);
+      return {
+        name: "install",
+        ok: false,
+        message: `dev bun-link at ${localCheckout} — run bun link to restore`,
+      };
+    }
+    console.log(`  ${C.gray}attempting reinstall…${C.reset}`);
+    try {
+      execSync("bun add -g github:Soul-Brews-Studio/maw-js", { stdio: "inherit" });
+      const nowExists = existsSync(binPath);
+      return {
+        name: "install",
+        ok: nowExists,
+        message: nowExists
+          ? "reinstalled from github:Soul-Brews-Studio/maw-js"
+          : "reinstall did not produce the binary — manual intervention needed",
+      };
+    } catch (e: any) {
+      return { name: "install", ok: false, message: `reinstall failed: ${e.message || e}` };
+    }
+  }
+  try {
+    const link = readlinkSync(binPath);
+    const abs = link.startsWith("/") ? link : resolve(dirname(binPath), link);
+    if (!existsSync(abs)) {
+      return { name: "install", ok: false, message: `binary is a broken symlink → ${abs}` };
+    }
+  } catch { /* not a symlink — that's fine */ }
+  return { name: "install", ok: true, message: "maw binary present and resolvable" };
+}
+
+/**
+ * Version drift: compare source package.json version to each running maw
+ * process's `/info` endpoint version (#638). MVP covers pm2 only.
+ *
+ * Returns a list (one per running maw, or a single synthetic entry when
+ * pm2/source lookup fails). Drift → ok:false; exit code gating lives in
+ * cmdDoctor via the --allow-drift flag.
+ */
+async function checkVersionDrift(): Promise<DoctorResult["checks"]> {
+  const source = readSourceVersion();
+  if (!source) {
+    return [{ name: "version:source", ok: false, message: "could not read package.json version" }];
+  }
+
+  const procs = listPm2MawProcs();
+  if (procs === null) {
+    return [{ name: "version:pm2", ok: true, message: `pm2 unavailable — source ${source} (no running maw to compare)` }];
+  }
+  if (procs.length === 0) {
+    return [{ name: "version:pm2", ok: true, message: `no running maw — source ${source}` }];
+  }
+
+  const results: DoctorResult["checks"] = [];
+  for (const p of procs) {
+    const port = p.port ?? defaultPort();
+    const label = `version:${p.name}${p.pmId != null ? `#${p.pmId}` : ""}`;
+    try {
+      const running = await fetchInfoVersion(port);
+      if (running === null) {
+        results.push({ name: label, ok: false, message: `unreachable at :${port} — source ${source}` });
+      } else if (running === source) {
+        results.push({ name: label, ok: true, message: `aligned (${source}) :${port}` });
+      } else {
+        results.push({ name: label, ok: false, message: `drift — running ${running}, source ${source} :${port}` });
+      }
+    } catch (e: any) {
+      results.push({ name: label, ok: false, message: `probe failed: ${e?.message || e} :${port}` });
+    }
+  }
+  return results;
+}
+
+function readSourceVersion(): string | null {
+  // Resolve via Bun's module resolver so we always land on the installed
+  // maw-js (sibling repo, linked node_modules, or npm install). The old
+  // ../../../../package.json walk assumed this plugin still lived inside
+  // maw-js/src/commands/plugins/doctor — extracting it to its own repo
+  // pointed the walk at ~/Code/github.com/package.json instead.
+  try {
+    const pkgPath = Bun.resolveSync("maw-js/package.json", import.meta.dir);
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+    return typeof pkg.version === "string" ? pkg.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function defaultPort(): number {
+  const envPort = Number(process.env.MAW_PORT);
+  return Number.isFinite(envPort) && envPort > 0 ? envPort : 3456;
+}
+
+interface Pm2Proc {
+  name: string;
+  pmId?: number;
+  port?: number;
+}
+
+function listPm2MawProcs(): Pm2Proc[] | null {
+  let raw: string;
+  try {
+    raw = execSync("pm2 jlist 2>/dev/null", { encoding: "utf-8" });
+  } catch {
+    return null;
+  }
+  let procs: any[];
+  try {
+    procs = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(procs)) return [];
+  const out: Pm2Proc[] = [];
+  for (const p of procs) {
+    if (!p || typeof p.name !== "string") continue;
+    if (p.name !== "maw" && !p.name.startsWith("maw-")) continue;
+    const env = p.pm2_env?.env || p.pm2_env || {};
+    const envPort = Number(env?.MAW_PORT ?? env?.PORT);
+    out.push({
+      name: p.name,
+      pmId: typeof p.pm_id === "number" ? p.pm_id : undefined,
+      port: Number.isFinite(envPort) && envPort > 0 ? envPort : undefined,
+    });
+  }
+  return out;
+}
+
+/**
+ * Peer cache duplicate `<oracle>:<node>` check (#804 Step 3).
+ *
+ * Loads `~/.maw/peers.json` (or `$PEERS_FILE` in tests) plus the local
+ * `(oracle, node)` from config and reports any collisions. This is a
+ * read-only check — duplicates surface as a `peers:duplicates` line with
+ * `ok:false` so the doctor exits non-zero, but we never auto-prune.
+ *
+ * Empty cache, missing-identity peers, and zero-collisions all return
+ * `ok:true`. Any peer without an `identity` field is silently skipped (legacy
+ * peers from pre-Step-3 captures — re-probing them via `maw peers probe`
+ * will populate identity and bring them under the dedup umbrella).
+ */
+function checkPeerDuplicates(): DoctorResult["checks"][number] {
+  let peers: Record<string, import("./internal/peers-store").Peer> = {};
+  try {
+    peers = loadPeers().peers;
+  } catch (e: any) {
+    return {
+      name: "peers:duplicates",
+      ok: true,
+      message: `peer cache unreadable (${e?.message || e}) — skipping dedup check`,
+    };
+  }
+
+  let local: { oracle: string; node: string } | undefined;
+  try {
+    const cfg = loadConfig();
+    if (cfg.node) {
+      local = { oracle: cfg.oracle ?? "mawjs", node: cfg.node };
+    }
+  } catch {
+    // Config unreadable in this environment — skip the local-vs-cache check
+    // but still scan peer-vs-peer collisions below.
+  }
+
+  const dups = findDuplicateIdentities(peers, local);
+  if (dups.length === 0) {
+    const n = Object.keys(peers).length;
+    return {
+      name: "peers:duplicates",
+      ok: true,
+      message: n === 0
+        ? "no peers cached"
+        : `no <oracle>:<node> collisions across ${n} peer${n === 1 ? "" : "s"}`,
+    };
+  }
+  return {
+    name: "peers:duplicates",
+    ok: false,
+    message: dups.map(formatDuplicate).join("; "),
+  };
+}
+
+/**
+ * Cross-source consistency via OracleManifest (Sub-PR 2 of #841).
+ *
+ * Loads the unified manifest (#838 — fleet, sessions, agents, oracles.json)
+ * and runs `findGaps()` over it to surface inconsistencies between the
+ * registries. All gaps are warnings, never hard failures: operators
+ * legitimately keep registries partly aligned during migrations, so
+ * gating exit codes on these would force `--allow-drift` for normal
+ * mid-flight states. Surface as `ok:true` with a message body that
+ * counts the gaps and breaks them down by kind; the per-gap detail
+ * lines are written to console for human inspection.
+ *
+ * Uses `loadManifestCached()` so this check shares the in-process
+ * manifest with any other consumer running in the same `maw doctor`
+ * invocation. We invalidate first to avoid serving a stale view if
+ * `loadConfig`-touching work happened earlier in the same process.
+ */
+function checkCrossSourceConsistency(): DoctorResult["checks"][number] {
+  let gaps: ReturnType<typeof findGaps>;
+  try {
+    invalidateManifest();
+    const manifest = loadManifestCached();
+    gaps = findGaps(manifest);
+  } catch (e: any) {
+    return {
+      name: "manifest:cross-source",
+      ok: true,
+      message: `manifest unreadable (${e?.message || e}) — skipping cross-source check`,
+    };
+  }
+
+  const { headline, lines } = summarizeGaps(gaps);
+  for (const line of lines) {
+    console.log(`    ${C.yellow}⚠${C.reset} ${line}`);
+  }
+  return {
+    name: "manifest:cross-source",
+    ok: true,
+    message: headline,
+  };
+}
+
+async function fetchInfoVersion(port: number): Promise<string | null> {
+  try {
+    const res = await fetch(`http://localhost:${port}/info`, { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) return null;
+    const body: any = await res.json();
+    return typeof body?.version === "string" ? body.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderResults(checks: DoctorResult["checks"], ok: boolean): void {
+  console.log("");
+  console.log(`  ${ok ? C.green + "✓" : C.red + "✗"} maw doctor${C.reset}`);
+  for (const c of checks) {
+    const icon = iconFor(c);
+    console.log(`    ${icon} ${c.name}${C.reset}: ${c.message}`);
+  }
+  console.log("");
+}
+
+function iconFor(c: { name: string; ok: boolean; message: string }): string {
+  if (c.ok) return C.green + "✓";
+  if (c.name.startsWith("version:") && c.message.startsWith("drift")) return C.yellow + "⚠";
+  return C.red + "✗";
+}
+
+// ─── Smoke tests ────────────────────────────────────────────────────────────
+
+type SmokeCheck = { name: string; ok: boolean; message: string };
+
+async function runSmokeTests(): Promise<SmokeCheck[]> {
+  const checks: SmokeCheck[] = [];
+  const t0 = Date.now();
+
+  checks.push(await smokeCmd("ls", ["ls"]));
+  checks.push(await smokeCmd("oracle ls", ["oracle", "ls", "--json"]));
+  checks.push(await smokeCmd("oracle search", ["oracle", "search", "maw"]));
+  checks.push(await smokeCmd("--version", ["--version"]));
+  checks.push(await smokeCmd("fleet ls", ["fleet", "ls"]));
+  checks.push(smokePluginCount());
+  checks.push(smokeBrokenSymlinks());
+
+  const elapsed = Date.now() - t0;
+  const pass = checks.filter(c => c.ok).length;
+  console.log(`\n  ${C.gray}${pass}/${checks.length} passed in ${elapsed}ms${C.reset}`);
+  return checks;
+}
+
+async function smokeCmd(label: string, args: string[]): Promise<SmokeCheck> {
+  try {
+    const proc = Bun.spawn(["maw", ...args], {
+      stdout: "pipe", stderr: "pipe",
+      env: { ...process.env, MAW_TEST_MODE: "1" },
+    });
+    const code = await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    if (code === 0) {
+      const lines = stdout.trim().split("\n").length;
+      return { name: `smoke:${label}`, ok: true, message: `exit 0 (${lines} lines)` };
+    }
+    const err = (stderr || stdout).trim().split("\n")[0] || `exit ${code}`;
+    return { name: `smoke:${label}`, ok: false, message: err };
+  } catch (e: any) {
+    return { name: `smoke:${label}`, ok: false, message: e?.message || String(e) };
+  }
+}
+
+function smokePluginCount(): SmokeCheck {
+  const { readdirSync, lstatSync } = require("fs");
+  const { join } = require("path");
+  const dir = join(homedir(), ".maw", "plugins");
+  try {
+    const entries = readdirSync(dir) as string[];
+    const broken = entries.filter((e: string) => {
+      const p = join(dir, e);
+      try { return lstatSync(p).isSymbolicLink() && !existsSync(p); } catch { return false; }
+    });
+    if (broken.length > 0) {
+      return { name: "smoke:plugins", ok: false, message: `${broken.length} broken symlink${broken.length === 1 ? "" : "s"} in ${dir}` };
+    }
+    return { name: "smoke:plugins", ok: true, message: `${entries.length} plugins loaded (0 broken)` };
+  } catch (e: any) {
+    return { name: "smoke:plugins", ok: false, message: e?.message || String(e) };
+  }
+}
+
+function smokeBrokenSymlinks(): SmokeCheck {
+  const { readdirSync, lstatSync } = require("fs");
+  const { join } = require("path");
+  const dir = join(homedir(), ".maw", "plugins");
+  try {
+    const entries = readdirSync(dir) as string[];
+    const broken: string[] = [];
+    for (const e of entries) {
+      const p = join(dir, e);
+      try {
+        if (lstatSync(p).isSymbolicLink() && !existsSync(p)) broken.push(e);
+      } catch {}
+    }
+    if (broken.length > 0) {
+      return { name: "smoke:symlinks", ok: false, message: `broken: ${broken.slice(0, 5).join(", ")}${broken.length > 5 ? ` (+${broken.length - 5} more)` : ""}` };
+    }
+    return { name: "smoke:symlinks", ok: true, message: "no broken symlinks" };
+  } catch (e: any) {
+    return { name: "smoke:symlinks", ok: false, message: e?.message || String(e) };
+  }
+}
